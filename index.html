@@ -77,14 +77,10 @@
       </div>
       <div>
         <h1 class="font-headline-lg text-2xl font-bold text-primary">EcoLife</h1>
-        <p class="font-label-bold text-xs text-on-surface-variant font-bold">Team .Tensor</p>
       </div>
     </div>
 
     <div class="flex-1 overflow-y-auto p-gutter flex flex-col gap-stack-sm">
-      <a data-nav="landing" href="#landing" class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-surface-container-high transition-all font-label-bold text-label-bold hover:translate-x-1 hover:translate-y-1">
-        <span class="material-symbols-outlined">home</span> Landing Page
-      </a>
       <a data-nav="overview" href="#overview" class="flex items-center gap-stack-md p-stack-md bg-secondary-container text-on-secondary-container neo-border-thin neo-shadow-sm font-label-bold text-label-bold">
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span> Overview
       </a>
@@ -139,121 +135,6 @@
 
   <!-- Main Content Body -->
   <main class="flex-1 lg:ml-64 pb-20 lg:pb-10">
-
-    <!-- PAGE 1: LANDING PAGE (Originkit Hero 23 Immersive Experience) -->
-    <section id="page-landing" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
-      <!-- Hero 23 Main Container -->
-      <div class="relative w-full bg-[#0b1c0e] border-4 border-on-surface neo-shadow rounded-sm overflow-hidden text-white p-6 md:p-12 min-h-[650px] flex flex-col justify-between">
-        <!-- Stardust Particle Canvas -->
-        <canvas id="hero-stardust-canvas" class="absolute inset-0 w-full h-full pointer-events-none opacity-40"></canvas>
-
-        <!-- Corners -->
-        <div class="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-secondary-container"></div>
-        <div class="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-secondary-container"></div>
-        <div class="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-secondary-container"></div>
-        <div class="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-secondary-container"></div>
-
-        <!-- Center Content -->
-        <div class="relative z-20 max-w-3xl mx-auto text-center flex flex-col items-center gap-6 mt-4">
-          <!-- Originkit Badge -->
-          <div class="inline-flex items-center gap-2 bg-[#173a1d] border border-secondary-container px-4 py-2 rounded-full text-secondary-container font-bold text-xs shadow-md">
-            <span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
-            🌱 PIXXELHACK 2.0 • Bonus Theme: Most Creative • Team .Tensor
-          </div>
-
-          <h1 class="font-display-lg text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-none text-white drop-shadow-md">
-            Automate Your Impact.<br/><span class="text-secondary-container">Zero Greenwashing.</span>
-          </h1>
-
-          <p class="font-body-lg text-base md:text-xl text-primary-fixed max-w-2xl leading-relaxed">
-            Quantify daily micro-actions, scan waste with AI, parse transport tickets, and benchmark eco-habits with your community.
-          </p>
-
-          <div class="flex flex-wrap items-center justify-center gap-4 mt-2">
-            <a href="#overview" data-nav="overview" class="neo-btn bg-secondary-container text-on-surface font-bold px-8 py-4 text-base rounded-md flex items-center gap-2 shadow-lg hover:scale-105 transition-transform">
-              Start Your Eco Journey <span class="material-symbols-outlined text-lg">arrow_forward</span>
-            </a>
-            <a href="#scanner" data-nav="scanner" class="neo-btn bg-[#1b3d20] text-white border border-white/20 font-bold px-6 py-4 text-base rounded-md flex items-center gap-2 hover:bg-[#234d29] transition-colors">
-              Launch AI Scanner <span class="material-symbols-outlined text-lg">barcode_scanner</span>
-            </a>
-          </div>
-        </div>
-
-        <!-- 3D Globe Visual Container -->
-        <div class="relative z-10 w-full max-w-4xl mx-auto mt-8 h-64 md:h-80 flex items-center justify-center">
-          <canvas id="hero-globe-canvas" class="w-64 h-64 md:w-80 md:h-80 rounded-full border-4 border-secondary-container shadow-[0_0_50px_rgba(222,233,80,0.3)]"></canvas>
-
-          <!-- Floating Stat Card Left -->
-          <div class="absolute left-2 top-8 md:left-12 md:top-12 bg-[#142918] border-2 border-secondary-container p-3 rounded-md neo-shadow-sm flex flex-col items-center text-center animate-bounce" style="animation-duration: 4s;">
-            <div class="flex -space-x-2 mb-1">
-              <span class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-xs border border-secondary-container">🌱</span>
-              <span class="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-xs border border-secondary-container">♻️</span>
-              <span class="w-6 h-6 rounded-full bg-primary-fixed flex items-center justify-center text-xs border border-secondary-container">⚡</span>
-            </div>
-            <div class="font-bold text-xl text-secondary-container">24.5K+</div>
-            <div class="text-[11px] text-white font-bold">Eco Warriors Active</div>
-          </div>
-
-          <!-- Floating Stat Card Right -->
-          <div class="absolute right-2 bottom-8 md:right-12 md:bottom-12 bg-[#142918] border-2 border-secondary-container p-3 rounded-md neo-shadow-sm flex flex-col items-center text-center animate-bounce" style="animation-duration: 5s;">
-            <div class="flex gap-1 mb-1 text-xs">
-              🇨🇦 🇸🇪 🇧🇷 🇹🇼 🇮🇪
-            </div>
-            <div class="font-bold text-xl text-secondary-container">1.2 Tons</div>
-            <div class="text-[11px] text-white font-bold">CO2 Mitigated YTD</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tech Stack & Standards Strip -->
-      <div class="w-full bg-on-surface text-surface neo-border neo-shadow p-stack-md mt-margin-desktop flex flex-wrap justify-around items-center gap-stack-md font-bold text-xs uppercase">
-        <div class="flex items-center gap-2">
-          <span class="text-secondary-container text-base">🤖</span> TensorFlow.js Waste AI
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-secondary-container text-base">🗺️</span> Leaflet OpenStreetMap
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-secondary-container text-base">🧾</span> Tesseract OCR Parser
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-secondary-container text-base">📍</span> Google Timeline Import
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-secondary-container text-base">📊</span> EPA & WRI Transport Metrics
-        </div>
-      </div>
-
-      <!-- Stats Grid -->
-      <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-gutter mt-margin-desktop">
-        <div class="bg-surface-container border-4 border-on-surface neo-shadow p-stack-lg flex flex-col gap-stack-sm hover:-translate-y-1 transition-transform">
-          <div class="flex items-center gap-2 text-on-surface-variant mb-2 border-b-2 border-on-surface pb-2">
-            <span class="material-symbols-outlined">co2</span>
-            <span class="font-label-bold text-xs uppercase font-bold">Carbon Mitigated</span>
-          </div>
-          <div class="font-display-lg text-4xl font-bold text-on-surface">1.2 Tons</div>
-          <div class="font-body-md text-sm text-on-surface-variant">Verified personal & campus carbon offsets.</div>
-        </div>
-
-        <div class="bg-primary-container border-4 border-on-surface neo-shadow p-stack-lg flex flex-col gap-stack-sm hover:-translate-y-1 transition-transform text-on-primary-container">
-          <div class="flex items-center gap-2 text-on-primary-container mb-2 border-b-2 border-on-primary-container pb-2 opacity-90">
-            <span class="material-symbols-outlined">group</span>
-            <span class="font-label-bold text-xs uppercase font-bold">Team .Tensor</span>
-          </div>
-          <div class="font-display-lg text-4xl font-bold">Ricco & Tanmay</div>
-          <div class="font-body-md text-sm opacity-90">TCET ACM & SIGITE Webathon Finalists.</div>
-        </div>
-
-        <div class="bg-secondary-container border-4 border-on-surface neo-shadow p-stack-lg flex flex-col gap-stack-sm hover:-translate-y-1 transition-transform text-on-secondary-container">
-          <div class="flex items-center gap-2 text-on-secondary-container mb-2 border-b-2 border-on-secondary-container pb-2 opacity-90">
-            <span class="material-symbols-outlined">nature</span>
-            <span class="font-label-bold text-xs uppercase font-bold">Green Score</span>
-          </div>
-          <div class="font-display-lg text-4xl font-bold">82 / 100</div>
-          <div class="font-body-md text-sm opacity-90">Daily sustainable micro-action score.</div>
-        </div>
-      </div>
-    </section>
 
     <!-- PAGE 2: OVERVIEW DASHBOARD -->
     <section id="page-overview" class="page-view active p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
