@@ -1,0 +1,20 @@
+# Node / JS
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+
+# Python / Models
+__pycache__/
+*.pyc
+.venv/
+env/
+*.pt
+*.onnx
+
+# System / IDE
+.DS_Store
+.vscode/
+.idea/
