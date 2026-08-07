@@ -6,13 +6,13 @@
 const SUPABASE_URL = window.ENV_SUPABASE_URL || "https://rmuvepphwybmbaifyfkz.supabase.co";
 const SUPABASE_ANON_KEY = window.ENV_SUPABASE_ANON_KEY || "sb_publishable_gyp9H3Mzu_6bhVD3JZtN7g_sL4o9_zy";
 
-let supabase = null;
+let _supabaseApp = null;
 
 // Initialize Supabase if SDK is available
 function initSupabase() {
   if (window.supabase && window.supabase.createClient) {
     try {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      _supabaseApp = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       console.log("Supabase Client initialized successfully.");
     } catch (e) {
       console.warn("Supabase init error, running in demo local mode:", e);
@@ -38,8 +38,8 @@ const DEMO_ACTIONS_KEY = "ecolife_demo_actions";
 const AuthResult = {
   // Sign Up
   async signUp(email, password, fullName = "") {
-    if (supabase) {
-      const { data, error } = await supabase.auth.signUp({
+    if (_supabaseApp) {
+      const { data, error } = await _supabaseApp.auth.signUp({
         email,
         password,
         options: { data: { full_name: fullName } }
@@ -60,8 +60,8 @@ const AuthResult = {
 
   // Sign In
   async signIn(email, password) {
-    if (supabase) {
-      const { data, error } = await supabase.auth.signInWithPassword({
+    if (_supabaseApp) {
+      const { data, error } = await _supabaseApp.auth.signInWithPassword({
         email,
         password
       });
@@ -85,8 +85,8 @@ const AuthResult = {
 
   // Sign In with Social OAuth (Google, GitHub, Apple)
   async signInWithOAuth(provider = 'google') {
-    if (supabase) {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+    if (_supabaseApp) {
+      const { data, error } = await _supabaseApp.auth.signInWithOAuth({
         provider: provider.toLowerCase(),
         options: {
           redirectTo: window.location.origin + '/dashboard.html'
@@ -109,8 +109,8 @@ const AuthResult = {
 
   // Sign Out
   async signOut() {
-    if (supabase) {
-      await supabase.auth.signOut();
+    if (_supabaseApp) {
+      await _supabaseApp.auth.signOut();
     }
     localStorage.removeItem(DEMO_USER_KEY);
     return { success: true };
@@ -118,8 +118,8 @@ const AuthResult = {
 
   // Get Current User
   async getCurrentUser() {
-    if (supabase) {
-      const { data } = await supabase.auth.getUser();
+    if (_supabaseApp) {
+      const { data } = await _supabaseApp.auth.getUser();
       if (data && data.user) return data.user;
     }
     const stored = localStorage.getItem(DEMO_USER_KEY);
@@ -138,8 +138,8 @@ const AuthResult = {
       logged_at: new Date().toISOString()
     };
 
-    if (supabase && user && !user.id.startsWith("demo-")) {
-      const { data, error } = await supabase.from("eco_actions").insert([newAction]);
+    if (_supabaseApp && user && !user.id.startsWith("demo-")) {
+      const { data, error } = await _supabaseApp.from("eco_actions").insert([newAction]);
       if (!error) return { success: true, data };
     }
 
@@ -153,8 +153,8 @@ const AuthResult = {
   // Fetch Eco Actions
   async getEcoActions() {
     const user = await this.getCurrentUser();
-    if (supabase && user && !user.id.startsWith("demo-")) {
-      const { data, error } = await supabase
+    if (_supabaseApp && user && !user.id.startsWith("demo-")) {
+      const { data, error } = await _supabaseApp
         .from("eco_actions")
         .select("*")
         .eq("user_id", user.id)
