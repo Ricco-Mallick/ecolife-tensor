@@ -84,6 +84,30 @@ const AuthResult = {
     }
   },
 
+  // Sign In with Social OAuth (Google, GitHub, Apple)
+  async signInWithOAuth(provider = 'google') {
+    if (supabase) {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: provider.toLowerCase(),
+        options: {
+          redirectTo: window.location.origin + '/dashboard.html'
+        }
+      });
+      if (error) return { success: false, message: error.message };
+      return { success: true, data };
+    } else {
+      // Demo fallback
+      const email = `user_${Math.floor(Math.random() * 1000)}@${provider.toLowerCase()}.com`;
+      const user = {
+        id: "demo-oauth-" + Date.now(),
+        email,
+        user_metadata: { full_name: `${provider} User` }
+      };
+      localStorage.setItem(DEMO_USER_KEY, JSON.stringify(user));
+      return { success: true, user };
+    }
+  },
+
   // Sign Out
   async signOut() {
     if (supabase) {

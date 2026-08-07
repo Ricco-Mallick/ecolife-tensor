@@ -554,12 +554,11 @@
     }
 
     async function handleSocialAuth(provider) {
-      const email = `user_${Math.floor(Math.random() * 1000)}@${provider.toLowerCase()}.com`;
-      const res = await EcoAuth.signIn(email, "social_pass_123");
-      if (res.success) {
-        const alertBox = document.getElementById('alertBox');
-        alertBox.className = 'alert-box success';
-        alertBox.textContent = `Signed in with ${provider}! Redirecting...`;
+      const alertBox = document.getElementById('alertBox');
+      alertBox.className = 'alert-box success';
+      alertBox.textContent = `Connecting to ${provider}...`;
+      const res = await EcoAuth.signInWithOAuth(provider);
+      if (res.success && res.user) {
         setTimeout(() => {
           window.location.href = 'dashboard.html';
         }, 600);
