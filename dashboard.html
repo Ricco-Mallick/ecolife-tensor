@@ -18,6 +18,10 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
+  <!-- Supabase JS CDN & Client Helper -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
+
   <!-- Custom Styles -->
   <link rel="stylesheet" href="styles.css"/>
 
@@ -130,9 +134,13 @@
       <button class="btn-open-log-action sm:hidden bg-primary text-on-primary px-3 py-1 font-bold text-xs neo-border-thin">
         + Log
       </button>
-      <a href="#profile" data-nav="profile" class="w-10 h-10 rounded-full overflow-hidden neo-border border-2 cursor-pointer">
-        <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxNcP4jmGLxlDNuWCtPln-cBePNWavmRWJWmdXAU4d8FQVwMmZ8kfvUFAxgKQeuV2qfIfBw20C1L43EZ1TMDBiiEtCWUwTu_V5CSEyO96Mbn4CgKlyqT8RvJg6vjxWQWH3DNnl9yebbUAHT49M2ige3sDObHlC-O2e6dLUjneCXmyA8lmvGupFl5AgbcEdw49T-AWArPGFL6hpwMnikONLO_DyvpUWQETsIHu6nWIHvLGQdTVPqGPNew" alt="Elena Rodriguez Profile"/>
-      </a>
+
+      <div id="userAuthPill" class="flex items-center gap-2">
+        <span id="headerUserName" class="hidden md:inline-block font-bold text-xs bg-surface px-3 py-1.5 neo-border-thin border-2">Guest</span>
+        <button id="btnAuthAction" onclick="handleAuthAction()" class="bg-surface text-on-surface px-3 py-1.5 neo-border-thin border-2 font-bold text-xs hover:bg-surface-container-high neo-btn">
+          Sign In
+        </button>
+      </div>
     </div>
   </header>
 
@@ -589,6 +597,54 @@
       </form>
     </div>
   </div>
+
+  <!-- Auth State Handler -->
+  <script>
+    async function checkAuthStatus() {
+      if (typeof EcoAuth === 'undefined') return;
+      const user = await EcoAuth.getCurrentUser();
+      const headerUserName = document.getElementById('headerUserName');
+      const btnAuthAction = document.getElementById('btnAuthAction');
+
+      if (headerUserName && btnAuthAction) {
+        if (user) {
+          const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+          headerUserName.textContent = '👤 ' + name;
+          btnAuthAction.textContent = 'Log Out';
+        } else {
+          headerUserName.textContent = 'Guest';
+          btnAuthAction.textContent = 'Sign In';
+        }
+      }
+    }
+
+    async function handleAuthAction() {
+      const user = await EcoAuth.getCurrentUser();
+      if (user) {
+        await EcoAuth.signOut();
+        checkAuthStatus();
+      } else {
+        window.location.href = 'auth.html';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(checkAuthStatus, 150);
+
+      const logForm = document.getElementById('log-action-form');
+      if (logForm) {
+        logForm.addEventListener('submit', async (e) => {
+          const category = document.getElementById('action-type').value;
+          const title = document.getElementById('action-detail').value;
+          const pts = document.getElementById('action-pts').value;
+          const co2Saved = (pts * 0.25).toFixed(1);
+
+          await EcoAuth.logEcoAction(category, title, co2Saved);
+          console.log('Action persisted successfully to database/store.');
+        });
+      }
+    });
+  </script>
 
   <!-- JavaScript -->
   <script src="app.js"></script>
