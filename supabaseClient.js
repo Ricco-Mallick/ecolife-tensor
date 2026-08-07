@@ -85,10 +85,11 @@ const AuthResult = {
 
   // Sign In with Social OAuth (Google, GitHub, Apple)
   async signInWithOAuth(provider = 'google') {
-      const redirectUrl = window.location.href.includes('github.io')
-        ? 'https://ricco-mallick.github.io/ecolife-tensor/dashboard.html'
-        : window.location.origin + '/dashboard.html';
+    const redirectUrl = window.location.href.includes('github.io')
+      ? 'https://ricco-mallick.github.io/ecolife-tensor/dashboard.html'
+      : window.location.origin + '/dashboard.html';
 
+    if (_supabaseApp) {
       const { data, error } = await _supabaseApp.auth.signInWithOAuth({
         provider: provider.toLowerCase(),
         options: {
