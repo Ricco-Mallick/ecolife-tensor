@@ -54,16 +54,17 @@
 
     .globe-wrapper {
       position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+      top: 32vh;
+      left: 0;
+      right: 0;
+      bottom: -60vh;
       z-index: 2;
       pointer-events: auto;
     }
 
     .ui-overlay {
       position: absolute;
-      top: 6%;
+      top: 14vh;
       left: 0;
       right: 0;
       z-index: 20;
@@ -1534,10 +1535,10 @@
               <Globe
                 speed={2.5}
                 smoothing={8.5}
-                dots={{ color: "#ffffff", size: 5, density: 8, allDots: false }}
+                dots={{ color: "#ffffff", size: 6, density: 9, allDots: false }}
                 fill="dots"
                 fillColor="#ffffff"
-                scale={8}
+                scale={16}
                 stopOnHover={false}
                 markerConfig={{
                   markers: [
@@ -1566,18 +1567,18 @@
             {/* Layer 3: React Bits DepthText Overlay (zIndex 20) */}
             <div className="ui-overlay">
               <DepthText
-                text="Eco Life"
-                layers={34}
-                depth={2.4}
+                text="ECO LIFE"
+                layers={36}
+                depth={2.8}
                 faceColor="#ffffff"
-                depthColor="#166534"
-                tilt={7.5}
+                depthColor="#15803d"
+                tilt={8}
                 pointerTracking={true}
                 smoothing={0.14}
                 perspective={900}
                 autoOrbit={true}
                 orbitSpeed={0.35}
-                fontSize="clamp(3rem, 10vw, 6.5rem)"
+                fontSize="clamp(4rem, 14vw, 9.5rem)"
                 fontWeight={900}
                 shadow={true}
               />
