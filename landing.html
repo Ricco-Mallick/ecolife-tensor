@@ -1245,21 +1245,23 @@
       return (
         <ErrorBoundary>
           <div style={{ width: '100vw', height: '100vh', backgroundColor: '#000000', position: 'relative' }}>
-            {/* React Bits Particles Component as Background */}
-            <Particles
-              particleColors={["#ffffff", "#ffffff", "#ffffff"]}
-              particleCount={300}
-              particleSpread={15}
-              speed={0.15}
-              particleBaseSize={120}
-              moveParticlesOnHover={true}
-              alphaParticles={false}
-              disableRotation={false}
-              cameraDistance={15}
-            />
+            {/* Layer 1: Particles Background (zIndex 1) */}
+            <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none' }}>
+              <Particles
+                particleColors={["#ffffff", "#a1a1aa", "#ffffff"]}
+                particleCount={400}
+                particleSpread={20}
+                speed={0.15}
+                particleBaseSize={150}
+                moveParticlesOnHover={true}
+                alphaParticles={true}
+                disableRotation={false}
+                cameraDistance={25}
+              />
+            </div>
 
-            {/* 3D Originkit Globe Component Overlay */}
-            <div className="globe-wrapper">
+            {/* Layer 2: 3D Globe Overlay (zIndex 2) */}
+            <div className="globe-wrapper" style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'auto' }}>
               <Globe
                 speed={2}
                 smoothing={8}
@@ -1272,7 +1274,7 @@
                 direction="left"
                 initialLatitude={23}
                 initialLongitude={-23}
-                oceanColor="#00000012"
+                oceanColor="#080808"
                 outlineColor="#77CC7D"
                 showOutline={true}
                 graticuleColor="#D4D4D4"
