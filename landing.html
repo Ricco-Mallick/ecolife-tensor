@@ -200,6 +200,12 @@
           alpha: true
         });
         const gl = renderer.gl;
+        gl.canvas.style.position = "absolute";
+        gl.canvas.style.top = "0";
+        gl.canvas.style.left = "0";
+        gl.canvas.style.width = "100%";
+        gl.canvas.style.height = "100%";
+        gl.canvas.style.pointerEvents = "none";
         container.appendChild(gl.canvas);
         gl.clearColor(0, 0, 0, 0);
 
@@ -1226,14 +1232,15 @@
           <div style={{ width: '100vw', height: '100vh', backgroundColor: '#000000', position: 'relative' }}>
             {/* OGL Particles Component as Background */}
             <Particles
-              particleColors={["#ffffff", "#ffffff", "#ffffff"]}
-              particleCount={200}
-              particleSpread={10}
-              speed={0.1}
-              particleBaseSize={100}
+              particleColors={["#ffffff", "#77CC7D", "#00f7ff", "#ffffff"]}
+              particleCount={500}
+              particleSpread={12}
+              speed={0.12}
+              particleBaseSize={160}
               moveParticlesOnHover={true}
-              particleHoverFactor={1}
-              alphaParticles={false}
+              particleHoverFactor={1.5}
+              alphaParticles={true}
+              cameraDistance={14}
               disableRotation={false}
             />
 
