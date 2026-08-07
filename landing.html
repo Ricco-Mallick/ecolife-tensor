@@ -12,12 +12,11 @@
   <!-- Three.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-  <!-- d3-geo -->
-  <script src="https://cdn.jsdelivr.net/npm/d3-array@3"></script>
-  <script src="https://cdn.jsdelivr.net/npm/d3-geo@3"></script>
+  <!-- Full D3 Bundle (includes d3-geo & d3-array) -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 
   <!-- OGL Library for Particles -->
-  <script src="https://unpkg.com/ogl@1.0.11/dist/ogl.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ogl@1.0.11/dist/ogl.umd.js"></script>
 
   <!-- Babel Standalone for JSX -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -58,10 +57,41 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+    const { useState, useEffect, useRef, Component } = React;
+
+    // Error Boundary Component to prevent silent blank screens
+    class ErrorBoundary extends Component {
+      constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
+      }
+      static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+      }
+      componentDidCatch(error, errorInfo) {
+        console.error("Globe Page Error:", error, errorInfo);
+      }
+      render() {
+        if (this.state.hasError) {
+          return (
+            <div style={{ color: '#ff6b6b', padding: '32px', fontFamily: 'monospace', textAlign: 'center' }}>
+              <h2>Render Error Occurred</h2>
+              <pre style={{ marginTop: '16px', background: '#111', padding: '16px', borderRadius: '4px' }}>
+                {this.state.error && this.state.error.toString()}
+              </pre>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
+    }
 
     // --- OGL PARTICLES COMPONENT ---
-    const { Renderer: OGLRenderer, Camera: OGLCamera, Geometry: OGLGeometry, Program: OGLProgram, Mesh: OGLMesh } = OGL;
+    const OGL_LIB = window.OGL || window.ogl;
+    if (!OGL_LIB) {
+      console.error("OGL library not found on window object");
+    }
+    const { Renderer: OGLRenderer, Camera: OGLCamera, Geometry: OGLGeometry, Program: OGLProgram, Mesh: OGLMesh } = OGL_LIB || {};
 
     const defaultColors = ['#ffffff', '#ffffff', '#ffffff'];
 
@@ -162,7 +192,7 @@
 
       useEffect(() => {
         const container = containerRef.current;
-        if (!container) return;
+        if (!container || !OGLRenderer) return;
 
         const renderer = new OGLRenderer({
           dpr: pixelRatio,
@@ -298,7 +328,7 @@
     };
 
     // --- THREE.JS ORIGINKIT GLOBE COMPONENT ---
-    const THREE_LIB = THREE;
+    const THREE_LIB = window.THREE;
     const {
       Scene,
       PerspectiveCamera,
@@ -318,7 +348,8 @@
       CanvasTexture,
     } = THREE_LIB;
 
-    const { geoEquirectangular, geoPath } = d3;
+    const D3_LIB = window.d3;
+    const { geoEquirectangular, geoPath } = D3_LIB;
 
     function parseColorToRgba(input) {
       if (!input || input.trim() === "") return { r: 0, g: 0, b: 0, a: 0 };
@@ -1191,45 +1222,47 @@
 
     function App() {
       return (
-        <div style={{ width: '100vw', height: '100vh', backgroundColor: '#000000', position: 'relative' }}>
-          {/* OGL Particles Component as Background */}
-          <Particles
-            particleColors={["#ffffff", "#ffffff", "#ffffff"]}
-            particleCount={200}
-            particleSpread={10}
-            speed={0.1}
-            particleBaseSize={100}
-            moveParticlesOnHover={true}
-            particleHoverFactor={1}
-            alphaParticles={false}
-            disableRotation={false}
-          />
-
-          {/* 3D Originkit Globe Component Overlay */}
-          <div className="globe-wrapper">
-            <Globe
-              speed={2}
-              smoothing={8}
-              dots={{ color: "#ffffff", size: 5, density: 8, allDots: false }}
-              fill="dots"
-              fillColor="#ffffff"
-              scale={8}
-              stopOnHover={true}
-              markerConfig={{ markers: [{ lat: 19.2062, lng: 72.8738 }, { lat: 43.6532, lng: -79.3832 }], color: "#77CC7D", size: 40 }}
-              direction="left"
-              initialLatitude={23}
-              initialLongitude={-23}
-              oceanColor="#00000012"
-              outlineColor="#77CC7D"
-              showOutline={true}
-              graticuleColor="#D4D4D4"
-              showGrid={false}
-              outlineWidth={1}
-              dragSpeed={5}
-              detail={5}
+        <ErrorBoundary>
+          <div style={{ width: '100vw', height: '100vh', backgroundColor: '#000000', position: 'relative' }}>
+            {/* OGL Particles Component as Background */}
+            <Particles
+              particleColors={["#ffffff", "#ffffff", "#ffffff"]}
+              particleCount={200}
+              particleSpread={10}
+              speed={0.1}
+              particleBaseSize={100}
+              moveParticlesOnHover={true}
+              particleHoverFactor={1}
+              alphaParticles={false}
+              disableRotation={false}
             />
+
+            {/* 3D Originkit Globe Component Overlay */}
+            <div className="globe-wrapper">
+              <Globe
+                speed={2}
+                smoothing={8}
+                dots={{ color: "#ffffff", size: 5, density: 8, allDots: false }}
+                fill="dots"
+                fillColor="#ffffff"
+                scale={8}
+                stopOnHover={true}
+                markerConfig={{ markers: [{ lat: 19.2062, lng: 72.8738 }, { lat: 43.6532, lng: -79.3832 }], color: "#77CC7D", size: 40 }}
+                direction="left"
+                initialLatitude={23}
+                initialLongitude={-23}
+                oceanColor="#00000012"
+                outlineColor="#77CC7D"
+                showOutline={true}
+                graticuleColor="#D4D4D4"
+                showGrid={false}
+                outlineWidth={1}
+                dragSpeed={5}
+                detail={5}
+              />
+            </div>
           </div>
-        </div>
+        </ErrorBoundary>
       );
     }
 
