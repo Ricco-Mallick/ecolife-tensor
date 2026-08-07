@@ -345,6 +345,19 @@ function setupScanner() {
         </div>
       `).join('');
 
+      // Update the background image to match the preset
+      const bgImages = {
+        bottle: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        can: "https://images.unsplash.com/photo-1550508608-8e65fa1a0735?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        e_waste: "https://images.unsplash.com/photo-1580142525796-039c362095ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        apple: "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      };
+      
+      const bgEl = document.getElementById('scanner-bg');
+      if (bgEl) {
+        bgEl.style.backgroundImage = `url('${bgImages[selected] || bgImages.bottle}')`;
+      }
+
       showToast(`AI Classifier scanned: ${itemData.title}!`);
     });
   }

@@ -129,7 +129,7 @@
     <div class="flex items-center gap-4">
       <div class="hidden sm:flex items-center gap-2 bg-primary-fixed px-3 py-1 neo-border-thin font-bold text-sm">
         <span class="material-symbols-outlined text-primary text-lg">stars</span>
-        <span>Points: <strong class="user-pts-val">24,500</strong></span>
+        <span>Points: <strong class="user-pts-val">0</strong></span>
       </div>
       <button class="btn-open-log-action sm:hidden bg-primary text-on-primary px-3 py-1 font-bold text-xs neo-border-thin">
         + Log
@@ -200,13 +200,13 @@
           <div class="flex items-center justify-center gap-4 z-10 my-auto">
             <span class="material-symbols-outlined text-6xl text-secondary-container">local_fire_department</span>
             <div class="text-left">
-              <span class="font-display-lg text-5xl font-bold block text-secondary-container user-streak-val">14</span>
+              <span class="font-display-lg text-5xl font-bold block text-secondary-container user-streak-val">0</span>
               <span class="font-label-bold text-xs uppercase tracking-widest text-surface-container-high font-bold">Days Active</span>
             </div>
           </div>
-          <button onclick="showToast('Streak Reward Claimed! +100 Bonus Points! ⚡')" class="mt-auto bg-surface text-on-surface font-label-bold px-4 py-2 neo-btn text-xs flex items-center gap-1 z-10">
-            Claim Daily Streak Reward <span class="material-symbols-outlined text-sm">arrow_forward</span>
-          </button>
+          <div class="mt-auto text-on-surface-variant font-label-bold text-xs z-10">
+            Log actions daily to build your streak!
+          </div>
         </div>
 
         <!-- Weekly Impact Chart Placeholder -->
@@ -238,7 +238,7 @@
         <div class="lg:col-span-7 flex flex-col gap-gutter">
           <div class="relative bg-on-surface w-full aspect-[4/3] border-4 border-on-surface neo-shadow overflow-hidden group">
             <video id="scanner-video" class="w-full h-full object-cover hidden" autoplay playsinline></video>
-            <div id="scanner-bg" class="absolute inset-0 bg-cover bg-center opacity-80" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBqvWGFKPJQhUNfkEd51JYoJMT_zn9aOkID-OSRULvXAV7re5qnQhlW_mZG-mlPVxmJ1QigFzfCgY13wDrLAwCaU7BmmZv8iXJAOwCCMdC1Qdu_B0db15mmBRk2UEVwnt0h40CAIL3Ua6_RwzYEZGIi4Xp4TK8sEzyHWujSOWjCXkZ3adAa6c9AX0yfhui90L2u6nO9QRXa3_CxtmTdX2GPT1jV0BQoLalSfW0F2pHeqG42OxqkYytQ_A');"></div>
+            <div id="scanner-bg" class="absolute inset-0 bg-cover bg-center opacity-80" style="background-image: url('https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
 
             <!-- HUD brackets -->
             <div class="scanner-bracket bracket-tl"></div>
@@ -446,7 +446,7 @@
             <span class="font-bold text-xs uppercase bg-white text-on-surface px-2 py-1 neo-border-thin">Total Points</span>
             <span class="material-symbols-outlined text-4xl">eco</span>
           </div>
-          <div class="font-display-lg text-5xl font-bold user-pts-val">24,500</div>
+          <div class="font-display-lg text-5xl font-bold user-pts-val">0</div>
         </div>
 
         <div class="bg-surface-container-highest text-on-surface p-gutter flex flex-col justify-between h-44 neo-border neo-shadow">
@@ -454,29 +454,17 @@
             <span class="font-bold text-xs uppercase bg-black text-white px-2 py-1 neo-border-thin">CO2 Offset</span>
             <span class="material-symbols-outlined text-4xl">co2</span>
           </div>
-          <div class="font-display-lg text-5xl font-bold"><span class="user-co2-val">1.2</span> <span class="text-xl font-normal">Tons</span></div>
+          <div class="font-display-lg text-5xl font-bold"><span class="user-co2-val">0.0</span> <span class="text-xl font-normal">Tons</span></div>
         </div>
       </section>
 
-      <!-- Trophies & Badges -->
+      <!-- Trophies & Badges (Coming Soon) -->
       <section class="flex flex-col gap-stack-md mt-gutter">
         <h3 class="font-headline-md text-2xl font-bold uppercase border-b-4 border-on-surface pb-1 w-fit">Trophies</h3>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-gutter">
-          <div class="bg-white p-4 neo-border flex flex-col items-center justify-center gap-2 text-center aspect-square neo-shadow-sm hover:bg-secondary-fixed transition-colors">
-            <span class="material-symbols-outlined text-4xl text-primary font-bold">recycling</span>
-            <span class="font-bold text-xs uppercase">Master Sorter</span>
-          </div>
-          <div class="bg-white p-4 neo-border flex flex-col items-center justify-center gap-2 text-center aspect-square neo-shadow-sm hover:bg-secondary-fixed transition-colors">
-            <span class="material-symbols-outlined text-4xl text-on-surface font-bold">directions_bike</span>
-            <span class="font-bold text-xs uppercase">Carbon Zero</span>
-          </div>
-          <div class="bg-white p-4 neo-border flex flex-col items-center justify-center gap-2 text-center aspect-square neo-shadow-sm hover:bg-secondary-fixed transition-colors">
-            <span class="material-symbols-outlined text-4xl text-secondary font-bold">wb_sunny</span>
-            <span class="font-bold text-xs uppercase">Solar Saver</span>
-          </div>
           <div class="bg-surface-container-high p-4 neo-border flex flex-col items-center justify-center gap-2 text-center aspect-square neo-shadow-sm opacity-60">
-            <span class="material-symbols-outlined text-4xl font-bold">water_drop</span>
-            <span class="font-bold text-xs uppercase">Water Wise</span>
+            <span class="material-symbols-outlined text-4xl font-bold">lock</span>
+            <span class="font-bold text-xs uppercase">More Challenges Coming Soon</span>
           </div>
         </div>
       </section>
