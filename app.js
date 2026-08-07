@@ -310,6 +310,9 @@ function setupScanner() {
     }
   };
 
+  const btnCaptureAi = document.getElementById('btn-capture-ai');
+  const aiLoading = document.getElementById('ai-loading');
+
   if (btnStartCam) {
     btnStartCam.addEventListener('click', async () => {
       try {
@@ -317,13 +320,77 @@ function setupScanner() {
           EcoState.webcamStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
           videoEl.srcObject = EcoState.webcamStream;
           videoEl.style.display = "block";
+          btnStartCam.style.display = "none";
+          if (btnCaptureAi) btnCaptureAi.style.display = "flex";
           showToast("Live webcam feed connected!");
         } else {
           showToast("Webcam access not supported in this browser.");
         }
       } catch (err) {
         console.error("Camera error:", err);
-        showToast("Camera permission denied or unavailable. Using simulated AI classifier.");
+        showToast("Camera permission denied or unavailable.");
+      }
+    });
+  }
+
+  if (btnCaptureAi) {
+    btnCaptureAi.addEventListener('click', async () => {
+      if (!EcoState.webcamStream) return;
+      
+      btnCaptureAi.style.display = 'none';
+      aiLoading.style.display = 'flex';
+      
+      // Capture frame
+      const canvas = document.createElement('canvas');
+      canvas.width = videoEl.videoWidth;
+      canvas.height = videoEl.videoHeight;
+      canvas.getContext('2d').drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+      const base64Data = canvas.toDataURL('image/jpeg').split(',')[1];
+
+      try {
+        let API_KEY = localStorage.getItem('gemini_api_key');
+        if (!API_KEY) {
+          API_KEY = prompt("Please enter your Gemini API Key for the AI Scanner:");
+          if (!API_KEY) throw new Error("No API Key provided.");
+          localStorage.setItem('gemini_api_key', API_KEY);
+        }
+
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: 'Analyze this waste item. Return ONLY a valid JSON object (no markdown, no backticks) with the keys: {"title": "Short name", "category": "Category", "steps": ["step 1", "step 2", "step 3"]}. Keep steps brief.' },
+                { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
+              ]
+            }]
+          })
+        });
+
+        const data = await res.json();
+        const textResponse = data.candidates[0].content.parts[0].text;
+        const cleanedJson = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+        const itemData = JSON.parse(cleanedJson);
+
+        scannerItemTitle.textContent = itemData.title || 'Unknown Item';
+        scannerMatchTag.textContent = "AI DETECTED";
+        scannerCategory.textContent = itemData.category || 'Uncategorized';
+        
+        scannerDisposalSteps.innerHTML = (itemData.steps || []).map((step, idx) => `
+          <div class="flex items-center p-stack-sm border-b-2 border-on-surface group hover:bg-surface-container-high transition-colors">
+            <div class="w-8 h-8 shrink-0 bg-primary text-on-primary font-label-bold flex items-center justify-center border-2 border-on-surface mr-stack-md">${idx + 1}</div>
+            <span class="font-body-md text-body-md">${step}</span>
+          </div>
+        `).join('');
+
+        showToast(`Gemini Analysis Complete!`);
+      } catch (err) {
+        console.error('Gemini error:', err);
+        showToast("AI analysis failed. Please try again.");
+      } finally {
+        aiLoading.style.display = 'none';
+        btnCaptureAi.style.display = 'flex';
       }
     });
   }

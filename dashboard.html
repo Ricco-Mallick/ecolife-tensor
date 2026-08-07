@@ -257,6 +257,14 @@
             <button id="btn-start-cam" class="flex-1 bg-primary text-on-primary font-bold py-3 px-4 neo-btn flex items-center justify-center gap-2">
               <span class="material-symbols-outlined">videocam</span> Enable Live Camera
             </button>
+            <button id="btn-capture-ai" class="flex-1 bg-secondary text-on-secondary font-bold py-3 px-4 neo-btn flex items-center justify-center gap-2 hidden">
+              <span class="material-symbols-outlined">center_focus_strong</span> Capture & Analyze
+            </button>
+            <div id="ai-loading" class="w-full hidden items-center justify-center gap-2 p-2 bg-primary-fixed text-on-surface font-bold neo-border-thin">
+              <span class="material-symbols-outlined animate-spin">refresh</span> Gemini AI is analyzing...
+            </div>
+
+            <div class="w-full h-1 bg-on-surface my-1"></div>
 
             <div class="flex-1 flex gap-2">
               <select id="preset-select" class="flex-1 bg-surface-container-lowest neo-border-thin font-bold px-3 py-2 text-sm">
