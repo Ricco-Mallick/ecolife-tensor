@@ -61,7 +61,7 @@
     const { useState, useEffect, useRef } = React;
 
     // --- OGL PARTICLES COMPONENT ---
-    const { Renderer, Camera, Geometry, Program, Mesh } = OGL;
+    const { Renderer: OGLRenderer, Camera: OGLCamera, Geometry: OGLGeometry, Program: OGLProgram, Mesh: OGLMesh } = OGL;
 
     const defaultColors = ['#ffffff', '#ffffff', '#ffffff'];
 
@@ -164,7 +164,7 @@
         const container = containerRef.current;
         if (!container) return;
 
-        const renderer = new Renderer({
+        const renderer = new OGLRenderer({
           dpr: pixelRatio,
           depth: false,
           alpha: true
@@ -173,7 +173,7 @@
         container.appendChild(gl.canvas);
         gl.clearColor(0, 0, 0, 0);
 
-        const camera = new Camera(gl, { fov: 15 });
+        const camera = new OGLCamera(gl, { fov: 15 });
         camera.position.set(0, 0, cameraDistance);
 
         const resize = () => {
@@ -217,13 +217,13 @@
           colors.set(col, i * 3);
         }
 
-        const geometry = new Geometry(gl, {
+        const geometry = new OGLGeometry(gl, {
           position: { size: 3, data: positions },
           random: { size: 4, data: randoms },
           color: { size: 3, data: colors }
         });
 
-        const program = new Program(gl, {
+        const program = new OGLProgram(gl, {
           vertex: particleVertexShader,
           fragment: particleFragmentShader,
           uniforms: {
@@ -237,7 +237,7 @@
           depthTest: false
         });
 
-        const particles = new Mesh(gl, { mode: gl.POINTS, geometry, program });
+        const particles = new OGLMesh(gl, { mode: gl.POINTS, geometry, program });
 
         let animationFrameId;
         let lastTime = performance.now();
@@ -1192,7 +1192,7 @@
     function App() {
       return (
         <div style={{ width: '100vw', height: '100vh', backgroundColor: '#000000', position: 'relative' }}>
-          <!-- OGL Particles Component as Background -->
+          {/* OGL Particles Component as Background */}
           <Particles
             particleColors={["#ffffff", "#ffffff", "#ffffff"]}
             particleCount={200}
@@ -1205,8 +1205,8 @@
             disableRotation={false}
           />
 
-          <!-- 3D Originkit Globe Component Overlay -->
-          <div class="globe-wrapper">
+          {/* 3D Originkit Globe Component Overlay */}
+          <div className="globe-wrapper">
             <Globe
               speed={2}
               smoothing={8}
