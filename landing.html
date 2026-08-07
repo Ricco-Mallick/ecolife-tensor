@@ -164,10 +164,10 @@
           if(d > 0.5) {
             discard;
           }
-          gl_FragColor = vec4(vColor + 0.2 * sin(uv.yxx + uTime + vRandom.y * 6.28), 1.0);
+          gl_FragColor = vec4((vColor * 2.8) + 0.4 * sin(uv.yxx + uTime + vRandom.y * 6.28), 1.0);
         } else {
-          float circle = smoothstep(0.5, 0.4, d) * 0.8;
-          gl_FragColor = vec4(vColor + 0.2 * sin(uv.yxx + uTime + vRandom.y * 6.28), circle);
+          float circle = smoothstep(0.5, 0.1, d) * 1.0;
+          gl_FragColor = vec4((vColor * 2.8) + 0.4 * sin(uv.yxx + uTime + vRandom.y * 6.28), circle);
         }
       }
     `;
@@ -1248,15 +1248,15 @@
             {/* Layer 1: Particles Background (zIndex 1) */}
             <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none' }}>
               <Particles
-                particleColors={["#ffffff", "#a1a1aa", "#ffffff"]}
-                particleCount={400}
-                particleSpread={20}
+                particleColors={["#ffffff", "#ffffff", "#ffffff"]}
+                particleCount={500}
+                particleSpread={18}
                 speed={0.15}
-                particleBaseSize={150}
+                particleBaseSize={200}
                 moveParticlesOnHover={true}
                 alphaParticles={true}
                 disableRotation={false}
-                cameraDistance={25}
+                cameraDistance={20}
               />
             </div>
 
