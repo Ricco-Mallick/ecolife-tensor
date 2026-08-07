@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoLife - Automate Your Impact | Originkit Hero 23</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <style>
+    body {
+      font-family: 'Space Grotesk', "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background-color: #0f0f0f;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    .btn-light {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 3px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(229, 229, 229, 1) 100%);
+      color: #060e08;
+      font-weight: 700;
+      letter-spacing: -0.32px;
+      box-shadow: inset 0px 2px 2px 0px white, inset 0px -1.5px 0px 0px rgba(0,0,0,0.23), 0px 9px 4.5px rgba(0,0,0,0.09);
+      transition: opacity 0.2s, transform 0.2s;
+      text-decoration: none;
+    }
+    .btn-light:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-dark {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #292929;
+      color: #ffffff;
+      font-weight: 600;
+      letter-spacing: -0.32px;
+      transition: opacity 0.2s, background-color 0.2s;
+      text-decoration: none;
+    }
+    .btn-dark:hover {
+      background: #333333;
+      opacity: 0.95;
+    }
+
+    .card-stat {
+      background: #292929;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      box-shadow: 0px 14px 14px 0px rgba(0,0,0,0.25);
+    }
+
+    /* Keyframes for reveal animations */
+    @keyframes heroReveal {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-hero-reveal {
+      animation: heroReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="bg-[#0f0f0f] text-white min-h-screen flex flex-col justify-between p-4 md:p-8">
+
+  <!-- Top Header Navigation -->
+  <header class="animate-hero-reveal relative w-full max-w-7xl mx-auto flex items-center justify-between border border-white/10 bg-[#0f0f0f] px-6 py-4 rounded-[3px] z-30 mb-4">
+    <!-- Brand Logo -->
+    <a href="#" class="flex items-center gap-3 text-decoration-none">
+      <div class="w-8 h-8 rounded-full bg-[#1b4d24] border border-[#a3f69c] flex items-center justify-center text-sm">🌱</div>
+      <span class="font-bold text-xl tracking-tight text-white">EcoLife</span>
+    </a>
+
+    <!-- Nav Links (Desktop) -->
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
+      <a href="index.html#overview" class="hover:text-white transition-colors">Overview</a>
+      <a href="index.html#scanner" class="hover:text-white transition-colors">Waste Scanner</a>
+      <a href="index.html#map" class="hover:text-white transition-colors">Green Map</a>
+      <a href="index.html#challenges" class="hover:text-white transition-colors">Challenges</a>
+      <a href="index.html#leaderboard" class="hover:text-white transition-colors">Leaderboard</a>
+    </nav>
+
+    <!-- Header Action Button -->
+    <a href="index.html#overview" class="btn-light px-4 py-2.5 text-sm">
+      Start your eco journey →
+    </a>
+
+    <!-- Corners -->
+    <div class="absolute left-0 top-0 w-2.5 h-2.5"><img src="public/originkit/hero-23/corner-tl.svg" alt="" class="w-full h-full"/></div>
+    <div class="absolute right-0 top-0 w-2.5 h-2.5 transform rotate-180 -scale-y-100"><img src="public/originkit/hero-23/corner-tr.svg" alt="" class="w-full h-full"/></div>
+    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 transform rotate-180"><img src="public/originkit/hero-23/corner-tr.svg" alt="" class="w-full h-full"/></div>
+    <div class="absolute bottom-0 left-0 w-2.5 h-2.5 transform -scale-y-100"><img src="public/originkit/hero-23/corner-tl.svg" alt="" class="w-full h-full"/></div>
+  </header>
+
+  <!-- Hero 23 Section -->
+  <main class="relative w-full max-w-7xl mx-auto flex-1 border border-white/10 bg-[#0f0f0f] rounded-[3px] overflow-hidden flex flex-col justify-between p-6 md:p-12 min-h-[620px]">
+    <!-- Canvas Stardust Background -->
+    <canvas id="hero-stardust-canvas" class="absolute inset-0 w-full h-full pointer-events-none opacity-40"></canvas>
+
+    <!-- Top Badge & Copy -->
+    <div class="relative z-20 max-w-2xl mx-auto text-center flex flex-col items-center gap-6 mt-2">
+      <!-- Badge -->
+      <div class="animate-hero-reveal inline-flex items-center gap-2 border border-white/10 bg-[#282828] px-3.5 py-1.5 rounded-[3px] text-xs text-white">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#a3f69c] animate-pulse"></span>
+        PIXXELHACK 2.0 • Bonus Theme: Most Creative • Team .Tensor
+      </div>
+
+      <!-- Headline -->
+      <h1 class="animate-hero-reveal font-bold text-4xl sm:text-5xl md:text-6xl tracking-tight leading-[1.1] text-white">
+        Build Your Sustainable Future. Effortlessly.
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="animate-hero-reveal text-sm sm:text-base text-white/60 leading-relaxed max-w-xl">
+        Quantify daily micro-actions, scan waste with AI, track carbon offsets, and manage community eco-goals in one seamless platform.
+      </p>
+
+      <!-- Action Buttons -->
+      <div class="animate-hero-reveal flex flex-wrap items-center justify-center gap-4 mt-2">
+        <a href="index.html#overview" class="btn-light px-6 py-3.5 text-base">
+          Start your eco journey
+        </a>
+        <a href="index.html#scanner" class="btn-dark px-6 py-3.5 text-base">
+          Launch AI Scanner
+        </a>
+      </div>
+    </div>
+
+    <!-- 3D Spinning Canvas Globe & Floating Stat Cards -->
+    <div class="relative z-10 w-full max-w-4xl mx-auto mt-8 h-64 md:h-80 flex items-center justify-center">
+      <!-- Interactive Globe Canvas -->
+      <canvas id="hero-globe-canvas" class="w-64 h-64 md:w-80 md:h-80 rounded-full border border-white/20 shadow-[0_0_60px_rgba(46,125,50,0.3)]"></canvas>
+
+      <!-- Floating Stat Card 1 (Left) -->
+      <div class="card-stat absolute left-2 top-4 md:left-12 md:top-8 p-3 w-40 flex flex-col items-center text-center animate-bounce" style="animation-duration: 4s;">
+        <div class="flex -space-x-2 mb-2">
+          <div class="w-6 h-6 rounded-full bg-[#2e7d32] border border-white/20 flex items-center justify-center text-xs">🌱</div>
+          <div class="w-6 h-6 rounded-full bg-[#5d6300] border border-white/20 flex items-center justify-center text-xs">♻️</div>
+          <div class="w-6 h-6 rounded-full bg-[#88d982] border border-white/20 flex items-center justify-center text-xs">⚡</div>
+        </div>
+        <div class="font-bold text-xl text-white/90">24.5K+</div>
+        <div class="text-xs text-white/60">Eco Warriors Active</div>
+      </div>
+
+      <!-- Floating Stat Card 2 (Right) -->
+      <div class="card-stat absolute right-2 bottom-4 md:right-12 md:bottom-8 p-3 w-44 flex flex-col items-center text-center animate-bounce" style="animation-duration: 5s;">
+        <div class="flex gap-1.5 mb-2 text-xs opacity-90">
+          <span>🇨🇦</span> <span>🇸🇪</span> <span>🇧🇷</span> <span>🇹🇼</span> <span>🇮🇪</span>
+        </div>
+        <div class="font-bold text-xl text-white/90">1.2 Tons</div>
+        <div class="text-xs text-white/60">CO2 Mitigated & Recycled</div>
+      </div>
+    </div>
+
+    <!-- Corners -->
+    <div class="absolute left-0 top-0 w-2.5 h-2.5"><img src="public/originkit/hero-23/corner-tl.svg" alt="" class="w-full h-full"/></div>
+    <div class="absolute right-0 top-0 w-2.5 h-2.5 transform rotate-180 -scale-y-100"><img src="public/originkit/hero-23/corner-tr.svg" alt="" class="w-full h-full"/></div>
+    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 transform rotate-180"><img src="public/originkit/hero-23/corner-tr.svg" alt="" class="w-full h-full"/></div>
+    <div class="absolute bottom-0 left-0 w-2.5 h-2.5 transform -scale-y-100"><img src="public/originkit/hero-23/corner-tl.svg" alt="" class="w-full h-full"/></div>
+  </main>
+
+  <!-- Bottom Logo Strip -->
+  <footer class="animate-hero-reveal relative w-full max-w-7xl mx-auto mt-4 border border-white/10 bg-[#0f0f0f] px-6 py-4 rounded-[3px] flex flex-wrap justify-around items-center gap-4 text-xs font-semibold tracking-wider text-white/70 uppercase">
+    <div class="flex items-center gap-2">
+      <span class="text-[#a3f69c] text-base">🤖</span> TensorFlow.js Waste AI
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-[#a3f69c] text-base">🗺️</span> Leaflet OpenStreetMap
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-[#a3f69c] text-base">🧾</span> Tesseract OCR Parser
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-[#a3f69c] text-base">📍</span> Google Timeline Import
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-[#a3f69c] text-base">📊</span> EPA & WRI Standards
+    </div>
+
+    <!-- Corners -->
+    <div class="absolute left-0 top-0 w-2.5 h-2.5"><img src="public/originkit/hero-23/corner-tl.svg" alt="" class="w-full h-full"/></div>
+    <div class="absolute right-0 top-0 w-2.5 h-2.5 transform rotate-180 -scale-y-100"><img src="public/originkit/hero-23/corner-tr.svg" alt="" class="w-full h-full"/></div>
+    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 transform rotate-180"><img src="public/originkit/hero-23/corner-tr.svg" alt="" class="w-full h-full"/></div>
+    <div class="absolute bottom-0 left-0 w-2.5 h-2.5 transform -scale-y-100"><img src="public/originkit/hero-23/corner-tl.svg" alt="" class="w-full h-full"/></div>
+  </footer>
+
+  <!-- Canvas Globe & Particles Script -->
+  <script>
+    // Canvas Particles
+    (function initStardust() {
+      const canvas = document.getElementById('hero-stardust-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      function resize() {
+        canvas.width = canvas.parentElement.offsetWidth;
+        canvas.height = canvas.parentElement.offsetHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const particles = [];
+      for (let i = 0; i < 50; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 1.5 + 0.5,
+          dx: (Math.random() - 0.5) * 0.3,
+          dy: (Math.random() - 0.5) * 0.3,
+          alpha: Math.random() * 0.6 + 0.2
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+
+        particles.forEach(p => {
+          ctx.globalAlpha = p.alpha;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+
+          p.x += p.dx;
+          p.y += p.dy;
+
+          if (p.x < 0) p.x = canvas.width;
+          if (p.x > canvas.width) p.x = 0;
+          if (p.y < 0) p.y = canvas.height;
+          if (p.y > canvas.height) p.y = 0;
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // Canvas 3D Rotating Globe
+    (function initGlobe() {
+      const canvas = document.getElementById('hero-globe-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width = 320;
+      const height = canvas.height = 320;
+      const radius = 120;
+      let angle = 0;
+
+      const dots = [];
+      for (let lat = -80; lat <= 80; lat += 18) {
+        const radLat = (lat * Math.PI) / 180;
+        const r = radius * Math.cos(radLat);
+        const y = radius * Math.sin(radLat);
+        const count = Math.max(4, Math.floor(Math.cos(radLat) * 24));
+        for (let i = 0; i < count; i++) {
+          const lon = (i * 360) / count;
+          dots.push({ lat, lon, r, y });
+        }
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Globe sphere fill
+        const grad = ctx.createRadialGradient(width / 2, height / 2, 10, width / 2, height / 2, radius);
+        grad.addColorStop(0, '#152e18');
+        grad.addColorStop(0.85, '#0b160d');
+        grad.addColorStop(1, '#2e7d32');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(width / 2, height / 2, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Dots
+        ctx.fillStyle = '#a3f69c';
+        dots.forEach(dot => {
+          const radLon = ((dot.lon + angle) * Math.PI) / 180;
+          const x = dot.r * Math.sin(radLon);
+          const z = dot.r * Math.cos(radLon);
+
+          if (z > 0) {
+            const px = width / 2 + x;
+            const py = height / 2 - dot.y;
+            const dotSize = Math.max(1, (z / radius) * 2.5);
+
+            ctx.globalAlpha = Math.min(1, Math.max(0.15, z / radius));
+            ctx.beginPath();
+            ctx.arc(px, py, dotSize, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+
+        angle += 0.35;
+        requestAnimationFrame(render);
+      }
+      render();
+    })();
+  </script>
+</body>
+</html>

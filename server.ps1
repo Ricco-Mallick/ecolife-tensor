@@ -17,7 +17,7 @@ while ($listener.IsListening) {
 
         $relativePath = $request.Url.LocalPath.TrimStart('/')
         if ([string]::IsNullOrEmpty($relativePath)) {
-            $relativePath = "index.html"
+            $relativePath = "landing.html"
         }
 
         $filePath = Join-Path $rootFolder $relativePath
