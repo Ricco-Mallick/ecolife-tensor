@@ -3,9 +3,8 @@
  * Team .Tensor
  */
 
-// Supabase Configuration (Replace with your live Supabase credentials if available)
-const SUPABASE_URL = window.ENV_SUPABASE_URL || "https://xyzcompany.supabase.co";
-const SUPABASE_ANON_KEY = window.ENV_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_anon_key";
+const SUPABASE_URL = window.ENV_SUPABASE_URL || "https://rmuvepphwybmbaifyfkz.supabase.co";
+const SUPABASE_ANON_KEY = window.ENV_SUPABASE_ANON_KEY || "sb_publishable_gyp9H3Mzu_6bhVD3JZtN7g_sL4o9_zy";
 
 let supabase = null;
 
