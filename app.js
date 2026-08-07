@@ -562,14 +562,14 @@ function renderMapMarkers() {
       label: { text: iconSymbol, fontSize: "16px" }
     });
 
-    const popupContent = \`
+    const popupContent = `
       <div style="color: black; max-width: 200px; padding: 4px;">
-        <div style="font-weight: bold; font-size: 10px; color: #0d631b; margin-bottom: 4px;">\${spot.type.toUpperCase()}</div>
-        <h4 style="margin: 0 0 4px 0; font-size: 14px;">\${escapeHtml(spot.name)}</h4>
-        <p style="margin: 0 0 8px 0; font-size: 12px; color: #444;">\${escapeHtml(spot.desc || spot.description || '')}</p>
+        <div style="font-weight: bold; font-size: 10px; color: #0d631b; margin-bottom: 4px;">${spot.type.toUpperCase()}</div>
+        <h4 style="margin: 0 0 4px 0; font-size: 14px;">${escapeHtml(spot.name)}</h4>
+        <p style="margin: 0 0 8px 0; font-size: 12px; color: #444;">${escapeHtml(spot.desc || spot.description || '')}</p>
         <button style="background: #0d631b; color: white; border: none; padding: 4px 8px; width: 100%; font-weight: bold; cursor: pointer;" onclick="alert('Directions calculated!')">Get Directions</button>
       </div>
-    \`;
+    `;
 
     marker.addListener("click", () => {
       EcoState.infoWindow.setContent(popupContent);
