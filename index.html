@@ -140,32 +140,87 @@
   <!-- Main Content Body -->
   <main class="flex-1 lg:ml-64 pb-20 lg:pb-10">
 
-    <!-- PAGE 1: LANDING PAGE -->
+    <!-- PAGE 1: LANDING PAGE (Originkit Hero 23 Immersive Experience) -->
     <section id="page-landing" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
-      <div class="w-full bg-surface-container-low border-4 border-on-surface neo-shadow p-margin-desktop flex flex-col md:flex-row items-center justify-between gap-gutter mt-stack-md">
-        <div class="max-w-2xl flex flex-col gap-stack-md">
-          <div class="inline-block bg-secondary-container text-on-secondary-container font-label-bold text-label-bold px-4 py-2 border-2 border-on-surface w-max">
-            BONUS THEME: MOST CREATIVE
+      <!-- Hero 23 Main Container -->
+      <div class="relative w-full bg-[#0b1c0e] border-4 border-on-surface neo-shadow rounded-sm overflow-hidden text-white p-6 md:p-12 min-h-[650px] flex flex-col justify-between">
+        <!-- Stardust Particle Canvas -->
+        <canvas id="hero-stardust-canvas" class="absolute inset-0 w-full h-full pointer-events-none opacity-40"></canvas>
+
+        <!-- Corners -->
+        <div class="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-secondary-container"></div>
+        <div class="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-secondary-container"></div>
+        <div class="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-secondary-container"></div>
+        <div class="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-secondary-container"></div>
+
+        <!-- Center Content -->
+        <div class="relative z-20 max-w-3xl mx-auto text-center flex flex-col items-center gap-6 mt-4">
+          <!-- Originkit Badge -->
+          <div class="inline-flex items-center gap-2 bg-[#173a1d] border border-secondary-container px-4 py-2 rounded-full text-secondary-container font-bold text-xs shadow-md">
+            <span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
+            🌱 PIXXELHACK 2.0 • Bonus Theme: Most Creative • Team .Tensor
           </div>
-          <h1 class="font-display-lg text-4xl md:text-6xl text-on-surface uppercase leading-none font-bold">Automate<br/>Your Impact</h1>
-          <p class="font-body-lg text-lg text-on-surface-variant max-w-xl">
-            Radical transparency meets actionable sustainability. Track your carbon footprint, scan waste with AI, parse transport tickets, and compete on community leaderboards.
+
+          <h1 class="font-display-lg text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-none text-white drop-shadow-md">
+            Automate Your Impact.<br/><span class="text-secondary-container">Zero Greenwashing.</span>
+          </h1>
+
+          <p class="font-body-lg text-base md:text-xl text-primary-fixed max-w-2xl leading-relaxed">
+            Quantify daily micro-actions, scan waste with AI, parse transport tickets, and benchmark eco-habits with your community.
           </p>
-          <div class="mt-stack-md flex flex-wrap gap-4">
-            <a href="#overview" data-nav="overview" class="neo-btn bg-primary text-on-primary font-label-bold px-8 py-4 neo-shadow-sm inline-flex items-center gap-2 uppercase tracking-wide">
-              Enter Dashboard <span class="material-symbols-outlined">arrow_forward</span>
+
+          <div class="flex flex-wrap items-center justify-center gap-4 mt-2">
+            <a href="#overview" data-nav="overview" class="neo-btn bg-secondary-container text-on-surface font-bold px-8 py-4 text-base rounded-md flex items-center gap-2 shadow-lg hover:scale-105 transition-transform">
+              Start Your Eco Journey <span class="material-symbols-outlined text-lg">arrow_forward</span>
             </a>
-            <a href="#scanner" data-nav="scanner" class="neo-btn bg-secondary-container text-on-surface font-label-bold px-6 py-4 neo-shadow-sm inline-flex items-center gap-2 uppercase">
-              Launch AI Scanner <span class="material-symbols-outlined">barcode_scanner</span>
+            <a href="#scanner" data-nav="scanner" class="neo-btn bg-[#1b3d20] text-white border border-white/20 font-bold px-6 py-4 text-base rounded-md flex items-center gap-2 hover:bg-[#234d29] transition-colors">
+              Launch AI Scanner <span class="material-symbols-outlined text-lg">barcode_scanner</span>
             </a>
           </div>
         </div>
 
-        <div class="w-full md:w-1/2 aspect-square md:aspect-[4/3] bg-on-surface neo-border neo-shadow relative overflow-hidden flex items-center justify-center group">
-          <img class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4CCz2fXzRYMGza3IhJiXqCMoVKpjf3CfFrdUMZCE_gk9yJzxWleI35LcALnNrv8K5CTlwzhBNSXXSrL3kfE3BUmy53g7-QL8s5JWP3y7zora7d9TsRxyvxLU08wMrvoc3Lb6lGXd9ktf7l4ob7V1jIyfXijEYw7cEbnHXE6wP2iQwod7Goy4cGORfA5MIXJzQUFLhR4f8Le6wmuEK9EF6dZ5AQIjZI0aSeYJCok4LjFV_4VQ81rlEWw" alt="Eco Digital Art"/>
-          <div class="absolute bottom-4 right-4 bg-background border-2 border-on-surface px-3 py-1 font-label-bold text-xs text-on-surface flex items-center gap-2">
-            <span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span> PIXXELHACK 2.0 LIVE
+        <!-- 3D Globe Visual Container -->
+        <div class="relative z-10 w-full max-w-4xl mx-auto mt-8 h-64 md:h-80 flex items-center justify-center">
+          <canvas id="hero-globe-canvas" class="w-64 h-64 md:w-80 md:h-80 rounded-full border-4 border-secondary-container shadow-[0_0_50px_rgba(222,233,80,0.3)]"></canvas>
+
+          <!-- Floating Stat Card Left -->
+          <div class="absolute left-2 top-8 md:left-12 md:top-12 bg-[#142918] border-2 border-secondary-container p-3 rounded-md neo-shadow-sm flex flex-col items-center text-center animate-bounce" style="animation-duration: 4s;">
+            <div class="flex -space-x-2 mb-1">
+              <span class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-xs border border-secondary-container">🌱</span>
+              <span class="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-xs border border-secondary-container">♻️</span>
+              <span class="w-6 h-6 rounded-full bg-primary-fixed flex items-center justify-center text-xs border border-secondary-container">⚡</span>
+            </div>
+            <div class="font-bold text-xl text-secondary-container">24.5K+</div>
+            <div class="text-[11px] text-white font-bold">Eco Warriors Active</div>
           </div>
+
+          <!-- Floating Stat Card Right -->
+          <div class="absolute right-2 bottom-8 md:right-12 md:bottom-12 bg-[#142918] border-2 border-secondary-container p-3 rounded-md neo-shadow-sm flex flex-col items-center text-center animate-bounce" style="animation-duration: 5s;">
+            <div class="flex gap-1 mb-1 text-xs">
+              🇨🇦 🇸🇪 🇧🇷 🇹🇼 🇮🇪
+            </div>
+            <div class="font-bold text-xl text-secondary-container">1.2 Tons</div>
+            <div class="text-[11px] text-white font-bold">CO2 Mitigated YTD</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tech Stack & Standards Strip -->
+      <div class="w-full bg-on-surface text-surface neo-border neo-shadow p-stack-md mt-margin-desktop flex flex-wrap justify-around items-center gap-stack-md font-bold text-xs uppercase">
+        <div class="flex items-center gap-2">
+          <span class="text-secondary-container text-base">🤖</span> TensorFlow.js Waste AI
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-secondary-container text-base">🗺️</span> Leaflet OpenStreetMap
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-secondary-container text-base">🧾</span> Tesseract OCR Parser
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-secondary-container text-base">📍</span> Google Timeline Import
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-secondary-container text-base">📊</span> EPA & WRI Transport Metrics
         </div>
       </div>
 

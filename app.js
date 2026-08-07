@@ -518,6 +518,164 @@ function renderLeaderboard() {
   `).join('');
 }
 
+// Hero 23 Canvas 3D Globe & Stardust Background Effects
+document.addEventListener('DOMContentLoaded', () => {
+  initHeroEffects();
+});
+
+function initHeroEffects() {
+  initStardust();
+  initCanvasGlobe();
+}
+
+function initStardust() {
+  const canvas = document.getElementById('hero-stardust-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = canvas.parentElement ? canvas.parentElement.offsetWidth : window.innerWidth;
+    canvas.height = canvas.parentElement ? canvas.parentElement.offsetHeight : 600;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const particles = [];
+  const numParticles = 60;
+  for (let i = 0; i < numParticles; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 1,
+      dx: (Math.random() - 0.5) * 0.4,
+      dy: (Math.random() - 0.5) * 0.4,
+      alpha: Math.random() * 0.7 + 0.3
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#a3f69c';
+
+    particles.forEach(p => {
+      ctx.globalAlpha = p.alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+
+      p.x += p.dx;
+      p.y += p.dy;
+
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function initCanvasGlobe() {
+  const canvas = document.getElementById('hero-globe-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const width = canvas.width = 320;
+  const height = canvas.height = 320;
+  const radius = 120;
+  let angle = 0;
+
+  // Globe latitude/longitude dots
+  const dots = [];
+  for (let lat = -80; lat <= 80; lat += 18) {
+    const radLat = (lat * Math.PI) / 180;
+    const r = radius * Math.cos(radLat);
+    const y = radius * Math.sin(radLat);
+    const count = Math.max(4, Math.floor(Math.cos(radLat) * 24));
+
+    for (let i = 0; i < count; i++) {
+      const lon = (i * 360) / count;
+      dots.push({ lat, lon, r, y });
+    }
+  }
+
+  function renderGlobe() {
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw Globe Background Circle
+    const grad = ctx.createRadialGradient(width / 2, height / 2, 10, width / 2, height / 2, radius);
+    grad.addColorStop(0, '#1a4722');
+    grad.addColorStop(0.8, '#0b1c0e');
+    grad.addColorStop(1, '#dee950');
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(width / 2, height / 2, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#dee950';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Render Rotating Dots
+    ctx.fillStyle = '#a3f69c';
+
+    dots.forEach(dot => {
+      const radLon = ((dot.lon + angle) * Math.PI) / 180;
+      const x = dot.r * Math.sin(radLon);
+      const z = dot.r * Math.cos(radLon);
+
+      if (z > 0) { // Only front hemisphere
+        const px = width / 2 + x;
+        const py = height / 2 - dot.y;
+        const dotSize = Math.max(1, (z / radius) * 3);
+
+        ctx.globalAlpha = Math.min(1, Math.max(0.2, z / radius));
+        ctx.beginPath();
+        ctx.arc(px, py, dotSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+
+    // Draw active glowing green eco nodes (Mumbai, Toronto, Stockholm, Tokyo, Sao Paulo)
+    const nodes = [
+      { lon: 72, lat: 19, label: 'Mumbai' },
+      { lon: -79, lat: 43, label: 'Toronto' },
+      { lon: 18, lat: 59, label: 'Stockholm' },
+      { lon: 139, lat: 35, label: 'Tokyo' },
+    ];
+
+    nodes.forEach(node => {
+      const radLat = (node.lat * Math.PI) / 180;
+      const r = radius * Math.cos(radLat);
+      const y = radius * Math.sin(radLat);
+      const radLon = ((node.lon + angle) * Math.PI) / 180;
+      const x = r * Math.sin(radLon);
+      const z = r * Math.cos(radLon);
+
+      if (z > 10) {
+        const px = width / 2 + x;
+        const py = height / 2 - y;
+
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#dee950';
+        ctx.beginPath();
+        ctx.arc(px, py, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    });
+
+    angle += 0.4;
+    requestAnimationFrame(renderGlobe);
+  }
+
+  renderGlobe();
+}
+
 // Utility Toast Notifications
 function showToast(message) {
   let container = document.getElementById('toast-container');
@@ -542,3 +700,4 @@ function showToast(message) {
 function escapeHtml(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+
