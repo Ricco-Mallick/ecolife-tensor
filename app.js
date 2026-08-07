@@ -43,43 +43,57 @@ const EcoState = {
   webcamStream: null,
 };
 
-// Initialize App
+// Ensure User is Authenticated on Dashboard Load
+async function checkAuth() {
+  if (typeof window.EcoAuth === 'undefined') {
+    console.error("EcoAuth not found, make sure supabaseClient.js is loaded first.");
+    return;
+  }
+  const user = await window.EcoAuth.getCurrentUser();
+  if (!user) {
+    console.log("No user found, redirecting to auth...");
+    window.location.href = "auth.html";
+    return;
+  }
+  await loadUserData();
+}
+
+async function loadUserData() {
+  const profile = await window.EcoAuth.getProfile();
+  if (profile) {
+    EcoState.user = {
+      id: profile.id,
+      name: profile.full_name || "Eco Warrior",
+      avatar: profile.avatar_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuBxNcP4jmGLxlDNuWCtPln-cBePNWavmRWJWmdXAU4d8FQVwMmZ8kfvUFAxgKQeuV2qfIfBw20C1L43EZ1TMDBiiEtCWUwTu_V5CSEyO96Mbn4CgKlyqT8RvJg6vjxWQWH3DNnl9yebbUAHT49M2ige3sDObHlC-O2e6dLUjneCXmyA8lmvGupFl5AgbcEdw49T-AWArPGFL6hpwMnikONLO_DyvpUWQETsIHu6nWIHvLGQdTVPqGPNew",
+      points: profile.total_points || 0,
+      dailyScore: Math.min((profile.total_points || 0) / 10, 100),
+      co2SavedTons: parseFloat(profile.co2_saved_tons || 0),
+      streakDays: profile.streak_days || 0
+    };
+  }
+
+  const actions = await window.EcoAuth.getEcoActions();
+  EcoState.actions = actions || [];
+  updateUIState();
+  renderTimeline();
+}
+
+// -----------------------------------------------------------
+// CORE INITIALIZATION
+// -----------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
-  loadStateFromStorage();
+  checkAuth();
   setupNavigation();
   setupLogActionModal();
   setupScanner();
   setupChallenges();
   setupLeaderboard();
-  updateUIState();
-
+  setupProfileSettings();
+  
   // Route based on URL hash or default to overview
   const initialHash = window.location.hash.replace('#', '') || 'overview';
   navigateTo(initialHash);
 });
-
-// Persistence
-function loadStateFromStorage() {
-  const saved = localStorage.getItem('ecolife_app_state');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      EcoState.user = { ...EcoState.user, ...parsed.user };
-      if (parsed.actionsLog) EcoState.actionsLog = parsed.actionsLog;
-      if (parsed.challenges) EcoState.challenges = parsed.challenges;
-    } catch (e) {
-      console.warn("Error reading state from localStorage:", e);
-    }
-  }
-}
-
-function saveStateToStorage() {
-  localStorage.setItem('ecolife_app_state', JSON.stringify({
-    user: EcoState.user,
-    actionsLog: EcoState.actionsLog,
-    challenges: EcoState.challenges,
-  }));
-}
 
 // Navigation & Router
 function setupNavigation() {
@@ -99,10 +113,8 @@ function setupNavigation() {
 }
 
 function navigateTo(pageId) {
-  // Update hash
   window.location.hash = pageId;
 
-  // Toggle page visibility
   const pages = document.querySelectorAll('.page-view');
   let found = false;
 
@@ -120,7 +132,6 @@ function navigateTo(pageId) {
     pageId = 'overview';
   }
 
-  // Update navbar active styling
   document.querySelectorAll('[data-nav]').forEach(link => {
     const navTarget = link.getAttribute('data-nav');
     if (navTarget === pageId) {
@@ -132,7 +143,6 @@ function navigateTo(pageId) {
     }
   });
 
-  // Lazy init map if navigated to map
   if (pageId === 'map' && !EcoState.mapInstance) {
     setTimeout(initMap, 200);
   }
@@ -142,20 +152,21 @@ function navigateTo(pageId) {
 
 // UI State Updates
 function updateUIState() {
-  // User Profile fields
+  if (!EcoState.user) return;
+  
   document.querySelectorAll('.user-pts-val').forEach(el => el.textContent = EcoState.user.points.toLocaleString());
-  document.querySelectorAll('.user-score-val').forEach(el => el.textContent = EcoState.user.dailyScore);
-  document.querySelectorAll('.user-co2-val').forEach(el => el.textContent = EcoState.user.co2SavedTons.toFixed(1));
+  document.querySelectorAll('.user-score-val').forEach(el => el.textContent = EcoState.user.dailyScore.toFixed(0));
+  document.querySelectorAll('.user-co2-val').forEach(el => el.textContent = EcoState.user.co2SavedTons.toFixed(2));
   document.querySelectorAll('.user-streak-val').forEach(el => el.textContent = EcoState.user.streakDays);
 
-  // Update gauge circle offset (max score 100 -> strokeDashoffset: 440 * (1 - 82/100) = ~79)
+  document.querySelectorAll('.profile-name-val').forEach(el => el.textContent = EcoState.user.name);
+  document.querySelectorAll('.profile-avatar-val').forEach(el => el.src = EcoState.user.avatar);
+
   const gaugeEl = document.getElementById('score-gauge');
   if (gaugeEl) {
     const offset = 440 * (1 - Math.min(EcoState.user.dailyScore, 100) / 100);
     gaugeEl.style.strokeDashoffset = offset;
   }
-
-  saveStateToStorage();
 }
 
 // Modal Action Logger
@@ -178,59 +189,95 @@ function setupLogActionModal() {
   });
 
   if (form) {
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const actionType = document.getElementById('action-type').value;
-      const detail = document.getElementById('action-detail').value || actionType;
-      const pointsToAdd = parseInt(document.getElementById('action-pts').value) || 50;
-
-      EcoState.user.points += pointsToAdd;
-      EcoState.user.dailyScore = Math.min(100, EcoState.user.dailyScore + Math.round(pointsToAdd / 10));
-      EcoState.user.co2SavedTons += 0.05;
-
-      EcoState.actionsLog.unshift({
-        type: actionType,
-        detail: detail,
-        pts: pointsToAdd,
-        time: 'Just now'
-      });
-
-      // Update user in leaderboard
-      const userRank = EcoState.leaderboard.find(item => item.isUser);
-      if (userRank) {
-        userRank.pts = EcoState.user.points;
-        userRank.action = detail;
+      const category = document.getElementById('action-type').value;
+      const title = document.getElementById('action-detail').value || category;
+      
+      const co2SavedKg = Math.random() * 5 + 1; // Mock kg calculation
+      const res = await window.EcoAuth.logEcoAction(category, title, co2SavedKg);
+      if (res.success) {
+        await loadUserData();
       }
-
-      updateUIState();
-      renderRecentActions();
-      renderLeaderboard();
-      modal.classList.remove('open');
+      
+      document.getElementById('action-modal').classList.remove('open');
       form.reset();
 
-      showToast(`Logged action! +${pointsToAdd} Eco Points earned! 🌿`);
+      showToast(`Logged action! Stats updated! 🌿`);
     });
   }
 
-  renderRecentActions();
+  renderTimeline();
 }
 
-function renderRecentActions() {
-  const container = document.getElementById('recent-actions-list');
+function renderTimeline() {
+  const container = document.getElementById('activity-timeline');
   if (!container) return;
 
-  container.innerHTML = EcoState.actionsLog.slice(0, 5).map(act => `
-    <div class="flex items-center justify-between p-stack-sm border-b-2 border-on-surface hover:bg-surface-container-high transition-colors">
-      <div class="flex items-center gap-stack-sm">
-        <span class="material-symbols-outlined text-primary bg-primary-fixed border-2 border-on-surface p-1 text-[18px]">eco</span>
-        <div>
-          <div class="font-label-bold text-label-bold">${escapeHtml(act.detail)}</div>
-          <div class="font-body-md text-xs text-on-surface-variant">${act.type} • ${act.time}</div>
+  container.innerHTML = '';
+  if (!EcoState.actions || EcoState.actions.length === 0) {
+    container.innerHTML = '<p class="text-on-surface-variant p-4 font-bold text-center">No recent activities. Log an action to get started!</p>';
+    return;
+  }
+
+  EcoState.actions.slice(0, 5).forEach((action, index) => {
+    const el = document.createElement('div');
+    el.className = 'flex gap-4 relative pl-8 before:absolute before:left-3 before:top-8 before:bottom-[-24px] before:w-0.5 before:bg-surface-container-highest last:before:hidden';
+    
+    const dateStr = new Date(action.logged_at).toLocaleDateString();
+
+    el.innerHTML = `
+      <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center neo-border z-10 shadow-sm">
+        <span class="material-symbols-outlined text-[14px]">eco</span>
+      </div>
+      <div class="bg-surface-container border-2 border-on-surface p-3 w-full group hover:-translate-y-1 transition-transform shadow-[4px_4px_0_0_#000]">
+        <div class="flex justify-between items-start mb-1">
+          <h4 class="font-bold text-on-surface leading-tight">${action.title}</h4>
+          <span class="text-xs font-bold text-on-surface-variant bg-surface px-2 py-0.5 border border-on-surface/20">${dateStr}</span>
+        </div>
+        <div class="flex items-center gap-1 text-primary">
+          <span class="material-symbols-outlined text-[16px]">co2</span>
+          <span class="font-bold text-sm">-${action.co2_saved_kg} kg</span>
         </div>
       </div>
-      <span class="font-label-bold text-label-bold bg-secondary-container px-2 py-1 border-2 border-on-surface">+${act.pts} pts</span>
-    </div>
-  `).join('');
+    `;
+    el.style.opacity = '0';
+    el.style.animation = `fadeUpIn 0.4s ease forwards ${index * 0.1}s`;
+    
+    container.appendChild(el);
+  });
+}
+
+function setupProfileSettings() {
+  const form = document.getElementById('profile-edit-form');
+  const btnSignOut = document.getElementById('btn-sign-out');
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('edit-profile-name').value;
+      const avatar = document.getElementById('edit-profile-avatar').value;
+
+      const updates = {};
+      if (name) updates.full_name = name;
+      if (avatar) updates.avatar_url = avatar;
+
+      const res = await window.EcoAuth.updateProfile(updates);
+      if (res.success) {
+        showToast("Profile updated successfully!");
+        await loadUserData();
+      } else {
+        showToast("Error updating profile: " + res.message);
+      }
+    });
+  }
+
+  if (btnSignOut) {
+    btnSignOut.addEventListener('click', async () => {
+      await window.EcoAuth.signOut();
+      window.location.href = 'auth.html';
+    });
+  }
 }
 
 // AI Waste Scanner Logic

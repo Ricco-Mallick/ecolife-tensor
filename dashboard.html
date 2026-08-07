@@ -484,13 +484,30 @@
     <section id="page-profile" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
       <section class="flex flex-col md:flex-row items-center md:items-start gap-gutter bg-secondary-fixed p-margin-desktop neo-border neo-shadow relative overflow-hidden">
         <div class="shrink-0 relative z-10">
-          <img class="w-32 h-32 md:w-44 md:h-44 rounded-full neo-border object-cover bg-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxNcP4jmGLxlDNuWCtPln-cBePNWavmRWJWmdXAU4d8FQVwMmZ8kfvUFAxgKQeuV2qfIfBw20C1L43EZ1TMDBiiEtCWUwTu_V5CSEyO96Mbn4CgKlyqT8RvJg6vjxWQWH3DNnl9yebbUAHT49M2ige3sDObHlC-O2e6dLUjneCXmyA8lmvGupFl5AgbcEdw49T-AWArPGFL6hpwMnikONLO_DyvpUWQETsIHu6nWIHvLGQdTVPqGPNew" alt="Elena Rodriguez"/>
+          <img class="w-32 h-32 md:w-44 md:h-44 rounded-full neo-border object-cover bg-white profile-avatar-val" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxNcP4jmGLxlDNuWCtPln-cBePNWavmRWJWmdXAU4d8FQVwMmZ8kfvUFAxgKQeuV2qfIfBw20C1L43EZ1TMDBiiEtCWUwTu_V5CSEyO96Mbn4CgKlyqT8RvJg6vjxWQWH3DNnl9yebbUAHT49M2ige3sDObHlC-O2e6dLUjneCXmyA8lmvGupFl5AgbcEdw49T-AWArPGFL6hpwMnikONLO_DyvpUWQETsIHu6nWIHvLGQdTVPqGPNew" alt="User Avatar"/>
           <div class="absolute -bottom-2 -right-2 bg-primary-fixed neo-border px-2 py-1 font-bold text-xs transform rotate-[-5deg]">LVL 12</div>
         </div>
         <div class="relative z-10 text-center md:text-left flex flex-col h-full justify-center">
-          <h2 class="font-display-lg text-4xl md:text-5xl font-bold uppercase leading-none">Elena Rodriguez</h2>
+          <h2 class="font-display-lg text-4xl md:text-5xl font-bold uppercase leading-none profile-name-val">Eco Warrior</h2>
           <p class="font-body-lg text-base font-bold text-on-surface-variant bg-white inline-block px-3 py-1 neo-border-thin mt-2 self-center md:self-start">Team .Tensor • Eco-Warrior Innovator</p>
         </div>
+      </section>
+
+      <!-- Edit Profile Settings -->
+      <section class="mt-gutter bg-surface-container p-gutter neo-border neo-shadow-sm">
+        <h3 class="font-headline-md text-2xl font-bold uppercase border-b-4 border-on-surface pb-1 w-fit mb-stack-md">Edit Profile</h3>
+        <form id="profile-edit-form" class="flex flex-col gap-stack-sm max-w-md">
+          <div class="flex flex-col">
+            <label class="font-label-bold text-sm mb-1">Full Name</label>
+            <input type="text" id="edit-profile-name" class="p-2 border-2 border-on-surface bg-white" placeholder="Elena Rodriguez" required />
+          </div>
+          <div class="flex flex-col">
+            <label class="font-label-bold text-sm mb-1">Avatar URL (Optional)</label>
+            <input type="url" id="edit-profile-avatar" class="p-2 border-2 border-on-surface bg-white" placeholder="https://..." />
+          </div>
+          <button type="submit" class="mt-2 bg-primary text-on-primary font-bold py-2 px-4 neo-border hover:-translate-y-1 transition-transform self-start">Save Changes</button>
+        </form>
+        <button id="btn-sign-out" class="mt-stack-lg bg-error text-on-error font-bold py-2 px-4 neo-border hover:-translate-y-1 transition-transform self-start">Sign Out</button>
       </section>
 
       <!-- Impact Stats Grid -->

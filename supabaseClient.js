@@ -15,10 +15,10 @@ function initSupabase() {
       _supabaseApp = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       console.log("Supabase Client initialized successfully.");
     } catch (e) {
-      console.warn("Supabase init error, running in demo local mode:", e);
+      console.error("Supabase init error:", e);
     }
   } else {
-    console.log("Supabase SDK script not loaded yet. Demo storage fallback active.");
+    console.error("Supabase SDK script not loaded yet.");
   }
 }
 
@@ -31,142 +31,147 @@ if (typeof window !== "undefined") {
   }
 }
 
-// Local Storage Fallback Store
-const DEMO_USER_KEY = "ecolife_demo_user";
-const DEMO_ACTIONS_KEY = "ecolife_demo_actions";
-
 const AuthResult = {
   // Sign Up
   async signUp(email, password, fullName = "") {
-    if (_supabaseApp) {
-      const { data, error } = await _supabaseApp.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: fullName } }
-      });
-      if (error) return { success: false, message: error.message };
-      return { success: true, user: data.user, session: data.session };
-    } else {
-      // Local fallback
-      const user = {
-        id: "demo-" + Date.now(),
-        email,
-        user_metadata: { full_name: fullName || email.split("@")[0] }
-      };
-      localStorage.setItem(DEMO_USER_KEY, JSON.stringify(user));
-      return { success: true, user };
-    }
+    if (!_supabaseApp) return { success: false, message: "Supabase not initialized." };
+    const { data, error } = await _supabaseApp.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName } }
+    });
+    if (error) return { success: false, message: error.message };
+    return { success: true, user: data.user, session: data.session };
   },
 
   // Sign In
   async signIn(email, password) {
-    if (_supabaseApp) {
-      const { data, error } = await _supabaseApp.auth.signInWithPassword({
-        email,
-        password
-      });
-      if (error) return { success: false, message: error.message };
-      return { success: true, user: data.user, session: data.session };
-    } else {
-      // Local fallback sign in
-      const stored = localStorage.getItem(DEMO_USER_KEY);
-      let user = stored ? JSON.parse(stored) : null;
-      if (!user || user.email !== email) {
-        user = {
-          id: "demo-" + Date.now(),
-          email,
-          user_metadata: { full_name: email.split("@")[0] }
-        };
-        localStorage.setItem(DEMO_USER_KEY, JSON.stringify(user));
-      }
-      return { success: true, user };
-    }
+    if (!_supabaseApp) return { success: false, message: "Supabase not initialized." };
+    const { data, error } = await _supabaseApp.auth.signInWithPassword({
+      email,
+      password
+    });
+    if (error) return { success: false, message: error.message };
+    return { success: true, user: data.user, session: data.session };
   },
 
   // Sign In with Social OAuth (Google, GitHub, Apple)
   async signInWithOAuth(provider = 'google') {
+    if (!_supabaseApp) return { success: false, message: "Supabase not initialized." };
     const redirectUrl = window.location.href.includes('github.io')
       ? 'https://ricco-mallick.github.io/ecolife-tensor/dashboard.html'
       : window.location.origin + '/dashboard.html';
 
-    if (_supabaseApp) {
-      const { data, error } = await _supabaseApp.auth.signInWithOAuth({
-        provider: provider.toLowerCase(),
-        options: {
-          redirectTo: redirectUrl
-        }
-      });
-      if (error) return { success: false, message: error.message };
-      return { success: true, data };
-    } else {
-      // Demo fallback
-      const email = `user_${Math.floor(Math.random() * 1000)}@${provider.toLowerCase()}.com`;
-      const user = {
-        id: "demo-oauth-" + Date.now(),
-        email,
-        user_metadata: { full_name: `${provider} User` }
-      };
-      localStorage.setItem(DEMO_USER_KEY, JSON.stringify(user));
-      return { success: true, user };
-    }
+    const { data, error } = await _supabaseApp.auth.signInWithOAuth({
+      provider: provider.toLowerCase(),
+      options: {
+        redirectTo: redirectUrl
+      }
+    });
+    if (error) return { success: false, message: error.message };
+    return { success: true, data };
   },
 
   // Sign Out
   async signOut() {
-    if (_supabaseApp) {
-      await _supabaseApp.auth.signOut();
-    }
-    localStorage.removeItem(DEMO_USER_KEY);
+    if (!_supabaseApp) return { success: false };
+    await _supabaseApp.auth.signOut();
     return { success: true };
   },
 
-  // Get Current User
+  // Get Current User (Auth)
   async getCurrentUser() {
-    if (_supabaseApp) {
-      const { data } = await _supabaseApp.auth.getUser();
-      if (data && data.user) return data.user;
-    }
-    const stored = localStorage.getItem(DEMO_USER_KEY);
-    return stored ? JSON.parse(stored) : null;
+    if (!_supabaseApp) return null;
+    const { data } = await _supabaseApp.auth.getUser();
+    return (data && data.user) ? data.user : null;
   },
 
-  // Log Eco Action to DB / Local Storage
+  // Get User Profile from `profiles` table
+  async getProfile() {
+    const user = await this.getCurrentUser();
+    if (!user) return null;
+
+    const { data, error } = await _supabaseApp
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (error) {
+      console.error("Error fetching profile:", error);
+      return null;
+    }
+    return data;
+  },
+
+  // Update User Profile
+  async updateProfile(updates) {
+    const user = await this.getCurrentUser();
+    if (!user) return { success: false, message: "Not logged in" };
+
+    const { data, error } = await _supabaseApp
+      .from("profiles")
+      .update(updates)
+      .eq("id", user.id)
+      .select();
+
+    if (error) {
+      console.error("Error updating profile:", error);
+      return { success: false, message: error.message };
+    }
+    return { success: true, data: data[0] };
+  },
+
+  // Log Eco Action to DB
   async logEcoAction(category, title, co2SavedKg) {
     const user = await this.getCurrentUser();
+    if (!user) return { success: false, message: "Not logged in" };
+
     const newAction = {
-      id: "act-" + Date.now(),
-      user_id: user ? user.id : "guest",
+      id: "act-" + Date.now() + "-" + Math.floor(Math.random()*1000),
+      user_id: user.id,
       category,
       title,
-      co2_saved_kg: parseFloat(co2SavedKg) || 0,
-      logged_at: new Date().toISOString()
+      co2_saved_kg: parseFloat(co2SavedKg) || 0
     };
 
-    if (_supabaseApp && user && !user.id.startsWith("demo-")) {
-      const { data, error } = await _supabaseApp.from("eco_actions").insert([newAction]);
-      if (!error) return { success: true, data };
+    const { data, error } = await _supabaseApp.from("eco_actions").insert([newAction]);
+    if (error) {
+      console.error("Error logging action:", error);
+      return { success: false, message: error.message };
     }
 
-    // Local fallback
-    const actions = JSON.parse(localStorage.getItem(DEMO_ACTIONS_KEY) || "[]");
-    actions.unshift(newAction);
-    localStorage.setItem(DEMO_ACTIONS_KEY, JSON.stringify(actions));
+    // After successfully logging the action, update the user's profile stats
+    const profile = await this.getProfile();
+    if (profile) {
+      const co2Tons = newAction.co2_saved_kg / 1000;
+      await this.updateProfile({
+        total_points: (profile.total_points || 0) + 50, // 50 points per action
+        co2_saved_tons: (profile.co2_saved_tons || 0) + co2Tons
+      });
+    }
+
     return { success: true, data: newAction };
   },
 
   // Fetch Eco Actions
   async getEcoActions() {
     const user = await this.getCurrentUser();
-    if (_supabaseApp && user && !user.id.startsWith("demo-")) {
-      const { data, error } = await _supabaseApp
-        .from("eco_actions")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("logged_at", { ascending: false });
-      if (!error) return data;
+    if (!user) return [];
+
+    const { data, error } = await _supabaseApp
+      .from("eco_actions")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("logged_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching eco actions:", error);
+      return [];
     }
-    return JSON.parse(localStorage.getItem(DEMO_ACTIONS_KEY) || "[]");
+    return data;
   }
 };
 
 window.EcoAuth = AuthResult;
+
