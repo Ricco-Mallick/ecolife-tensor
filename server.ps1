@@ -16,7 +16,7 @@ while ($listener.IsListening) {
         $response = $context.Response
 
         $relativePath = $request.Url.LocalPath.TrimStart('/')
-        if ([string]::IsNullOrEmpty($relativePath)) {
+        if ([string]::IsNullOrEmpty($relativePath) -or $relativePath -eq "landing") {
             $relativePath = "landing.html"
         }
 
