@@ -254,12 +254,10 @@ void main() {
   }
 
   if (uTransparent) {
-    float alpha = length(col);
-    alpha = smoothstep(0.0, 0.3, alpha);
-    alpha = min(alpha, 1.0);
-    gl_FragColor = vec4(col, alpha);
+    float alpha = clamp(length(col) * 3.0, 0.0, 1.0);
+    gl_FragColor = vec4(col * 2.5, alpha);
   } else {
-    gl_FragColor = vec4(col, 1.0);
+    gl_FragColor = vec4(col * 2.5, 1.0);
   }
 }
 `;
@@ -1341,13 +1339,13 @@ void main() {
             <Galaxy
               mouseRepulsion={true}
               mouseInteraction={true}
-              density={1.5}
-              glowIntensity={0.6}
-              saturation={0.8}
+              density={2.5}
+              glowIntensity={2.0}
+              saturation={1.0}
               hueShift={240}
-              starSpeed={0.5}
-              twinkleIntensity={0.4}
-              rotationSpeed={0.08}
+              starSpeed={0.8}
+              twinkleIntensity={0.6}
+              rotationSpeed={0.15}
               transparent={true}
             />
 
