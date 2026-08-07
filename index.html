@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoLife - Sustainable Living Dashboard | Team .Tensor</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <!-- Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Leaflet Maps CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css"/>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#0d631b",
+            "primary-container": "#2e7d32",
+            "primary-fixed": "#a3f69c",
+            "primary-fixed-dim": "#88d982",
+            "secondary": "#5d6300",
+            "secondary-container": "#dee950",
+            "secondary-fixed": "#e1eb53",
+            "surface": "#f9f9f9",
+            "surface-container": "#eeeeee",
+            "surface-container-high": "#e8e8e8",
+            "surface-container-highest": "#e2e2e2",
+            "surface-container-lowest": "#ffffff",
+            "on-surface": "#1a1c1c",
+            "on-surface-variant": "#40493d",
+            "on-primary": "#ffffff",
+            "on-secondary": "#ffffff",
+            "on-secondary-container": "#616700",
+            "background": "#f9f9f9",
+            "error": "#ba1a1a",
+            "error-container": "#ffdad6"
+          },
+          fontFamily: {
+            "body-md": ["Inter"],
+            "headline-lg": ["Space Grotesk"],
+            "display-lg": ["Space Grotesk"]
+          },
+          spacing: {
+            "margin-desktop": "48px",
+            "gutter": "24px",
+            "unit": "4px",
+            "stack-md": "16px",
+            "margin-mobile": "16px",
+            "stack-sm": "8px",
+            "stack-lg": "32px"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col antialiased">
+
+  <!-- Desktop Sidebar Navigation -->
+  <nav class="hidden lg:flex flex-col h-full fixed left-0 top-0 z-40 bg-surface w-64 border-r-4 border-on-surface shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+    <div class="p-stack-md border-b-4 border-on-surface flex items-center gap-3">
+      <div class="w-10 h-10 bg-primary text-on-primary font-bold text-xl flex items-center justify-center border-2 border-on-surface neo-shadow-sm">
+        🌱
+      </div>
+      <div>
+        <h1 class="font-headline-lg text-2xl font-bold text-primary">EcoLife</h1>
+        <p class="font-label-bold text-xs text-on-surface-variant font-bold">Team .Tensor</p>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-gutter flex flex-col gap-stack-sm">
+      <a data-nav="landing" href="#landing" class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-surface-container-high transition-all font-label-bold text-label-bold hover:translate-x-1 hover:translate-y-1">
+        <span class="material-symbols-outlined">home</span> Landing Page
+      </a>
+      <a data-nav="overview" href="#overview" class="flex items-center gap-stack-md p-stack-md bg-secondary-container text-on-secondary-container neo-border-thin neo-shadow-sm font-label-bold text-label-bold">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span> Overview
+      </a>
+      <a data-nav="scanner" href="#scanner" class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-surface-container-high transition-all font-label-bold text-label-bold">
+        <span class="material-symbols-outlined">barcode_scanner</span> Waste Scanner
+      </a>
+      <a data-nav="map" href="#map" class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-surface-container-high transition-all font-label-bold text-label-bold">
+        <span class="material-symbols-outlined">map</span> Green Map
+      </a>
+      <a data-nav="challenges" href="#challenges" class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-surface-container-high transition-all font-label-bold text-label-bold">
+        <span class="material-symbols-outlined">emoji_events</span> Challenges
+      </a>
+      <a data-nav="leaderboard" href="#leaderboard" class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-surface-container-high transition-all font-label-bold text-label-bold">
+        <span class="material-symbols-outlined">leaderboard</span> Leaderboard
+      </a>
+      <a data-nav="profile" href="#profile" class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-surface-container-high transition-all font-label-bold text-label-bold mt-auto">
+        <span class="material-symbols-outlined">account_circle</span> Profile & Settings
+      </a>
+    </div>
+
+    <div class="p-gutter border-t-4 border-on-surface bg-surface">
+      <button class="btn-open-log-action w-full bg-primary text-on-primary font-label-bold text-label-bold p-stack-md neo-btn">
+        + Log Eco Action
+      </button>
+    </div>
+  </nav>
+
+  <!-- Top App Header -->
+  <header class="sticky top-0 z-30 bg-background border-b-4 border-on-surface flex justify-between items-center px-margin-mobile md:px-margin-desktop py-3 lg:ml-64">
+    <div class="flex items-center gap-3">
+      <div class="lg:hidden flex items-center gap-2">
+        <span class="font-headline-lg text-xl font-bold text-primary">EcoLife</span>
+      </div>
+      <div class="hidden md:inline-block bg-secondary-container px-3 py-1 neo-border-thin font-label-bold text-xs">
+        PIXXELHACK 2.0 • TEAM .TENSOR
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="hidden sm:flex items-center gap-2 bg-primary-fixed px-3 py-1 neo-border-thin font-bold text-sm">
+        <span class="material-symbols-outlined text-primary text-lg">stars</span>
+        <span>Points: <strong class="user-pts-val">24,500</strong></span>
+      </div>
+      <button class="btn-open-log-action sm:hidden bg-primary text-on-primary px-3 py-1 font-bold text-xs neo-border-thin">
+        + Log
+      </button>
+      <a href="#profile" data-nav="profile" class="w-10 h-10 rounded-full overflow-hidden neo-border border-2 cursor-pointer">
+        <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxNcP4jmGLxlDNuWCtPln-cBePNWavmRWJWmdXAU4d8FQVwMmZ8kfvUFAxgKQeuV2qfIfBw20C1L43EZ1TMDBiiEtCWUwTu_V5CSEyO96Mbn4CgKlyqT8RvJg6vjxWQWH3DNnl9yebbUAHT49M2ige3sDObHlC-O2e6dLUjneCXmyA8lmvGupFl5AgbcEdw49T-AWArPGFL6hpwMnikONLO_DyvpUWQETsIHu6nWIHvLGQdTVPqGPNew" alt="Elena Rodriguez Profile"/>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content Body -->
+  <main class="flex-1 lg:ml-64 pb-20 lg:pb-10">
+
+    <!-- PAGE 1: LANDING PAGE -->
+    <section id="page-landing" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
+      <div class="w-full bg-surface-container-low border-4 border-on-surface neo-shadow p-margin-desktop flex flex-col md:flex-row items-center justify-between gap-gutter mt-stack-md">
+        <div class="max-w-2xl flex flex-col gap-stack-md">
+          <div class="inline-block bg-secondary-container text-on-secondary-container font-label-bold text-label-bold px-4 py-2 border-2 border-on-surface w-max">
+            BONUS THEME: MOST CREATIVE
+          </div>
+          <h1 class="font-display-lg text-4xl md:text-6xl text-on-surface uppercase leading-none font-bold">Automate<br/>Your Impact</h1>
+          <p class="font-body-lg text-lg text-on-surface-variant max-w-xl">
+            Radical transparency meets actionable sustainability. Track your carbon footprint, scan waste with AI, parse transport tickets, and compete on community leaderboards.
+          </p>
+          <div class="mt-stack-md flex flex-wrap gap-4">
+            <a href="#overview" data-nav="overview" class="neo-btn bg-primary text-on-primary font-label-bold px-8 py-4 neo-shadow-sm inline-flex items-center gap-2 uppercase tracking-wide">
+              Enter Dashboard <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+            <a href="#scanner" data-nav="scanner" class="neo-btn bg-secondary-container text-on-surface font-label-bold px-6 py-4 neo-shadow-sm inline-flex items-center gap-2 uppercase">
+              Launch AI Scanner <span class="material-symbols-outlined">barcode_scanner</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="w-full md:w-1/2 aspect-square md:aspect-[4/3] bg-on-surface neo-border neo-shadow relative overflow-hidden flex items-center justify-center group">
+          <img class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4CCz2fXzRYMGza3IhJiXqCMoVKpjf3CfFrdUMZCE_gk9yJzxWleI35LcALnNrv8K5CTlwzhBNSXXSrL3kfE3BUmy53g7-QL8s5JWP3y7zora7d9TsRxyvxLU08wMrvoc3Lb6lGXd9ktf7l4ob7V1jIyfXijEYw7cEbnHXE6wP2iQwod7Goy4cGORfA5MIXJzQUFLhR4f8Le6wmuEK9EF6dZ5AQIjZI0aSeYJCok4LjFV_4VQ81rlEWw" alt="Eco Digital Art"/>
+          <div class="absolute bottom-4 right-4 bg-background border-2 border-on-surface px-3 py-1 font-label-bold text-xs text-on-surface flex items-center gap-2">
+            <span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span> PIXXELHACK 2.0 LIVE
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-gutter mt-margin-desktop">
+        <div class="bg-surface-container border-4 border-on-surface neo-shadow p-stack-lg flex flex-col gap-stack-sm hover:-translate-y-1 transition-transform">
+          <div class="flex items-center gap-2 text-on-surface-variant mb-2 border-b-2 border-on-surface pb-2">
+            <span class="material-symbols-outlined">co2</span>
+            <span class="font-label-bold text-xs uppercase font-bold">Carbon Mitigated</span>
+          </div>
+          <div class="font-display-lg text-4xl font-bold text-on-surface">1.2 Tons</div>
+          <div class="font-body-md text-sm text-on-surface-variant">Verified personal & campus carbon offsets.</div>
+        </div>
+
+        <div class="bg-primary-container border-4 border-on-surface neo-shadow p-stack-lg flex flex-col gap-stack-sm hover:-translate-y-1 transition-transform text-on-primary-container">
+          <div class="flex items-center gap-2 text-on-primary-container mb-2 border-b-2 border-on-primary-container pb-2 opacity-90">
+            <span class="material-symbols-outlined">group</span>
+            <span class="font-label-bold text-xs uppercase font-bold">Team .Tensor</span>
+          </div>
+          <div class="font-display-lg text-4xl font-bold">Ricco & Tanmay</div>
+          <div class="font-body-md text-sm opacity-90">TCET ACM & SIGITE Webathon Finalists.</div>
+        </div>
+
+        <div class="bg-secondary-container border-4 border-on-surface neo-shadow p-stack-lg flex flex-col gap-stack-sm hover:-translate-y-1 transition-transform text-on-secondary-container">
+          <div class="flex items-center gap-2 text-on-secondary-container mb-2 border-b-2 border-on-secondary-container pb-2 opacity-90">
+            <span class="material-symbols-outlined">nature</span>
+            <span class="font-label-bold text-xs uppercase font-bold">Green Score</span>
+          </div>
+          <div class="font-display-lg text-4xl font-bold">82 / 100</div>
+          <div class="font-body-md text-sm opacity-90">Daily sustainable micro-action score.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 2: OVERVIEW DASHBOARD -->
+    <section id="page-overview" class="page-view active p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
+      <div class="mb-stack-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 class="font-display-lg text-3xl md:text-5xl font-bold">Welcome back, Elena.</h2>
+          <p class="font-body-lg text-on-surface-variant mt-1">Your impact is looking solid today. Let's keep the streak alive!</p>
+        </div>
+        <button class="btn-open-log-action bg-secondary-container text-on-surface px-5 py-3 neo-btn font-label-bold text-sm">
+          + Log Action
+        </button>
+      </div>
+
+      <!-- Dashboard Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
+        <!-- Daily Eco Score Gauge -->
+        <div class="bg-surface-container-lowest p-gutter neo-border neo-shadow flex flex-col items-center justify-center col-span-1 min-h-[300px]">
+          <h3 class="font-headline-md text-xl font-bold w-full text-left mb-stack-md border-b-2 border-on-surface pb-stack-sm">Daily Score</h3>
+          <div class="relative w-44 h-44">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 160 160">
+              <circle cx="80" cy="80" r="70" fill="transparent" stroke="#eeeeee" stroke-width="16"></circle>
+              <circle id="score-gauge" cx="80" cy="80" r="70" fill="transparent" stroke="#0d631b" stroke-width="16" stroke-linecap="butt" class="gauge-circle"></circle>
+              <circle cx="80" cy="80" r="78" fill="transparent" stroke="#1a1c1c" stroke-width="4"></circle>
+              <circle cx="80" cy="80" r="62" fill="transparent" stroke="#1a1c1c" stroke-width="4"></circle>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="font-display-lg text-4xl font-bold user-score-val">82</span>
+              <span class="font-label-bold text-xs text-on-surface-variant uppercase tracking-widest font-bold">GREAT</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carbon Footprint Card -->
+        <div class="bg-secondary-container p-gutter neo-border neo-shadow col-span-1 flex flex-col justify-between min-h-[300px]">
+          <div>
+            <h3 class="font-headline-md text-xl font-bold border-b-2 border-on-surface pb-stack-sm mb-stack-md flex items-center justify-between">
+              Carbon Offset
+              <span class="material-symbols-outlined text-2xl">co2</span>
+            </h3>
+            <div class="font-display-lg text-5xl font-bold mt-4"><span class="user-co2-val">1.2</span> <span class="text-xl font-normal">Tons</span></div>
+            <p class="font-label-bold text-xs mt-2 uppercase tracking-wide font-bold">YTD Mitigated Emissions</p>
+          </div>
+          <div class="mt-auto bg-surface p-stack-sm neo-border-thin flex items-center gap-stack-sm">
+            <span class="material-symbols-outlined text-primary">trending_down</span>
+            <span class="font-body-md text-sm"><strong>15% lower</strong> carbon footprint than last month</span>
+          </div>
+        </div>
+
+        <!-- Action Streak Counter -->
+        <div class="bg-on-surface text-surface p-gutter neo-border neo-shadow col-span-1 md:col-span-2 xl:col-span-1 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[300px]">
+          <h3 class="font-headline-md text-xl font-bold w-full text-left mb-stack-md border-b-2 border-surface-container-high pb-stack-sm text-surface">Action Streak</h3>
+          <div class="flex items-center justify-center gap-4 z-10 my-auto">
+            <span class="material-symbols-outlined text-6xl text-secondary-container">local_fire_department</span>
+            <div class="text-left">
+              <span class="font-display-lg text-5xl font-bold block text-secondary-container user-streak-val">14</span>
+              <span class="font-label-bold text-xs uppercase tracking-widest text-surface-container-high font-bold">Days Active</span>
+            </div>
+          </div>
+          <button onclick="showToast('Streak Reward Claimed! +100 Bonus Points! ⚡')" class="mt-auto bg-surface text-on-surface font-label-bold px-4 py-2 neo-btn text-xs flex items-center gap-1 z-10">
+            Claim Daily Streak Reward <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </button>
+        </div>
+
+        <!-- Weekly Impact Chart -->
+        <div class="bg-surface-container-lowest p-gutter neo-border neo-shadow col-span-1 md:col-span-2 xl:col-span-3">
+          <h3 class="font-headline-md text-xl font-bold border-b-2 border-on-surface pb-stack-sm mb-stack-lg">Weekly Impact Actions</h3>
+          <div class="h-56 flex items-end justify-between gap-stack-sm px-gutter border-l-4 border-b-4 border-on-surface pb-unit pt-stack-lg relative">
+            <div class="w-full flex justify-around items-end h-full">
+              <div class="flex flex-col items-center gap-2 w-1/7">
+                <div class="w-10 bg-secondary h-[40%] neo-border-thin relative group">
+                  <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-xs px-1 font-bold hidden group-hover:block whitespace-nowrap">4 Actions</div>
+                </div>
+                <span class="font-label-bold text-xs font-bold">Mon</span>
+              </div>
+              <div class="flex flex-col items-center gap-2 w-1/7">
+                <div class="w-10 bg-primary h-[70%] neo-border-thin relative group">
+                  <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-xs px-1 font-bold hidden group-hover:block whitespace-nowrap">7 Actions</div>
+                </div>
+                <span class="font-label-bold text-xs font-bold">Tue</span>
+              </div>
+              <div class="flex flex-col items-center gap-2 w-1/7">
+                <div class="w-10 bg-secondary h-[50%] neo-border-thin relative group">
+                  <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-xs px-1 font-bold hidden group-hover:block whitespace-nowrap">5 Actions</div>
+                </div>
+                <span class="font-label-bold text-xs font-bold">Wed</span>
+              </div>
+              <div class="flex flex-col items-center gap-2 w-1/7">
+                <div class="w-10 bg-primary h-[90%] neo-border-thin relative group">
+                  <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-xs px-1 font-bold hidden group-hover:block whitespace-nowrap">9 Actions</div>
+                </div>
+                <span class="font-label-bold text-xs font-bold">Thu</span>
+              </div>
+              <div class="flex flex-col items-center gap-2 w-1/7">
+                <div class="w-10 bg-secondary h-[60%] neo-border-thin relative group">
+                  <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-xs px-1 font-bold hidden group-hover:block whitespace-nowrap">6 Actions</div>
+                </div>
+                <span class="font-label-bold text-xs font-bold">Fri</span>
+              </div>
+              <div class="flex flex-col items-center gap-2 w-1/7">
+                <div class="w-10 bg-primary-fixed h-[85%] neo-border-thin relative group">
+                  <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-xs px-1 font-bold hidden group-hover:block whitespace-nowrap">8 Actions</div>
+                </div>
+                <span class="font-label-bold text-xs font-bold text-primary">Sat</span>
+              </div>
+              <div class="flex flex-col items-center gap-2 w-1/7">
+                <div class="w-10 bg-surface-container-highest h-[20%] neo-border-thin border-dashed relative group">
+                  <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-xs px-1 font-bold hidden group-hover:block whitespace-nowrap">Today</div>
+                </div>
+                <span class="font-label-bold text-xs font-bold text-on-surface-variant">Sun</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Actions Feed -->
+        <div class="bg-surface p-gutter neo-border neo-shadow col-span-1 md:col-span-2 xl:col-span-3">
+          <h3 class="font-headline-md text-xl font-bold border-b-2 border-on-surface pb-stack-sm mb-stack-md">Recent Logged Actions</h3>
+          <div id="recent-actions-list" class="flex flex-col neo-border-thin bg-surface-container-lowest">
+            <!-- Dynamic items rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 3: AI WASTE SCANNER -->
+    <section id="page-scanner" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
+      <div class="bg-surface p-gutter border-4 border-on-surface neo-shadow mb-gutter">
+        <h1 class="font-headline-lg text-3xl font-bold uppercase">AI Waste Classifier</h1>
+        <p class="font-body-md text-on-surface-variant mt-1">Point your camera at an item or select a preset sample to classify waste and retrieve disposal rules instantly.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+        <!-- Viewport -->
+        <div class="lg:col-span-7 flex flex-col gap-gutter">
+          <div class="relative bg-on-surface w-full aspect-[4/3] border-4 border-on-surface neo-shadow overflow-hidden group">
+            <video id="scanner-video" class="w-full h-full object-cover hidden" autoplay playsinline></video>
+            <div id="scanner-bg" class="absolute inset-0 bg-cover bg-center opacity-80" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBqvWGFKPJQhUNfkEd51JYoJMT_zn9aOkID-OSRULvXAV7re5qnQhlW_mZG-mlPVxmJ1QigFzfCgY13wDrLAwCaU7BmmZv8iXJAOwCCMdC1Qdu_B0db15mmBRk2UEVwnt0h40CAIL3Ua6_RwzYEZGIi4Xp4TK8sEzyHWujSOWjCXkZ3adAa6c9AX0yfhui90L2u6nO9QRXa3_CxtmTdX2GPT1jV0BQoLalSfW0F2pHeqG42OxqkYytQ_A');"></div>
+
+            <!-- HUD brackets -->
+            <div class="scanner-bracket bracket-tl"></div>
+            <div class="scanner-bracket bracket-tr"></div>
+            <div class="scanner-bracket bracket-bl"></div>
+            <div class="scanner-bracket bracket-br"></div>
+            <div class="scan-line"></div>
+
+            <div class="absolute top-4 left-4 bg-surface text-on-surface font-label-bold text-xs px-3 py-1 border-2 border-on-surface flex items-center gap-2 neo-shadow-sm">
+              <span class="w-2.5 h-2.5 rounded-full bg-error animate-pulse block"></span> AI VISION ACTIVE
+            </div>
+          </div>
+
+          <!-- Camera & Sample Controls -->
+          <div class="flex flex-wrap gap-stack-md bg-surface p-stack-md neo-border neo-shadow">
+            <button id="btn-start-cam" class="flex-1 bg-primary text-on-primary font-bold py-3 px-4 neo-btn flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined">videocam</span> Enable Live Camera
+            </button>
+
+            <div class="flex-1 flex gap-2">
+              <select id="preset-select" class="flex-1 bg-surface-container-lowest neo-border-thin font-bold px-3 py-2 text-sm">
+                <option value="bottle">PET Plastic Water Bottle</option>
+                <option value="can">Aluminum Beverage Can</option>
+                <option value="e_waste">Lithium Phone Battery (E-Waste)</option>
+                <option value="compost">Apple Core & Food Scraps</option>
+              </select>
+              <button id="btn-scan-preset" class="bg-secondary-container text-on-surface font-bold px-4 py-2 neo-btn text-sm">
+                Classify
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scanner Prediction Results -->
+        <div class="lg:col-span-5 flex flex-col gap-gutter h-full">
+          <div class="bg-surface border-4 border-on-surface p-gutter neo-shadow flex-1">
+            <div class="flex justify-between items-start mb-stack-md">
+              <h3 id="scan-item-title" class="font-headline-md text-2xl font-bold text-on-surface leading-tight">PET Plastic Bottle</h3>
+              <div id="scan-match-tag" class="bg-secondary text-on-secondary font-label-bold text-xs px-3 py-1 border-2 border-on-surface font-bold">
+                98% MATCH
+              </div>
+            </div>
+            <p class="font-body-md text-sm text-on-surface-variant mb-stack-lg border-b-2 border-on-surface pb-stack-md">
+              Category: <strong id="scan-category" class="text-on-surface">Recyclable Plastic (Type 1 - PET)</strong>
+            </p>
+
+            <h4 class="font-label-bold text-xs text-on-surface uppercase tracking-wider mb-stack-sm font-bold">Disposal Guide</h4>
+            <div id="scan-disposal-steps" class="flex flex-col border-2 border-on-surface bg-surface-container-lowest">
+              <div class="flex items-center p-stack-sm border-b-2 border-on-surface group hover:bg-surface-container-high transition-colors">
+                <div class="w-8 h-8 shrink-0 bg-primary text-on-primary font-label-bold flex items-center justify-center border-2 border-on-surface mr-stack-md font-bold">1</div>
+                <span class="font-body-md text-sm">Empty all remaining liquids thoroughly.</span>
+              </div>
+              <div class="flex items-center p-stack-sm border-b-2 border-on-surface group hover:bg-surface-container-high transition-colors">
+                <div class="w-8 h-8 shrink-0 bg-primary text-on-primary font-label-bold flex items-center justify-center border-2 border-on-surface mr-stack-md font-bold">2</div>
+                <span class="font-body-md text-sm">Crush bottle flat to conserve recycling space.</span>
+              </div>
+              <div class="flex items-center p-stack-sm group hover:bg-surface-container-high transition-colors">
+                <div class="w-8 h-8 shrink-0 bg-primary text-on-primary font-label-bold flex items-center justify-center border-2 border-on-surface mr-stack-md font-bold">3</div>
+                <span class="font-body-md text-sm">Place in local recycling bin or drop off.</span>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <button id="btn-confirm-scan" class="w-full bg-primary text-on-primary font-bold py-3 px-4 neo-btn flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">check_circle</span> Confirm Proper Disposal (+60 Pts)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 4: GREEN MAP -->
+    <section id="page-map" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
+      <div class="bg-surface p-gutter border-4 border-on-surface neo-shadow mb-gutter flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 class="font-headline-lg text-3xl font-bold uppercase">Interactive Green Map</h1>
+          <p class="font-body-md text-on-surface-variant mt-1">Locate community recycling bins, EV charging hubs, compost stations, and bike docks.</p>
+        </div>
+        <button id="btn-add-map-spot" class="bg-secondary-container text-on-surface px-4 py-2 font-bold neo-btn text-sm flex items-center gap-1">
+          <span class="material-symbols-outlined">add_location_alt</span> Add Green Spot
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter min-h-[500px]">
+        <!-- Map Filters -->
+        <aside class="lg:col-span-4 bg-surface neo-border neo-shadow p-stack-md flex flex-col gap-4">
+          <h3 class="font-headline-md text-xl font-bold border-b-2 border-on-surface pb-2">Filter Locations</h3>
+          <div class="flex flex-col gap-3">
+            <label class="flex items-center gap-3 cursor-pointer p-2 border-2 border-on-surface bg-surface-container-lowest">
+              <input type="checkbox" value="recycling" checked class="map-filter-checkbox w-5 h-5 accent-primary"/>
+              <span class="font-bold text-sm flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">recycling</span> Recycling Centers
+              </span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer p-2 border-2 border-on-surface bg-surface-container-lowest">
+              <input type="checkbox" value="ev" checked class="map-filter-checkbox w-5 h-5 accent-primary"/>
+              <span class="font-bold text-sm flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">ev_station</span> EV Chargers
+              </span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer p-2 border-2 border-on-surface bg-surface-container-lowest">
+              <input type="checkbox" value="compost" checked class="map-filter-checkbox w-5 h-5 accent-primary"/>
+              <span class="font-bold text-sm flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">compost</span> Compost Bins
+              </span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer p-2 border-2 border-on-surface bg-surface-container-lowest">
+              <input type="checkbox" value="bike" checked class="map-filter-checkbox w-5 h-5 accent-primary"/>
+              <span class="font-bold text-sm flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">directions_bike</span> Bike Stations
+              </span>
+            </label>
+          </div>
+
+          <div class="mt-auto p-3 bg-secondary-container neo-border-thin text-xs font-bold">
+            💡 Click on any map marker to see full details and get directions.
+          </div>
+        </aside>
+
+        <!-- Leaflet Container -->
+        <div class="lg:col-span-8 bg-surface neo-border neo-shadow min-h-[450px] relative overflow-hidden">
+          <div id="eco-map" class="w-full h-full min-h-[450px] z-10"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 5: CHALLENGES -->
+    <section id="page-challenges" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
+      <div class="mb-stack-lg border-b-4 border-on-surface pb-stack-md flex justify-between items-end">
+        <div>
+          <h1 class="font-headline-lg text-3xl font-bold uppercase">Active Eco Challenges</h1>
+          <p class="font-body-lg text-on-surface-variant mt-1">Complete daily tasks to gain green score and reduce emissions.</p>
+        </div>
+      </div>
+
+      <div id="challenges-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- PAGE 6: LEADERBOARD -->
+    <section id="page-leaderboard" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-stack-lg">
+        <div>
+          <h2 class="font-display-lg text-4xl font-bold uppercase border-b-4 border-on-surface inline-block pb-1">Leaderboard</h2>
+          <p class="font-body-lg text-on-surface-variant mt-2">Compete. Act. Dominate.</p>
+        </div>
+        <div class="flex border-4 border-on-surface bg-surface neo-shadow-sm p-1">
+          <button class="px-4 py-2 font-bold bg-secondary-container border-2 border-on-surface text-sm">Global</button>
+          <button onclick="showToast('Filtered to TCET Campus Leaderboard!')" class="px-4 py-2 font-bold hover:bg-surface-container-high text-sm">Campus</button>
+        </div>
+      </div>
+
+      <!-- Podium Top 3 -->
+      <section class="grid grid-cols-3 gap-gutter items-end mt-stack-lg min-h-[350px]">
+        <!-- Rank 2 -->
+        <div class="flex flex-col items-center">
+          <div class="mb-stack-md flex flex-col items-center text-center">
+            <img class="w-20 h-20 rounded-full border-4 border-on-surface neo-shadow-sm object-cover mb-2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwpKy2NhlFWmT35KNHiJAhDijyWdBHjBfwFDtEbtdqG3dwoo3Ds-fEEFo_V9YZJQZ9nP-geow1sovJE6a9Ixxsb43OXlFJTlW4iXs7fqTCtVp6ZafgGU8jaVC8EIHxP2kbU5y942h6klxaEZ8IMfT3lqLGKDY-uod46KTRevNcdHbbLYH-s3NrK-IsEADwnW_lues5CYVjeekKl4p-Uql3vE2eRUN1UJhBeHpBqR16PkMJZMdOM_iu7w" alt="SarahG"/>
+            <span class="font-bold text-lg">@SarahG</span>
+            <span class="font-bold bg-primary-fixed text-on-surface px-2 py-0.5 border-2 border-on-surface text-xs mt-1">22,400 pts</span>
+          </div>
+          <div class="w-full bg-surface-container-highest border-4 border-on-surface border-b-0 h-40 flex justify-center items-start pt-4 font-bold text-4xl">2</div>
+        </div>
+
+        <!-- Rank 1 -->
+        <div class="flex flex-col items-center">
+          <span class="material-symbols-outlined text-secondary-fixed text-4xl mb-1">kid_star</span>
+          <div class="mb-stack-md flex flex-col items-center text-center">
+            <img class="w-28 h-28 rounded-full border-4 border-on-surface neo-shadow object-cover mb-2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYMdAutk7r072Wpz2leW0w1OsiROHPnyxnpXG-m0qlKgNUX21vSOIcs6bzZsizSwlIktZpdURvJofJZJ0dWOO8cXtQtHK584rqZHFFN8AikgUlHDVuR-grPMm_3gR5X6pipOScafL_8ziqIr13WLAqaYWEzIC6Vixopn2kLJ0uVp2XlwlOLtbiCoSfM69hADe6EVQjc1JLdDWGydRCGJwLzfHAI9YBkyeiLC5S6AWbncZKRWVfdbKecQ" alt="EcoWarrior"/>
+            <span class="font-bold text-xl">@EcoWarrior (You)</span>
+            <span class="font-bold bg-secondary-container px-3 py-1 border-2 border-on-surface text-xs mt-1 neo-shadow-sm user-pts-val">24,500 pts</span>
+          </div>
+          <div class="w-full bg-primary-container text-on-primary-container border-4 border-on-surface border-b-0 h-56 flex justify-center items-start pt-4 font-bold text-5xl">1</div>
+        </div>
+
+        <!-- Rank 3 -->
+        <div class="flex flex-col items-center">
+          <div class="mb-stack-md flex flex-col items-center text-center">
+            <img class="w-20 h-20 rounded-full border-4 border-on-surface neo-shadow-sm object-cover mb-2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwwNOMYwOPIG2lTYl4WevTNkrOrJBdqfa-jTS1hKq2ExdOGhZycM_TRk4f1fcoovjVT-oxAd69qegtRrpVyrAnIlWaGdye0qQMehZj7WlFPUvNwalFieVF7R7IegGGsHSEITFGsrr6pqlzAYcqX370hdBKrouBc1Vswox_iXbVU4aDRsn3KvAbFtP44_w_pfX3SoH6UHOSymA8H9A5KiFc5UhESwDYY5aF9NjZId58mzrEirz4gb3eGw" alt="GreenBean"/>
+            <span class="font-bold text-lg">@GreenBean</span>
+            <span class="font-bold bg-surface-container-highest text-on-surface px-2 py-0.5 border-2 border-on-surface text-xs mt-1">21,100 pts</span>
+          </div>
+          <div class="w-full bg-surface-container-highest border-4 border-on-surface border-b-0 h-32 flex justify-center items-start pt-4 font-bold text-4xl">3</div>
+        </div>
+      </section>
+
+      <!-- Rest of Pack Table -->
+      <section class="mt-stack-lg">
+        <h3 class="font-headline-md text-xl uppercase mb-stack-md bg-on-surface text-surface inline-block px-3 py-1 font-bold">The Rest of the Pack</h3>
+        <div id="leaderboard-list" class="flex flex-col border-4 border-on-surface bg-surface neo-shadow">
+          <!-- Rendered by JS -->
+        </div>
+      </section>
+    </section>
+
+    <!-- PAGE 7: PROFILE & SETTINGS -->
+    <section id="page-profile" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
+      <section class="flex flex-col md:flex-row items-center md:items-start gap-gutter bg-secondary-fixed p-margin-desktop neo-border neo-shadow relative overflow-hidden">
+        <div class="shrink-0 relative z-10">
+          <img class="w-32 h-32 md:w-44 md:h-44 rounded-full neo-border object-cover bg-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxNcP4jmGLxlDNuWCtPln-cBePNWavmRWJWmdXAU4d8FQVwMmZ8kfvUFAxgKQeuV2qfIfBw20C1L43EZ1TMDBiiEtCWUwTu_V5CSEyO96Mbn4CgKlyqT8RvJg6vjxWQWH3DNnl9yebbUAHT49M2ige3sDObHlC-O2e6dLUjneCXmyA8lmvGupFl5AgbcEdw49T-AWArPGFL6hpwMnikONLO_DyvpUWQETsIHu6nWIHvLGQdTVPqGPNew" alt="Elena Rodriguez"/>
+          <div class="absolute -bottom-2 -right-2 bg-primary-fixed neo-border px-2 py-1 font-bold text-xs transform rotate-[-5deg]">LVL 12</div>
+        </div>
+        <div class="relative z-10 text-center md:text-left flex flex-col h-full justify-center">
+          <h2 class="font-display-lg text-4xl md:text-5xl font-bold uppercase leading-none">Elena Rodriguez</h2>
+          <p class="font-body-lg text-base font-bold text-on-surface-variant bg-white inline-block px-3 py-1 neo-border-thin mt-2 self-center md:self-start">Team .Tensor • Eco-Warrior Innovator</p>
+        </div>
+      </section>
+
+      <!-- Impact Stats Grid -->
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-gutter mt-gutter">
+        <div class="bg-primary text-on-primary p-gutter flex flex-col justify-between h-44 neo-border neo-shadow">
+          <div class="flex justify-between items-start w-full">
+            <span class="font-bold text-xs uppercase bg-white text-on-surface px-2 py-1 neo-border-thin">Total Points</span>
+            <span class="material-symbols-outlined text-4xl">eco</span>
+          </div>
+          <div class="font-display-lg text-5xl font-bold user-pts-val">24,500</div>
+        </div>
+
+        <div class="bg-surface-container-highest text-on-surface p-gutter flex flex-col justify-between h-44 neo-border neo-shadow">
+          <div class="flex justify-between items-start w-full">
+            <span class="font-bold text-xs uppercase bg-black text-white px-2 py-1 neo-border-thin">CO2 Offset</span>
+            <span class="material-symbols-outlined text-4xl">co2</span>
+          </div>
+          <div class="font-display-lg text-5xl font-bold"><span class="user-co2-val">1.2</span> <span class="text-xl font-normal">Tons</span></div>
+        </div>
+      </section>
+
+      <!-- Trophies & Badges -->
+      <section class="flex flex-col gap-stack-md mt-gutter">
+        <h3 class="font-headline-md text-2xl font-bold uppercase border-b-4 border-on-surface pb-1 w-fit">Trophies</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-gutter">
+          <div class="bg-white p-4 neo-border flex flex-col items-center justify-center gap-2 text-center aspect-square neo-shadow-sm hover:bg-secondary-fixed transition-colors">
+            <span class="material-symbols-outlined text-4xl text-primary font-bold">recycling</span>
+            <span class="font-bold text-xs uppercase">Master Sorter</span>
+          </div>
+          <div class="bg-white p-4 neo-border flex flex-col items-center justify-center gap-2 text-center aspect-square neo-shadow-sm hover:bg-secondary-fixed transition-colors">
+            <span class="material-symbols-outlined text-4xl text-on-surface font-bold">directions_bike</span>
+            <span class="font-bold text-xs uppercase">Carbon Zero</span>
+          </div>
+          <div class="bg-white p-4 neo-border flex flex-col items-center justify-center gap-2 text-center aspect-square neo-shadow-sm hover:bg-secondary-fixed transition-colors">
+            <span class="material-symbols-outlined text-4xl text-secondary font-bold">wb_sunny</span>
+            <span class="font-bold text-xs uppercase">Solar Saver</span>
+          </div>
+          <div class="bg-surface-container-high p-4 neo-border flex flex-col items-center justify-center gap-2 text-center aspect-square neo-shadow-sm opacity-60">
+            <span class="material-symbols-outlined text-4xl font-bold">water_drop</span>
+            <span class="font-bold text-xs uppercase">Water Wise</span>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <!-- Mobile Navigation Bar -->
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t-4 border-on-surface z-40 flex justify-around p-1">
+    <a data-nav="overview" href="#overview" class="flex flex-col items-center p-1 text-primary">
+      <span class="material-symbols-outlined text-xl">dashboard</span>
+      <span class="font-bold text-[10px]">Overview</span>
+    </a>
+    <a data-nav="scanner" href="#scanner" class="flex flex-col items-center p-1 text-on-surface-variant">
+      <span class="material-symbols-outlined text-xl">barcode_scanner</span>
+      <span class="font-bold text-[10px]">Scanner</span>
+    </a>
+    <a data-nav="map" href="#map" class="flex flex-col items-center p-1 text-on-surface-variant">
+      <span class="material-symbols-outlined text-xl">map</span>
+      <span class="font-bold text-[10px]">Map</span>
+    </a>
+    <a data-nav="challenges" href="#challenges" class="flex flex-col items-center p-1 text-on-surface-variant">
+      <span class="material-symbols-outlined text-xl">emoji_events</span>
+      <span class="font-bold text-[10px]">Challenges</span>
+    </a>
+    <a data-nav="profile" href="#profile" class="flex flex-col items-center p-1 text-on-surface-variant">
+      <span class="material-symbols-outlined text-xl">account_circle</span>
+      <span class="font-bold text-[10px]">Profile</span>
+    </a>
+  </nav>
+
+  <!-- Log Action Modal -->
+  <div id="action-modal" class="modal-overlay">
+    <div class="bg-surface border-4 border-on-surface neo-shadow-lg p-margin-desktop max-w-md w-full mx-4 relative">
+      <div class="flex justify-between items-center border-b-4 border-on-surface pb-3 mb-4">
+        <h3 class="font-headline-md text-2xl font-bold">Log Eco Action</h3>
+        <button class="btn-close-modal text-2xl font-bold hover:text-error">✕</button>
+      </div>
+
+      <form id="log-action-form" class="flex flex-col gap-4">
+        <div>
+          <label class="block font-bold text-sm mb-1">Action Category</label>
+          <select id="action-type" class="w-full bg-surface-container-lowest neo-border-thin p-3 font-bold text-sm">
+            <option value="Recycling">Recycling & Waste Segregation</option>
+            <option value="Transit">Low-Carbon Transit (Bike/Walk/Bus)</option>
+            <option value="Energy">Solar & Energy Conservation</option>
+            <option value="Food">Zero-Waste / Plant-Based Meal</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-sm mb-1">Activity Description</label>
+          <input type="text" id="action-detail" placeholder="e.g. Cycled 10km to college" required class="w-full bg-surface-container-lowest neo-border-thin p-3 text-sm"/>
+        </div>
+
+        <div>
+          <label class="block font-bold text-sm mb-1">Estimated Eco Points</label>
+          <input type="number" id="action-pts" value="50" min="10" max="500" class="w-full bg-surface-container-lowest neo-border-thin p-3 font-bold text-sm"/>
+        </div>
+
+        <div class="flex gap-3 mt-2">
+          <button type="button" class="btn-close-modal flex-1 bg-surface-container-high py-3 font-bold neo-btn">Cancel</button>
+          <button type="submit" class="flex-1 bg-primary text-on-primary py-3 font-bold neo-btn">Save Action</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
