@@ -6,20 +6,14 @@
 // Global App State
 const EcoState = {
   user: null, // Will be loaded dynamically
-  actionsLog: [], // Will be loaded dynamically
   actions: [],
-  mapSpots: [
-    { id: 1, name: "TCET Central Recycling Hub", type: "recycling", lat: 19.2062, lng: 72.8738, desc: "Accepts PET, E-waste, and cardboard. Open 24/7." },
-    { id: 2, name: "Kandivali Solar EV Fast Charger", type: "ev", lat: 19.2105, lng: 72.8650, desc: "4 fast chargers available. 100% renewable power." },
-    { id: 3, name: "Green Campus Compost Bin #4", type: "compost", lat: 19.2040, lng: 72.8780, desc: "Community organic waste compost point." },
-    { id: 4, name: "Metro Station Bike Dock", type: "bike", lat: 19.2150, lng: 72.8620, desc: "18 e-bikes available for zero-emission transit." },
-  ],
+  mapSpots: [], // Will be loaded dynamically
   challenges: [
-    { id: 'c1', title: 'Walk 5km a Day', desc: 'Ditch the car and track your steps to reduce carbon emissions.', category: 'Transit', reward: 50, current: 3.2, total: 5, unit: 'km', bg: 'bg-secondary-fixed', icon: 'directions_walk' },
-    { id: 'c2', title: 'Zero Single-Use Plastic', desc: 'Use a reusable bottle and decline plastic bags all week.', category: 'Waste', reward: 100, current: 4, total: 7, unit: 'Days', bg: 'bg-surface-container-lowest', icon: 'local_drink' },
-    { id: 'c3', title: 'Plant-Based Weekend', desc: 'Commit to eating 100% plant-based meals this weekend.', category: 'Food', reward: 200, current: 0, total: 2, unit: 'Days', bg: 'bg-primary-fixed', icon: 'energy_savings_leaf' },
+    { id: 'c1', title: 'Walk 5km a Day', desc: 'Ditch the car and track your steps to reduce carbon emissions.', category: 'Transit', reward: 50, bg: 'bg-secondary-fixed', icon: 'directions_walk' },
+    { id: 'c2', title: 'Zero Single-Use Plastic', desc: 'Use a reusable bottle and decline plastic bags all week.', category: 'Waste', reward: 100, bg: 'bg-surface-container-lowest', icon: 'local_drink' },
+    { id: 'c3', title: 'Plant-Based Weekend', desc: 'Commit to eating 100% plant-based meals this weekend.', category: 'Food', reward: 200, bg: 'bg-primary-fixed', icon: 'energy_savings_leaf' },
   ],
-  leaderboard: [], // Empty initially until a backend is implemented for it
+  leaderboard: [], 
   mapInstance: null,
   markersLayer: null,
   webcamStream: null,
@@ -50,14 +44,26 @@ async function loadUserData() {
       points: profile.total_points || 0,
       dailyScore: Math.min((profile.total_points || 0) / 10, 100),
       co2SavedTons: parseFloat(profile.co2_saved_tons || 0),
-      streakDays: profile.streak_days || 0
+      streakDays: profile.streak_days || 0,
+      completedChallenges: profile.completed_challenges || []
     };
   }
 
   const actions = await window.EcoAuth.getEcoActions();
   EcoState.actions = actions || [];
+
+  // Update dynamic lists
+  EcoState.mapSpots = await window.EcoAuth.getMapSpots();
+  EcoState.leaderboard = await window.EcoAuth.getLeaderboard();
+
   updateUIState();
   renderTimeline();
+  renderLeaderboard();
+  renderChallenges();
+  
+  if (EcoState.mapInstance) {
+    renderMapMarkers();
+  }
 }
 
 // -----------------------------------------------------------
@@ -344,19 +350,18 @@ function setupScanner() {
   }
 
   if (btnConfirmScan) {
-    btnConfirmScan.addEventListener('click', () => {
-      const pts = 60;
-      EcoState.user.points += pts;
-      EcoState.user.dailyScore = Math.min(100, EcoState.user.dailyScore + 6);
-      EcoState.actionsLog.unshift({
-        type: 'Waste Scanner',
-        detail: `Properly recycled ${scannerItemTitle.textContent}`,
-        pts: pts,
-        time: 'Just now'
-      });
-      updateUIState();
-      renderRecentActions();
-      showToast(`Proper disposal confirmed! +${pts} Eco Points awarded! ♻️`);
+    btnConfirmScan.addEventListener('click', async () => {
+      const category = scannerCategory.textContent;
+      const title = `AI Scanned: ${scannerItemTitle.textContent}`;
+      const co2SavedKg = Math.random() * 2 + 0.5; // Simulate AI estimation
+
+      const res = await window.EcoAuth.logEcoAction(category, title, co2SavedKg);
+      if (res.success) {
+        showToast(`Proper disposal confirmed! Points awarded! ♻️`);
+        await loadUserData();
+      } else {
+        showToast(`Failed to log scan: ${res.message}`);
+      }
     });
   }
 }
@@ -366,7 +371,6 @@ function initMap() {
   const mapContainer = document.getElementById('eco-map');
   if (!mapContainer || EcoState.mapInstance) return;
 
-  // Initialize Leaflet Map centered at Mumbai / College Campus area
   EcoState.mapInstance = L.map('eco-map').setView([19.2062, 72.8738], 14);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -386,23 +390,28 @@ function initMap() {
   // Handle Add Custom Spot Button
   const btnAddSpot = document.getElementById('btn-add-map-spot');
   if (btnAddSpot) {
-    btnAddSpot.addEventListener('click', () => {
+    btnAddSpot.addEventListener('click', async () => {
       const name = prompt("Enter location name:", "Green Campus Bin");
       if (!name) return;
       const type = prompt("Type (recycling, ev, compost, bike):", "recycling");
 
       const center = EcoState.mapInstance.getCenter();
       const newSpot = {
-        id: Date.now(),
         name: name,
         type: type || 'recycling',
         lat: center.lat,
         lng: center.lng,
-        desc: 'User crowdsourced eco spot.'
+        description: "User added community spot"
       };
-      EcoState.mapSpots.push(newSpot);
-      renderMapMarkers();
-      showToast("Added new eco spot to map! 📍");
+
+      const res = await window.EcoAuth.addMapSpot(newSpot);
+      if (res.success) {
+        showToast("Map spot added to global database!");
+        EcoState.mapSpots.push(res.data);
+        renderMapMarkers();
+      } else {
+        showToast("Error adding map spot: " + res.message);
+      }
     });
   }
 }
@@ -438,7 +447,7 @@ function renderMapMarkers() {
       <div class="p-stack-md bg-white">
         <div class="bg-primary-fixed neo-border-thin px-2 py-1 font-label-bold text-xs uppercase mb-1">${spot.type.toUpperCase()}</div>
         <h4 class="font-headline-md text-headline-md font-bold text-on-surface m-0 mb-1">${escapeHtml(spot.name)}</h4>
-        <p class="font-body-md text-sm text-on-surface-variant m-0 mb-3">${escapeHtml(spot.desc)}</p>
+        <p class="font-body-md text-sm text-on-surface-variant m-0 mb-3">${escapeHtml(spot.desc || spot.description || '')}</p>
         <button class="w-full bg-primary text-on-primary font-label-bold text-xs py-2 neo-btn" onclick="alert('Directions calculated! Distance: 0.8 km')">Get Directions</button>
       </div>
     `;
@@ -459,92 +468,138 @@ function setupChallenges() {
 
 function renderChallenges() {
   const container = document.getElementById('challenges-grid');
-  if (!container) return;
+  if (!container || !EcoState.user) return;
 
   container.innerHTML = EcoState.challenges.map(c => {
-    const percent = Math.min(100, Math.round((c.current / c.total) * 100));
+    const isCompleted = EcoState.user.completedChallenges.includes(c.id);
+    
     return `
-      <div class="${c.bg} neo-border neo-shadow p-stack-md flex flex-col justify-between h-full relative overflow-hidden group">
-        <div class="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
-          <span class="material-symbols-outlined text-[100px]">${c.icon}</span>
+    <div class="${c.bg} p-gutter neo-border neo-shadow-sm flex flex-col justify-between group hover:-translate-y-2 transition-transform h-full min-h-[280px]">
+      <div>
+        <div class="flex justify-between items-start mb-stack-md">
+          <span class="material-symbols-outlined text-4xl bg-surface border-2 border-on-surface p-2 rounded-full">${c.icon}</span>
+          <span class="font-label-bold text-xs uppercase bg-surface text-on-surface px-2 py-1 neo-border-thin">${c.category}</span>
         </div>
-        <div>
-          <div class="flex justify-between items-start mb-4">
-            <div class="bg-surface px-3 py-1 neo-border-thin font-label-bold text-xs inline-flex items-center gap-1">
-              <span class="material-symbols-outlined text-sm">schedule</span> Ongoing
-            </div>
-            <span class="font-label-bold text-label-bold bg-primary text-on-primary px-2 py-1 border-2 border-on-surface">+${c.reward} Pts</span>
-          </div>
-          <h3 class="font-headline-md text-headline-md font-bold mb-2 z-10 relative">${escapeHtml(c.title)}</h3>
-          <p class="font-body-md text-body-md mb-6 z-10 relative">${escapeHtml(c.desc)}</p>
-        </div>
-        <div>
-          <div class="mb-2 flex justify-between font-label-bold text-label-bold text-sm">
-            <span>Progress</span>
-            <span>${c.current} / ${c.total} ${c.unit}</span>
-          </div>
-          <div class="w-full h-6 neo-border bg-surface mb-6 relative">
-            <div class="absolute top-0 left-0 h-full bg-primary border-r-4 border-on-surface" style="width: ${percent}%;"></div>
-          </div>
-          <button class="w-full bg-surface text-on-surface font-label-bold text-label-bold py-3 neo-btn" onclick="logChallengeProgress('${c.id}')">
-            ${percent >= 100 ? 'Completed 🎉' : 'Log Progress'}
-          </button>
-        </div>
+        <h4 class="font-headline-md text-xl font-bold uppercase mb-2">${c.title}</h4>
+        <p class="font-body-md text-sm text-on-surface-variant line-clamp-3">${c.desc}</p>
       </div>
-    `;
-  }).join('');
+      
+      <div class="mt-stack-lg">
+        ${isCompleted ? 
+          `<div class="w-full text-center py-2 bg-primary text-on-primary font-bold neo-border">COMPLETED</div>` :
+          `<button onclick="window.completeEcoChallenge('${c.id}', ${c.reward})" class="w-full text-center py-2 bg-surface text-on-surface hover:bg-secondary-container transition-colors font-bold neo-border">COMPLETE FOR +${c.reward} PTS</button>`
+        }
+      </div>
+    </div>
+  `}).join('');
 }
 
-window.logChallengeProgress = function(id) {
-  const challenge = EcoState.challenges.find(c => c.id === id);
-  if (!challenge) return;
-
-  if (challenge.current < challenge.total) {
-    challenge.current = Math.min(challenge.total, challenge.current + 1);
-    if (challenge.current >= challenge.total) {
-      EcoState.user.points += challenge.reward;
-      showToast(`Challenge Completed! Earned +${challenge.reward} points! 🏆`);
-    } else {
-      showToast(`Logged progress for ${challenge.title}!`);
-    }
-    updateUIState();
-    renderChallenges();
+window.completeEcoChallenge = async function(id, reward) {
+  if (!EcoState.user) return;
+  const res = await window.EcoAuth.completeChallenge(id, reward);
+  if (res.success) {
+    showToast(`Challenge Completed! Earned +${reward} points! 🏆`);
+    await loadUserData();
   } else {
-    showToast(`You have already completed this challenge!`);
+    showToast(res.message);
   }
 };
 
-// Leaderboard Setup
 function setupLeaderboard() {
-  renderLeaderboard();
+  // Initial render happens in loadUserData
 }
 
 function renderLeaderboard() {
   const container = document.getElementById('leaderboard-list');
-  if (!container) return;
+  const podiumContainer = document.getElementById('leaderboard-podium');
+  if (!container || !EcoState.leaderboard) return;
 
-  const sorted = [...EcoState.leaderboard].sort((a, b) => b.pts - a.pts);
-  sorted.forEach((item, idx) => item.rank = idx + 1);
+  const sorted = [...EcoState.leaderboard];
+
+  // Render Podium (Top 3)
+  if (podiumContainer) {
+    if (sorted.length === 0) {
+      podiumContainer.innerHTML = `
+        <span class="material-symbols-outlined text-6xl text-on-surface-variant mb-4">emoji_events</span>
+        <h3 class="font-headline-md text-2xl font-bold">No data yet.</h3>
+        <p class="font-body-md text-on-surface-variant mt-2">Log an action to become number one!</p>
+      `;
+    } else {
+      let podiumHtml = `<div class="grid grid-cols-3 gap-gutter items-end mt-stack-lg min-h-[350px] w-full text-center">`;
+      
+      const p2 = sorted[1];
+      if (p2) {
+        podiumHtml += `<div class="flex flex-col items-center">
+            <div class="mb-stack-md flex flex-col items-center">
+              <img class="w-20 h-20 rounded-full border-4 border-on-surface neo-shadow-sm object-cover mb-2" src="${p2.avatar_url || 'https://via.placeholder.com/100'}" />
+              <span class="font-bold text-lg">${escapeHtml(p2.full_name)}</span>
+              <span class="font-bold bg-primary-fixed text-on-surface px-2 py-0.5 border-2 border-on-surface text-xs mt-1">${p2.total_points} pts</span>
+            </div>
+            <div class="w-full bg-surface-container-highest border-4 border-on-surface border-b-0 h-40 flex justify-center items-start pt-4 font-bold text-4xl">2</div>
+          </div>`;
+      } else {
+        podiumHtml += `<div></div>`;
+      }
+
+      const p1 = sorted[0];
+      if (p1) {
+        podiumHtml += `<div class="flex flex-col items-center">
+            <span class="material-symbols-outlined text-secondary-fixed text-4xl mb-1">kid_star</span>
+            <div class="mb-stack-md flex flex-col items-center">
+              <img class="w-28 h-28 rounded-full border-4 border-on-surface neo-shadow object-cover mb-2" src="${p1.avatar_url || 'https://via.placeholder.com/100'}" />
+              <span class="font-bold text-xl">${escapeHtml(p1.full_name)}</span>
+              <span class="font-bold bg-secondary-container px-3 py-1 border-2 border-on-surface text-xs mt-1 neo-shadow-sm">${p1.total_points} pts</span>
+            </div>
+            <div class="w-full bg-primary-container text-on-primary-container border-4 border-on-surface border-b-0 h-56 flex justify-center items-start pt-4 font-bold text-5xl">1</div>
+          </div>`;
+      } else {
+        podiumHtml += `<div></div>`;
+      }
+
+      const p3 = sorted[2];
+      if (p3) {
+        podiumHtml += `<div class="flex flex-col items-center">
+            <div class="mb-stack-md flex flex-col items-center">
+              <img class="w-20 h-20 rounded-full border-4 border-on-surface neo-shadow-sm object-cover mb-2" src="${p3.avatar_url || 'https://via.placeholder.com/100'}" />
+              <span class="font-bold text-lg">${escapeHtml(p3.full_name)}</span>
+              <span class="font-bold bg-surface-container-highest text-on-surface px-2 py-0.5 border-2 border-on-surface text-xs mt-1">${p3.total_points} pts</span>
+            </div>
+            <div class="w-full bg-surface-container-highest border-4 border-on-surface border-b-0 h-32 flex justify-center items-start pt-4 font-bold text-4xl">3</div>
+          </div>`;
+      } else {
+        podiumHtml += `<div></div>`;
+      }
+      
+      podiumHtml += `</div>`;
+      podiumContainer.innerHTML = podiumHtml;
+      podiumContainer.className = "flex flex-col justify-center items-center w-full"; // Clear empty placeholder styles
+    }
+  }
 
   // Render rest of pack (rank >= 4)
   const rest = sorted.slice(3);
+  if (rest.length === 0) {
+    container.innerHTML = `<div class="p-4 text-center font-bold text-on-surface-variant">No other players yet.</div>`;
+    return;
+  }
 
-  container.innerHTML = rest.map(item => `
-    <div class="grid grid-cols-12 gap-unit p-stack-md border-b-2 border-on-surface ${item.isUser ? 'bg-secondary-container' : 'bg-surface'} hover:bg-surface-container-low transition-colors items-center font-body-md">
-      <div class="col-span-2 md:col-span-1 text-center font-bold text-headline-md">${item.rank}</div>
+  container.innerHTML = rest.map((item, idx) => {
+    const isUser = EcoState.user && item.id === EcoState.user.id;
+    return `
+    <div class="grid grid-cols-12 gap-unit p-stack-md border-b-2 border-on-surface ${isUser ? 'bg-secondary-container' : 'bg-surface'} hover:bg-surface-container-low transition-colors items-center font-body-md">
+      <div class="col-span-2 md:col-span-1 text-center font-bold text-headline-md">${idx + 4}</div>
       <div class="col-span-7 md:col-span-5 flex items-center gap-stack-sm">
-        <div class="w-10 h-10 bg-primary border-2 border-on-surface flex items-center justify-center text-on-primary font-bold">
-          ${item.name.substring(1, 3).toUpperCase()}
+        <div class="w-10 h-10 bg-primary border-2 border-on-surface flex items-center justify-center text-on-primary font-bold overflow-hidden rounded-full">
+          <img src="${item.avatar_url || 'https://via.placeholder.com/50'}" class="w-full h-full object-cover"/>
         </div>
         <div>
-          <span class="font-bold block">${escapeHtml(item.name)} ${item.isUser ? '(You)' : ''}</span>
-          <span class="text-xs text-on-surface-variant">${escapeHtml(item.handle)}</span>
+          <span class="font-bold block">${escapeHtml(item.full_name || 'Anonymous')} ${isUser ? '(You)' : ''}</span>
         </div>
       </div>
-      <div class="hidden md:block md:col-span-4 text-on-surface-variant text-sm">${escapeHtml(item.action || 'Active Eco Warrior')}</div>
-      <div class="col-span-3 md:col-span-2 text-right font-bold text-headline-md">${item.pts.toLocaleString()}</div>
+      <div class="hidden md:block md:col-span-4 text-on-surface-variant text-sm">Saved ${item.co2_saved_tons || 0} Tons CO2</div>
+      <div class="col-span-3 md:col-span-2 text-right font-bold text-headline-md">${item.total_points.toLocaleString()}</div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 // Hero 23 Canvas 3D Globe & Stardust Background Effects

@@ -170,6 +170,85 @@ const AuthResult = {
       return [];
     }
     return data;
+  },
+
+  // Get Leaderboard Data (Top 10 users by points)
+  async getLeaderboard() {
+    if (!_supabaseApp) return [];
+    
+    const { data, error } = await _supabaseApp
+      .from("profiles")
+      .select("id, full_name, avatar_url, total_points, co2_saved_tons")
+      .order("total_points", { ascending: false })
+      .limit(10);
+      
+    if (error) {
+      console.error("Error fetching leaderboard:", error);
+      return [];
+    }
+    return data;
+  },
+
+  // Map Spots
+  async getMapSpots() {
+    if (!_supabaseApp) return [];
+    const { data, error } = await _supabaseApp
+      .from("map_spots")
+      .select("*");
+    if (error) {
+      console.error("Error fetching map spots:", error);
+      return [];
+    }
+    return data;
+  },
+
+  async addMapSpot(spot) {
+    const user = await this.getCurrentUser();
+    if (!user) return { success: false, message: "Not logged in" };
+
+    const newSpot = {
+      ...spot,
+      created_by: user.id
+    };
+
+    const { data, error } = await _supabaseApp.from("map_spots").insert([newSpot]).select();
+    if (error) {
+      console.error("Error adding map spot:", error);
+      return { success: false, message: error.message };
+    }
+    return { success: true, data: data[0] };
+  },
+
+  // Complete a Challenge
+  async completeChallenge(challengeId, rewardPoints) {
+    const user = await this.getCurrentUser();
+    if (!user) return { success: false, message: "Not logged in" };
+
+    const profile = await this.getProfile();
+    if (!profile) return { success: false, message: "Profile not found" };
+
+    const completed = profile.completed_challenges || [];
+    if (completed.includes(challengeId)) {
+      return { success: false, message: "Challenge already completed" };
+    }
+
+    const updatedCompleted = [...completed, challengeId];
+    const newPoints = (profile.total_points || 0) + rewardPoints;
+
+    const { data, error } = await _supabaseApp
+      .from("profiles")
+      .update({ 
+        completed_challenges: updatedCompleted,
+        total_points: newPoints 
+      })
+      .eq("id", user.id)
+      .select();
+
+    if (error) {
+      console.error("Error updating challenge progress:", error);
+      return { success: false, message: error.message };
+    }
+    return { success: true, data: data[0] };
   }
 };
 
