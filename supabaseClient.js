@@ -91,11 +91,34 @@ const AuthResult = {
     const user = await this.getCurrentUser();
     if (!user) return null;
 
-    const { data, error } = await _supabaseApp
+    let { data, error } = await _supabaseApp
       .from("profiles")
       .select("*")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
+
+    if (!data && !error) {
+      // Profile doesn't exist, create it automatically to satisfy foreign keys
+      const newProfile = {
+        id: user.id,
+        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "Eco Warrior",
+        avatar_url: user.user_metadata?.avatar_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuBxNcP4jmGLxlDNuWCtPln-cBePNWavmRWJWmdXAU4d8FQVwMmZ8kfvUFAxgKQeuV2qfIfBw20C1L43EZ1TMDBiiEtCWUwTu_V5CSEyO96Mbn4CgKlyqT8RvJg6vjxWQWH3DNnl9yebbUAHT49M2ige3sDObHlC-O2e6dLUjneCXmyA8lmvGupFl5AgbcEdw49T-AWArPGFL6hpwMnikONLO_DyvpUWQETsIHu6nWIHvLGQdTVPqGPNew",
+        total_points: 0,
+        co2_saved_tons: 0,
+        streak_days: 1
+      };
+      const { data: insertedData, error: insertError } = await _supabaseApp
+        .from("profiles")
+        .insert([newProfile])
+        .select()
+        .single();
+        
+      if (insertError) {
+        console.error("Error creating profile:", insertError);
+        return null;
+      }
+      return insertedData;
+    }
 
     if (error) {
       console.error("Error fetching profile:", error);
@@ -126,6 +149,10 @@ const AuthResult = {
   async logEcoAction(category, title, co2SavedKg) {
     const user = await this.getCurrentUser();
     if (!user) return { success: false, message: "Not logged in" };
+
+    // Ensure profile exists for Foreign Key constraint
+    const profile = await this.getProfile();
+    if (!profile) return { success: false, message: "Failed to load or create profile." };
 
     const newAction = {
       id: "act-" + Date.now() + "-" + Math.floor(Math.random()*1000),
@@ -205,6 +232,10 @@ const AuthResult = {
   async addMapSpot(spot) {
     const user = await this.getCurrentUser();
     if (!user) return { success: false, message: "Not logged in" };
+
+    // Ensure profile exists for Foreign Key constraint
+    const profile = await this.getProfile();
+    if (!profile) return { success: false, message: "Failed to load or create profile." };
 
     const newSpot = {
       ...spot,
