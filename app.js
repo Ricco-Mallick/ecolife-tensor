@@ -446,31 +446,74 @@ function setupScanner() {
   }
 }
 
-// Leaflet Map Setup
-function initMap() {
+// Google Maps Setup
+function loadGoogleMapsScript() {
+  return new Promise((resolve, reject) => {
+    if (window.google && window.google.maps) return resolve();
+    if (document.getElementById('gmaps-script')) return resolve();
+
+    let apiKey = localStorage.getItem('gmaps_api_key');
+    if (!apiKey) {
+      apiKey = prompt("Please enter your Google Maps API Key:");
+      if (!apiKey) return reject("No Maps API Key provided.");
+      localStorage.setItem('gmaps_api_key', apiKey);
+    }
+
+    window.__gmapsLoaded = () => resolve();
+    const script = document.createElement('script');
+    script.id = 'gmaps-script';
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=__gmapsLoaded&v=weekly`;
+    script.async = true;
+    script.defer = true;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+async function initMap() {
   const mapContainer = document.getElementById('eco-map');
   if (!mapContainer || EcoState.mapInstance) return;
 
-  EcoState.mapInstance = L.map('eco-map').setView([19.2062, 72.8738], 14);
+  try {
+    await loadGoogleMapsScript();
+  } catch (err) {
+    console.error(err);
+    showToast("Google Maps failed to load.");
+    return;
+  }
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 19,
-  }).addTo(EcoState.mapInstance);
+  const customMapStyle = [
+    { elementType: "geometry", stylers: [{ color: "#1a1c1c" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#1a1c1c" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#a3f69c" }] },
+    { featureType: "water", elementType: "geometry", stylers: [{ color: "#000000" }] },
+    { featureType: "road", elementType: "geometry", stylers: [{ color: "#40493d" }] },
+    { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#0d631b" }] },
+    { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#2e7d32" }] }
+  ];
 
-  EcoState.markersLayer = L.layerGroup().addTo(EcoState.mapInstance);
+  EcoState.mapInstance = new google.maps.Map(mapContainer, {
+    center: { lat: 19.2062, lng: 72.8738 },
+    zoom: 14,
+    styles: customMapStyle,
+    disableDefaultUI: true,
+    zoomControl: true,
+  });
+
+  EcoState.markersLayer = [];
+  EcoState.infoWindow = new google.maps.InfoWindow();
 
   renderMapMarkers();
 
-  // Handle Filter checkboxes
   document.querySelectorAll('.map-filter-checkbox').forEach(chk => {
     chk.addEventListener('change', renderMapMarkers);
   });
 
-  // Handle Add Custom Spot Button
   const btnAddSpot = document.getElementById('btn-add-map-spot');
   if (btnAddSpot) {
-    btnAddSpot.addEventListener('click', async () => {
+    const newBtn = btnAddSpot.cloneNode(true);
+    btnAddSpot.parentNode.replaceChild(newBtn, btnAddSpot);
+    newBtn.addEventListener('click', async () => {
       const name = prompt("Enter location name:", "Green Campus Bin");
       if (!name) return;
       const type = prompt("Type (recycling, ev, compost, bike):", "recycling");
@@ -479,8 +522,8 @@ function initMap() {
       const newSpot = {
         name: name,
         type: type || 'recycling',
-        lat: center.lat,
-        lng: center.lng,
+        lat: center.lat(),
+        lng: center.lng(),
         description: "User added community spot"
       };
 
@@ -497,44 +540,43 @@ function initMap() {
 }
 
 function renderMapMarkers() {
-  if (!EcoState.markersLayer) return;
-  EcoState.markersLayer.clearLayers();
+  if (!window.google || !EcoState.mapInstance) return;
+
+  EcoState.markersLayer.forEach(m => m.setMap(null));
+  EcoState.markersLayer = [];
 
   const activeTypes = Array.from(document.querySelectorAll('.map-filter-checkbox:checked')).map(cb => cb.value);
 
   EcoState.mapSpots.forEach(spot => {
     if (activeTypes.length > 0 && !activeTypes.includes(spot.type)) return;
 
-    let iconSymbol = 'recycling';
-    let iconClass = '';
-    if (spot.type === 'ev') { iconSymbol = 'ev_station'; iconClass = 'ev'; }
-    else if (spot.type === 'compost') { iconSymbol = 'compost'; iconClass = 'compost'; }
-    else if (spot.type === 'bike') { iconSymbol = 'directions_bike'; iconClass = 'bike'; }
+    let iconSymbol = '♻️';
+    if (spot.type === 'ev') iconSymbol = '⚡';
+    else if (spot.type === 'compost') iconSymbol = '🌱';
+    else if (spot.type === 'bike') iconSymbol = '🚲';
 
-    const customIcon = L.divIcon({
-      className: 'custom-leaflet-icon',
-      html: `
-        <div class="custom-neo-marker ${iconClass}">
-          <span class="material-symbols-outlined text-on-surface" style="font-variation-settings: 'FILL' 1;">${iconSymbol}</span>
-        </div>
-      `,
-      iconSize: [44, 44],
-      iconAnchor: [22, 44],
-      popupAnchor: [0, -44]
+    const marker = new google.maps.Marker({
+      position: { lat: spot.lat, lng: spot.lng },
+      map: EcoState.mapInstance,
+      title: spot.name,
+      label: { text: iconSymbol, fontSize: "16px" }
     });
 
-    const popupContent = `
-      <div class="p-stack-md bg-white">
-        <div class="bg-primary-fixed neo-border-thin px-2 py-1 font-label-bold text-xs uppercase mb-1">${spot.type.toUpperCase()}</div>
-        <h4 class="font-headline-md text-headline-md font-bold text-on-surface m-0 mb-1">${escapeHtml(spot.name)}</h4>
-        <p class="font-body-md text-sm text-on-surface-variant m-0 mb-3">${escapeHtml(spot.desc || spot.description || '')}</p>
-        <button class="w-full bg-primary text-on-primary font-label-bold text-xs py-2 neo-btn" onclick="alert('Directions calculated! Distance: 0.8 km')">Get Directions</button>
+    const popupContent = \`
+      <div style="color: black; max-width: 200px; padding: 4px;">
+        <div style="font-weight: bold; font-size: 10px; color: #0d631b; margin-bottom: 4px;">\${spot.type.toUpperCase()}</div>
+        <h4 style="margin: 0 0 4px 0; font-size: 14px;">\${escapeHtml(spot.name)}</h4>
+        <p style="margin: 0 0 8px 0; font-size: 12px; color: #444;">\${escapeHtml(spot.desc || spot.description || '')}</p>
+        <button style="background: #0d631b; color: white; border: none; padding: 4px 8px; width: 100%; font-weight: bold; cursor: pointer;" onclick="alert('Directions calculated!')">Get Directions</button>
       </div>
-    `;
+    \`;
 
-    L.marker([spot.lat, spot.lng], { icon: customIcon })
-      .bindPopup(popupContent)
-      .addTo(EcoState.markersLayer);
+    marker.addListener("click", () => {
+      EcoState.infoWindow.setContent(popupContent);
+      EcoState.infoWindow.open(EcoState.mapInstance, marker);
+    });
+
+    EcoState.markersLayer.push(marker);
   });
 }
 
