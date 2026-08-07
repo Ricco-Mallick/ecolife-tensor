@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EcoLife - Automate Your Impact | Originkit Hero 23</title>
+  <title>EcoLife - Black & White Minimalist Landing | Originkit Hero 23</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -11,200 +11,225 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
   <style>
+    /* Monochrome Minimalist Design System Tokens */
+    :root {
+      --bg-obsidian: #000000;
+      --bg-surface: #0a0a0a;
+      --bg-card: #121212;
+      --border-hairline: 1px solid rgba(255, 255, 255, 0.08);
+      --border-focus: 1px solid rgba(255, 255, 255, 0.25);
+      --text-white: #ffffff;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+    }
+
     body {
-      font-family: 'Space Grotesk', "Helvetica Neue", Helvetica, Arial, sans-serif;
-      background-color: #0f0f0f;
-      color: #ffffff;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-obsidian);
+      color: var(--text-white);
       margin: 0;
       padding: 0;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .btn-light {
-      position: relative;
+    .font-heading {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Minimalist Black & White Buttons */
+    .btn-bw-primary {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border-radius: 3px;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(229, 229, 229, 1) 100%);
-      color: #060e08;
-      font-weight: 700;
-      letter-spacing: -0.32px;
-      box-shadow: inset 0px 2px 2px 0px white, inset 0px -1.5px 0px 0px rgba(0,0,0,0.23), 0px 9px 4.5px rgba(0,0,0,0.09);
-      transition: opacity 0.2s, transform 0.2s;
+      background-color: #ffffff;
+      color: #000000;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 12px 24px;
+      border-radius: 2px;
+      border: 1px solid #ffffff;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       text-decoration: none;
     }
-    .btn-light:hover {
-      opacity: 0.9;
+    .btn-bw-primary:hover {
+      background-color: #e4e4e7;
+      border-color: #e4e4e7;
       transform: translateY(-1px);
     }
 
-    .btn-dark {
-      position: relative;
+    .btn-bw-secondary {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border-radius: 3px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: #292929;
+      background-color: rgba(255, 255, 255, 0.03);
       color: #ffffff;
-      font-weight: 600;
-      letter-spacing: -0.32px;
-      transition: opacity 0.2s, background-color 0.2s;
+      font-weight: 500;
+      font-size: 14px;
+      padding: 12px 24px;
+      border-radius: 2px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(8px);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       text-decoration: none;
     }
-    .btn-dark:hover {
-      background: #333333;
-      opacity: 0.95;
+    .btn-bw-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.25);
     }
 
-    .card-stat {
-      background: #292929;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      box-shadow: 0px 14px 14px 0px rgba(0,0,0,0.25);
+    /* Minimalist Monochrome Card */
+    .card-bw-stat {
+      background-color: rgba(18, 18, 18, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border-radius: 4px;
     }
 
-    /* Keyframes for reveal animations */
-    @keyframes heroReveal {
-      from { opacity: 0; transform: translateY(12px); }
+    /* Keyframe Reveal Animations */
+    @keyframes monoReveal {
+      from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .animate-hero-reveal {
-      animation: heroReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    .animate-mono-reveal {
+      animation: monoReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
   </style>
 </head>
-<body class="bg-[#0f0f0f] text-white min-h-screen flex flex-col justify-between p-4 md:p-8">
+<body class="bg-black text-white min-h-screen flex flex-col justify-between p-4 md:p-8">
 
   <!-- Top Header Navigation -->
-  <header class="animate-hero-reveal relative w-full max-w-7xl mx-auto flex items-center justify-between border border-white/10 bg-[#0f0f0f] px-6 py-4 rounded-[3px] z-30 mb-4">
+  <header class="animate-mono-reveal relative w-full max-w-7xl mx-auto flex items-center justify-between border border-white/10 bg-[#0a0a0a] px-6 py-4 rounded-[2px] z-30 mb-6">
     <!-- Brand Logo -->
     <a href="#" class="flex items-center gap-3 text-decoration-none">
-      <div class="w-8 h-8 rounded-full bg-[#1b4d24] border border-[#a3f69c] flex items-center justify-center text-sm">🌱</div>
-      <span class="font-bold text-xl tracking-tight text-white">EcoLife</span>
+      <div class="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center font-bold text-xs">⚪</div>
+      <span class="font-heading font-bold text-lg tracking-tight text-white">EcoLife</span>
     </a>
 
     <!-- Nav Links (Desktop) -->
-    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
+    <nav class="hidden md:flex items-center gap-8 text-xs font-mono-code uppercase tracking-wider text-zinc-400">
       <a href="index.html#overview" class="hover:text-white transition-colors">Overview</a>
-      <a href="index.html#scanner" class="hover:text-white transition-colors">Waste Scanner</a>
+      <a href="index.html#scanner" class="hover:text-white transition-colors">AI Scanner</a>
       <a href="index.html#map" class="hover:text-white transition-colors">Green Map</a>
       <a href="index.html#challenges" class="hover:text-white transition-colors">Challenges</a>
       <a href="index.html#leaderboard" class="hover:text-white transition-colors">Leaderboard</a>
     </nav>
 
     <!-- Header Action Button -->
-    <a href="index.html#overview" class="btn-light px-4 py-2.5 text-sm">
-      Start your eco journey →
+    <a href="index.html#overview" class="btn-bw-primary text-xs py-2 px-4 font-mono-code uppercase tracking-wider">
+      Explore →
     </a>
 
-    <!-- Corners -->
-    <div class="absolute left-0 top-0 w-2.5 h-2.5"><img src="public/originkit/hero-23/corner-tl.svg" alt="" class="w-full h-full"/></div>
-    <div class="absolute right-0 top-0 w-2.5 h-2.5 transform rotate-180 -scale-y-100"><img src="public/originkit/hero-23/corner-tr.svg" alt="" class="w-full h-full"/></div>
-    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 transform rotate-180"><img src="public/originkit/hero-23/corner-tr.svg" alt="" class="w-full h-full"/></div>
-    <div class="absolute bottom-0 left-0 w-2.5 h-2.5 transform -scale-y-100"><img src="public/originkit/hero-23/corner-tl.svg" alt="" class="w-full h-full"/></div>
+    <!-- Corner Accents -->
+    <div class="absolute left-0 top-0 w-2 h-2 border-t border-l border-white/40"></div>
+    <div class="absolute right-0 top-0 w-2 h-2 border-t border-r border-white/40"></div>
+    <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+    <div class="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
   </header>
 
-  <!-- Hero 23 Section -->
-  <main class="relative w-full max-w-7xl mx-auto flex-1 border border-white/10 bg-[#0f0f0f] rounded-[3px] overflow-hidden flex flex-col justify-between p-6 md:p-12 min-h-[620px]">
+  <!-- Hero 23 Section (Monochrome Minimalist) -->
+  <main class="relative w-full max-w-7xl mx-auto flex-1 border border-white/10 bg-[#0a0a0a] rounded-[2px] overflow-hidden flex flex-col justify-between p-6 md:p-12 min-h-[640px]">
     <!-- Canvas Stardust Background -->
-    <canvas id="hero-stardust-canvas" class="absolute inset-0 w-full h-full pointer-events-none opacity-40"></canvas>
+    <canvas id="hero-stardust-canvas" class="absolute inset-0 w-full h-full pointer-events-none opacity-30"></canvas>
 
     <!-- Top Badge & Copy -->
-    <div class="relative z-20 max-w-2xl mx-auto text-center flex flex-col items-center gap-6 mt-2">
+    <div class="relative z-20 max-w-3xl mx-auto text-center flex flex-col items-center gap-6 mt-4">
       <!-- Badge -->
-      <div class="animate-hero-reveal inline-flex items-center gap-2 border border-white/10 bg-[#282828] px-3.5 py-1.5 rounded-[3px] text-xs text-white">
-        <span class="w-1.5 h-1.5 rounded-full bg-[#a3f69c] animate-pulse"></span>
-        PIXXELHACK 2.0 • Bonus Theme: Most Creative • Team .Tensor
+      <div class="animate-mono-reveal inline-flex items-center gap-2 border border-white/15 bg-white/5 px-4 py-1.5 rounded-full text-xs font-mono-code text-zinc-300">
+        <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+        ORIGINKIT HERO-23 • PIXXELHACK 2.0 • TEAM .TENSOR
       </div>
 
       <!-- Headline -->
-      <h1 class="animate-hero-reveal font-bold text-4xl sm:text-5xl md:text-6xl tracking-tight leading-[1.1] text-white">
-        Build Your Sustainable Future. Effortlessly.
+      <h1 class="animate-mono-reveal font-heading font-bold text-4xl sm:text-6xl md:text-7xl tracking-tight leading-[1.08] text-white">
+        Automate Your Impact.<br/><span class="text-zinc-400 font-light">Zero Greenwashing.</span>
       </h1>
 
       <!-- Subtitle -->
-      <p class="animate-hero-reveal text-sm sm:text-base text-white/60 leading-relaxed max-w-xl">
-        Quantify daily micro-actions, scan waste with AI, track carbon offsets, and manage community eco-goals in one seamless platform.
+      <p class="animate-mono-reveal text-sm sm:text-base text-zinc-400 leading-relaxed max-w-xl font-light">
+        Quantify daily micro-actions, scan waste with AI, parse transport tickets, and benchmark eco-habits with your community.
       </p>
 
       <!-- Action Buttons -->
-      <div class="animate-hero-reveal flex flex-wrap items-center justify-center gap-4 mt-2">
-        <a href="index.html#overview" class="btn-light px-6 py-3.5 text-base">
-          Start your eco journey
+      <div class="animate-mono-reveal flex flex-wrap items-center justify-center gap-4 mt-2">
+        <a href="index.html#overview" class="btn-bw-primary">
+          Start your eco journey →
         </a>
-        <a href="index.html#scanner" class="btn-dark px-6 py-3.5 text-base">
+        <a href="index.html#scanner" class="btn-bw-secondary">
           Launch AI Scanner
         </a>
       </div>
     </div>
 
     <!-- 3D Spinning Canvas Globe & Floating Stat Cards -->
-    <div class="relative z-10 w-full max-w-4xl mx-auto mt-8 h-64 md:h-80 flex items-center justify-center">
+    <div class="relative z-10 w-full max-w-4xl mx-auto mt-10 h-64 md:h-80 flex items-center justify-center">
       <!-- Interactive Globe Canvas -->
-      <canvas id="hero-globe-canvas" class="w-64 h-64 md:w-80 md:h-80 rounded-full border border-white/20 shadow-[0_0_60px_rgba(46,125,50,0.3)]"></canvas>
+      <canvas id="hero-globe-canvas" class="w-64 h-64 md:w-80 md:h-80 rounded-full border border-white/20 shadow-[0_0_80px_rgba(255,255,255,0.08)]"></canvas>
 
       <!-- Floating Stat Card 1 (Left) -->
-      <div class="card-stat absolute left-2 top-4 md:left-12 md:top-8 p-3 w-40 flex flex-col items-center text-center animate-bounce" style="animation-duration: 4s;">
+      <div class="card-bw-stat absolute left-2 top-4 md:left-12 md:top-8 p-4 w-44 flex flex-col items-center text-center animate-bounce" style="animation-duration: 6s;">
         <div class="flex -space-x-2 mb-2">
-          <div class="w-6 h-6 rounded-full bg-[#2e7d32] border border-white/20 flex items-center justify-center text-xs">🌱</div>
-          <div class="w-6 h-6 rounded-full bg-[#5d6300] border border-white/20 flex items-center justify-center text-xs">♻️</div>
-          <div class="w-6 h-6 rounded-full bg-[#88d982] border border-white/20 flex items-center justify-center text-xs">⚡</div>
+          <div class="w-6 h-6 rounded-full bg-zinc-800 border border-white/20 flex items-center justify-center text-xs font-mono-code">01</div>
+          <div class="w-6 h-6 rounded-full bg-zinc-700 border border-white/20 flex items-center justify-center text-xs font-mono-code">02</div>
+          <div class="w-6 h-6 rounded-full bg-zinc-600 border border-white/20 flex items-center justify-center text-xs font-mono-code">03</div>
         </div>
-        <div class="font-bold text-xl text-white/90">24.5K+</div>
-        <div class="text-xs text-white/60">Eco Warriors Active</div>
+        <div class="font-heading font-bold text-xl text-white">24.5K+</div>
+        <div class="text-[11px] text-zinc-400 font-mono-code uppercase mt-0.5">Eco Warriors Active</div>
       </div>
 
       <!-- Floating Stat Card 2 (Right) -->
-      <div class="card-stat absolute right-2 bottom-4 md:right-12 md:bottom-8 p-3 w-44 flex flex-col items-center text-center animate-bounce" style="animation-duration: 5s;">
-        <div class="flex gap-1.5 mb-2 text-xs opacity-90">
-          <span>🇨🇦</span> <span>🇸🇪</span> <span>🇧🇷</span> <span>🇹🇼</span> <span>🇮🇪</span>
+      <div class="card-bw-stat absolute right-2 bottom-4 md:right-12 md:bottom-8 p-4 w-48 flex flex-col items-center text-center animate-bounce" style="animation-duration: 7s;">
+        <div class="flex gap-2 mb-2 text-xs font-mono-code text-zinc-400 uppercase tracking-widest">
+          <span>[CO2]</span> <span>[RECYCLED]</span>
         </div>
-        <div class="font-bold text-xl text-white/90">1.2 Tons</div>
-        <div class="text-xs text-white/60">CO2 Mitigated & Recycled</div>
+        <div class="font-heading font-bold text-xl text-white">1.2 Tons</div>
+        <div class="text-[11px] text-zinc-400 font-mono-code uppercase mt-0.5">Mitigated & Recycled</div>
       </div>
     </div>
 
-    <!-- Corners -->
-    <div class="absolute left-0 top-0 w-2.5 h-2.5"><img src="public/originkit/hero-23/corner-tl.svg" alt="" class="w-full h-full"/></div>
-    <div class="absolute right-0 top-0 w-2.5 h-2.5 transform rotate-180 -scale-y-100"><img src="public/originkit/hero-23/corner-tr.svg" alt="" class="w-full h-full"/></div>
-    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 transform rotate-180"><img src="public/originkit/hero-23/corner-tr.svg" alt="" class="w-full h-full"/></div>
-    <div class="absolute bottom-0 left-0 w-2.5 h-2.5 transform -scale-y-100"><img src="public/originkit/hero-23/corner-tl.svg" alt="" class="w-full h-full"/></div>
+    <!-- Corner Accents -->
+    <div class="absolute left-0 top-0 w-3 h-3 border-t-2 border-l-2 border-white/40"></div>
+    <div class="absolute right-0 top-0 w-3 h-3 border-t-2 border-r-2 border-white/40"></div>
+    <div class="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white/40"></div>
+    <div class="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white/40"></div>
   </main>
 
   <!-- Bottom Logo Strip -->
-  <footer class="animate-hero-reveal relative w-full max-w-7xl mx-auto mt-4 border border-white/10 bg-[#0f0f0f] px-6 py-4 rounded-[3px] flex flex-wrap justify-around items-center gap-4 text-xs font-semibold tracking-wider text-white/70 uppercase">
+  <footer class="animate-mono-reveal relative w-full max-w-7xl mx-auto mt-6 border border-white/10 bg-[#0a0a0a] px-6 py-4 rounded-[2px] flex flex-wrap justify-around items-center gap-4 text-xs font-mono-code tracking-widest text-zinc-400 uppercase">
     <div class="flex items-center gap-2">
-      <span class="text-[#a3f69c] text-base">🤖</span> TensorFlow.js Waste AI
+      <span class="w-2 h-2 rounded-full bg-white"></span> TensorFlow.js Waste AI
     </div>
     <div class="flex items-center gap-2">
-      <span class="text-[#a3f69c] text-base">🗺️</span> Leaflet OpenStreetMap
+      <span class="w-2 h-2 rounded-full bg-white"></span> Leaflet OpenStreetMap
     </div>
     <div class="flex items-center gap-2">
-      <span class="text-[#a3f69c] text-base">🧾</span> Tesseract OCR Parser
+      <span class="w-2 h-2 rounded-full bg-white"></span> Tesseract OCR Parser
     </div>
     <div class="flex items-center gap-2">
-      <span class="text-[#a3f69c] text-base">📍</span> Google Timeline Import
+      <span class="w-2 h-2 rounded-full bg-white"></span> Google Timeline Import
     </div>
     <div class="flex items-center gap-2">
-      <span class="text-[#a3f69c] text-base">📊</span> EPA & WRI Standards
+      <span class="w-2 h-2 rounded-full bg-white"></span> EPA & WRI Metrics
     </div>
 
-    <!-- Corners -->
-    <div class="absolute left-0 top-0 w-2.5 h-2.5"><img src="public/originkit/hero-23/corner-tl.svg" alt="" class="w-full h-full"/></div>
-    <div class="absolute right-0 top-0 w-2.5 h-2.5 transform rotate-180 -scale-y-100"><img src="public/originkit/hero-23/corner-tr.svg" alt="" class="w-full h-full"/></div>
-    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 transform rotate-180"><img src="public/originkit/hero-23/corner-tr.svg" alt="" class="w-full h-full"/></div>
-    <div class="absolute bottom-0 left-0 w-2.5 h-2.5 transform -scale-y-100"><img src="public/originkit/hero-23/corner-tl.svg" alt="" class="w-full h-full"/></div>
+    <!-- Corner Accents -->
+    <div class="absolute left-0 top-0 w-2 h-2 border-t border-l border-white/40"></div>
+    <div class="absolute right-0 top-0 w-2 h-2 border-t border-r border-white/40"></div>
+    <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+    <div class="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
   </footer>
 
-  <!-- Canvas Globe & Particles Script -->
+  <!-- Canvas Globe & Particles Script (Monochrome) -->
   <script>
-    // Canvas Particles
+    // Canvas Particles (Monochrome)
     (function initStardust() {
       const canvas = document.getElementById('hero-stardust-canvas');
       if (!canvas) return;
@@ -222,10 +247,10 @@
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          r: Math.random() * 1.5 + 0.5,
-          dx: (Math.random() - 0.5) * 0.3,
-          dy: (Math.random() - 0.5) * 0.3,
-          alpha: Math.random() * 0.6 + 0.2
+          r: Math.random() * 1.2 + 0.4,
+          dx: (Math.random() - 0.5) * 0.25,
+          dy: (Math.random() - 0.5) * 0.25,
+          alpha: Math.random() * 0.5 + 0.1
         });
       }
 
@@ -252,7 +277,7 @@
       draw();
     })();
 
-    // Canvas 3D Rotating Globe
+    // Canvas 3D Rotating Globe (Monochrome)
     (function initGlobe() {
       const canvas = document.getElementById('hero-globe-canvas');
       if (!canvas) return;
@@ -277,22 +302,22 @@
       function render() {
         ctx.clearRect(0, 0, width, height);
 
-        // Globe sphere fill
+        // Globe sphere fill (Black to dark gray radial)
         const grad = ctx.createRadialGradient(width / 2, height / 2, 10, width / 2, height / 2, radius);
-        grad.addColorStop(0, '#152e18');
-        grad.addColorStop(0.85, '#0b160d');
-        grad.addColorStop(1, '#2e7d32');
+        grad.addColorStop(0, '#1c1c1e');
+        grad.addColorStop(0.85, '#09090b');
+        grad.addColorStop(1, '#27272a');
 
         ctx.fillStyle = grad;
         ctx.beginPath();
         ctx.arc(width / 2, height / 2, radius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // Dots
-        ctx.fillStyle = '#a3f69c';
+        // White/Silver Dots
+        ctx.fillStyle = '#ffffff';
         dots.forEach(dot => {
           const radLon = ((dot.lon + angle) * Math.PI) / 180;
           const x = dot.r * Math.sin(radLon);
@@ -301,16 +326,16 @@
           if (z > 0) {
             const px = width / 2 + x;
             const py = height / 2 - dot.y;
-            const dotSize = Math.max(1, (z / radius) * 2.5);
+            const dotSize = Math.max(1, (z / radius) * 2.2);
 
-            ctx.globalAlpha = Math.min(1, Math.max(0.15, z / radius));
+            ctx.globalAlpha = Math.min(1, Math.max(0.1, z / radius));
             ctx.beginPath();
             ctx.arc(px, py, dotSize, 0, Math.PI * 2);
             ctx.fill();
           }
         });
 
-        angle += 0.35;
+        angle += 0.3;
         requestAnimationFrame(render);
       }
       render();
