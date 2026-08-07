@@ -822,7 +822,7 @@
         );
         const baseRadius = 1;
         const globeRadius = baseRadius * scaleMultiplier;
-        const cameraDistance = 2.5 / scaleMultiplier;
+        const cameraDistance = globeRadius * 1.35;
         camera.position.set(0, 0, cameraDistance);
         camera.lookAt(0, 0, 0);
 
@@ -1420,7 +1420,7 @@
           camera.aspect = newWidth / newHeight;
           camera.updateProjectionMatrix();
           renderer.setSize(newWidth, newHeight);
-          const newCameraDistance = 2.5 / scaleMultiplier;
+          const newCameraDistance = globeRadius * 1.35;
           camera.position.set(0, 0, newCameraDistance);
           camera.lookAt(0, 0, 0);
           renderer.render(scene, camera);
