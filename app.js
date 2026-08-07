@@ -5,20 +5,9 @@
 
 // Global App State
 const EcoState = {
-  user: {
-    name: "Elena Rodriguez",
-    handle: "@EcoWarrior",
-    level: 12,
-    points: 24500,
-    co2SavedTons: 1.2,
-    streakDays: 14,
-    dailyScore: 82,
-  },
-  actionsLog: [
-    { type: 'Recycling', detail: 'Scanned PET bottle with AI Waste Classifier', pts: 50, time: '10 mins ago' },
-    { type: 'Transit', detail: 'Cycled 6km campus commute', pts: 120, time: '2 hours ago' },
-    { type: 'Challenge', detail: 'Completed Zero Single-Use Plastic daily task', pts: 100, time: '1 day ago' },
-  ],
+  user: null, // Will be loaded dynamically
+  actionsLog: [], // Will be loaded dynamically
+  actions: [],
   mapSpots: [
     { id: 1, name: "TCET Central Recycling Hub", type: "recycling", lat: 19.2062, lng: 72.8738, desc: "Accepts PET, E-waste, and cardboard. Open 24/7." },
     { id: 2, name: "Kandivali Solar EV Fast Charger", type: "ev", lat: 19.2105, lng: 72.8650, desc: "4 fast chargers available. 100% renewable power." },
@@ -30,14 +19,7 @@ const EcoState = {
     { id: 'c2', title: 'Zero Single-Use Plastic', desc: 'Use a reusable bottle and decline plastic bags all week.', category: 'Waste', reward: 100, current: 4, total: 7, unit: 'Days', bg: 'bg-surface-container-lowest', icon: 'local_drink' },
     { id: 'c3', title: 'Plant-Based Weekend', desc: 'Commit to eating 100% plant-based meals this weekend.', category: 'Food', reward: 200, current: 0, total: 2, unit: 'Days', bg: 'bg-primary-fixed', icon: 'energy_savings_leaf' },
   ],
-  leaderboard: [
-    { rank: 1, name: "@EcoWarrior", handle: "Elena Rodriguez", pts: 24500, action: "Cycled 12km & AI Scanned 4 items", avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAYMdAutk7r072Wpz2leW0w1OsiROHPnyxnpXG-m0qlKgNUX21vSOIcs6bzZsizSwlIktZpdURvJofJZJ0dWOO8cXtQtHK584rqZHFFN8AikgUlHDVuR-grPMm_3gR5X6pipOScafL_8ziqIr13WLAqaYWEzIC6Vixopn2kLJ0uVp2XlwlOLtbiCoSfM69hADe6EVQjc1JLdDWGydRCGJwLzfHAI9YBkyeiLC5S6AWbncZKRWVfdbKecQ", isUser: true },
-    { rank: 2, name: "@SarahG", handle: "Sarah Green", pts: 22400, action: "Composted 5kg organic waste", avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuDwpKy2NhlFWmT35KNHiJAhDijyWdBHjBfwFDtEbtdqG3dwoo3Ds-fEEFo_V9YZJQZ9nP-geow1sovJE6a9Ixxsb43OXlFJTlW4iXs7fqTCtVp6ZafgGU8jaVC8EIHxP2kbU5y942h6klxaEZ8IMfT3lqLGKDY-uod46KTRevNcdHbbLYH-s3NrK-IsEADwnW_lues5CYVjeekKl4p-Uql3vE2eRUN1UJhBeHpBqR16PkMJZMdOM_iu7w", isUser: false },
-    { rank: 3, name: "@GreenBean", handle: "Tanmay M.", pts: 21100, action: "Logged Solar EV charge", avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCwwNOMYwOPIG2lTYl4WevTNkrOrJBdqfa-jTS1hKq2ExdOGhZycM_TRk4f1fcoovjVT-oxAd69qegtRrpVyrAnIlWaGdye0qQMehZj7WlFPUvNwalFieVF7R7IegGGsHSEITFGsrr6pqlzAYcqX370hdBKrouBc1Vswox_iXbVU4aDRsn3KvAbFtP44_w_pfX3SoH6UHOSymA8H9A5KiFc5UhESwDYY5aF9NjZId58mzrEirz4gb3eGw", isUser: false },
-    { rank: 4, name: "@AlexL", handle: "Alex Lin", pts: 18980, action: "Logged 5kg recycling", badge: "recycling", isUser: false },
-    { rank: 5, name: "@MiaJ", handle: "Mia Johnson", pts: 17945, action: "Zero-waste lunch", isUser: false },
-    { rank: 6, name: "@DanR", handle: "Dan Rivera", pts: 16890, action: "Biked 10km", badge: "directions_bike", isUser: false },
-  ],
+  leaderboard: [], // Empty initially until a backend is implemented for it
   mapInstance: null,
   markersLayer: null,
   webcamStream: null,
