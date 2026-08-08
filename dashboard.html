@@ -177,11 +177,11 @@
           <div class="flex flex-wrap items-center gap-3">
             <div class="bg-white text-[#0a0a0a] border-3 border-[#0a0a0a] shadow-[5px_5px_0px_0px_#0a0a0a] p-4 rounded-2xl text-center min-w-[120px] transform hover:scale-105 transition-transform">
               <p class="text-[10px] font-black uppercase text-[#15803d] tracking-wider">Total Points</p>
-              <p id="headerUserPoints" class="font-display font-black text-3xl text-[#0a0a0a]">1,280</p>
+              <p id="headerUserPoints" class="font-display font-black text-3xl text-[#0a0a0a]">0</p>
             </div>
             <div class="bg-[#ccff00] text-[#0a0a0a] border-3 border-[#0a0a0a] shadow-[5px_5px_0px_0px_#0a0a0a] p-4 rounded-2xl text-center min-w-[120px] transform hover:scale-105 transition-transform">
               <p class="text-[10px] font-black uppercase text-[#0a0a0a] tracking-wider">CO₂ Saved</p>
-              <p id="headerCo2Saved" class="font-display font-black text-3xl text-[#0a0a0a]">42.5 kg</p>
+              <p id="headerCo2Saved" class="font-display font-black text-3xl text-[#0a0a0a]">0.0 kg</p>
             </div>
           </div>
         </div>
@@ -190,7 +190,6 @@
       <!-- 4 Core Overview Cards Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-        <!-- Card 1: Daily Eco Score Gauge -->
         <div class="neo-card p-6 bg-white flex flex-col justify-between">
           <div class="flex items-center justify-between mb-4">
             <h3 class="font-display font-black text-lg text-[#0a0a0a]">Daily Eco Score</h3>
@@ -200,15 +199,15 @@
           <div class="flex items-center justify-center my-2 relative">
             <div class="w-36 h-36 rounded-full border-8 border-[#f6f9f3] border-t-[#15803d] border-r-[#ccff00] border-b-[#a3e635] flex items-center justify-center shadow-inner relative">
               <div class="text-center">
-                <span id="dailyEcoScore" class="font-display font-black text-4xl text-[#15803d]">88</span>
+                <span id="dailyEcoScore" class="font-display font-black text-4xl text-[#15803d]">0</span>
                 <span class="text-xs font-black block text-gray-400">/ 100</span>
               </div>
             </div>
           </div>
 
           <div class="mt-4 pt-4 border-t-2 border-[#0a0a0a]/10 flex justify-between text-xs font-bold text-gray-700">
-            <span>Daily Target Met!</span>
-            <span class="text-[#15803d] font-black">+12% vs Yesterday</span>
+            <span>Based on your actions</span>
+            <span class="text-[#15803d] font-black">Live from Supabase</span>
           </div>
         </div>
 
@@ -256,7 +255,6 @@
           </button>
         </div>
 
-        <!-- Card 3: Streak Counter -->
         <div class="neo-card p-6 bg-[#ccff00] flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <h3 class="font-display font-black text-lg text-[#0a0a0a]">Active Streak</h3>
@@ -264,14 +262,14 @@
           </div>
 
           <div class="my-4 text-center">
-            <span id="streakDaysCount" class="font-display font-black text-5xl text-[#0a0a0a]">7</span>
+            <span id="streakDaysCount" class="font-display font-black text-5xl text-[#0a0a0a]">0</span>
             <span class="font-display font-black text-xs block uppercase tracking-widest text-[#0a0a0a] mt-1">Days Active Streak</span>
           </div>
 
           <div class="bg-white border-3 border-[#0a0a0a] p-3 rounded-xl shadow-[3px_3px_0px_0px_#0a0a0a]">
-            <p class="text-[11px] font-black text-[#0a0a0a] mb-1">Next Milestone: 10 Days</p>
+            <p class="text-[11px] font-black text-[#0a0a0a] mb-1">Start eco actions to build your streak!</p>
             <div class="w-full bg-[#f6f9f3] border-2 border-[#0a0a0a] h-2.5 rounded-full overflow-hidden">
-              <div class="bg-[#15803d] h-full w-[70%]"></div>
+              <div id="streakProgressBar" class="bg-[#15803d] h-full w-0 transition-all duration-500"></div>
             </div>
           </div>
         </div>
@@ -765,7 +763,7 @@
           <p class="text-sm text-gray-600 font-medium">Real-time rankings updated instantly when eco challenges and actions are completed.</p>
         </div>
         <div class="flex items-center gap-2">
-          <span id="leaderboardUserRankBadge" class="neo-badge bg-[#15803d] text-white text-xs py-1.5 px-3">Your Live Rank: #4</span>
+          <span id="leaderboardUserRankBadge" class="neo-badge bg-[#15803d] text-white text-xs py-1.5 px-3">Your Live Rank: —</span>
         </div>
       </div>
 
@@ -787,9 +785,8 @@
               <tr class="border-b-4 border-[#0a0a0a] text-xs font-display font-black uppercase text-gray-600">
                 <th class="py-3 px-3">Rank</th>
                 <th class="py-3 px-3">User</th>
-                <th class="py-3 px-3">Badge Title</th>
-                <th class="py-3 px-3 text-right">Points</th>
-                <th class="py-3 px-3 text-right">CO₂ Saved</th>
+                <th class="py-3 px-3 text-center">Points</th>
+                <th class="py-3 px-3 text-center">CO₂ Saved</th>
               </tr>
             </thead>
             <tbody id="leaderboardTableBody" class="divide-y-2 divide-[#0a0a0a]/10 font-bold text-sm">
@@ -807,29 +804,10 @@
             <p class="text-xs text-gray-500 font-medium mt-0.5">Real-time verified challenge feed from the community.</p>
 
             <div id="liveActivityFeed" class="mt-4 space-y-3 max-h-[380px] overflow-y-auto pr-1">
-              <!-- Dynamic activity items -->
-              <div class="p-3 bg-[#f6f9f3] border-2 border-[#0a0a0a] rounded-xl flex items-center gap-3">
-                <span class="text-xl">🚶</span>
-                <div class="text-xs">
-                  <p class="font-black text-[#0a0a0a]">Aarav S. completed Walk 2km</p>
-                  <p class="text-[10px] font-bold text-[#15803d]">+50 Pts • AI Verified 2m ago</p>
-                </div>
-              </div>
-
-              <div class="p-3 bg-[#f6f9f3] border-2 border-[#0a0a0a] rounded-xl flex items-center gap-3">
-                <span class="text-xl">🥤</span>
-                <div class="text-xs">
-                  <p class="font-black text-[#0a0a0a]">Elena R. completed Reusable Bottle</p>
-                  <p class="text-[10px] font-bold text-[#15803d]">+30 Pts • AI Verified 8m ago</p>
-                </div>
-              </div>
-
-              <div class="p-3 bg-[#f6f9f3] border-2 border-[#0a0a0a] rounded-xl flex items-center gap-3">
-                <span class="text-xl">🌳</span>
-                <div class="text-xs">
-                  <p class="font-black text-[#0a0a0a]">You completed Plant a Tree</p>
-                  <p class="text-[10px] font-bold text-[#15803d]">+200 Pts • AI Verified Just Now</p>
-                </div>
+              <div id="activityFeedEmpty" class="py-10 text-center text-gray-400">
+                <span class="material-symbols-outlined text-3xl mb-2 block">hourglass_empty</span>
+                <p class="text-xs font-bold">No activity yet.</p>
+                <p class="text-[10px] mt-1">Complete a challenge to appear here!</p>
               </div>
             </div>
           </div>
@@ -869,20 +847,20 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="neo-card p-6 bg-white text-center">
           <p class="text-xs font-extrabold uppercase text-gray-500">Total CO₂ Saved</p>
-          <p id="profCo2Saved" class="font-display font-black text-4xl text-[#15803d] my-2">42.5 kg</p>
-          <span class="text-[11px] font-bold text-gray-500">Equivalent to ~2 trees planted</span>
+          <p id="profCo2Saved" class="font-display font-black text-4xl text-[#15803d] my-2">0.0 kg</p>
+          <span class="text-[11px] font-bold text-gray-500">Loaded from your activity</span>
         </div>
 
         <div class="neo-card p-6 bg-white text-center">
           <p class="text-xs font-extrabold uppercase text-gray-500">Total Points Earned</p>
-          <p id="profTotalPoints" class="font-display font-black text-4xl text-[#0a0a0a] my-2">1,280</p>
-          <span class="text-[11px] font-bold text-[#15803d]">Level 4 Achieved</span>
+          <p id="profTotalPoints" class="font-display font-black text-4xl text-[#0a0a0a] my-2">0</p>
+          <span class="text-[11px] font-bold text-[#15803d]">Keep taking eco actions!</span>
         </div>
 
         <div class="neo-card p-6 bg-[#ccff00] text-center">
           <p class="text-xs font-extrabold uppercase text-[#0a0a0a]">Active Streak</p>
-          <p id="profActiveStreak" class="font-display font-black text-4xl text-[#0a0a0a] my-2">7 Days 🔥</p>
-          <span class="text-[11px] font-extrabold text-[#0a0a0a]">3 Days to Next Trophy</span>
+          <p id="profActiveStreak" class="font-display font-black text-4xl text-[#0a0a0a] my-2">0 Days 🔥</p>
+          <span class="text-[11px] font-extrabold text-[#0a0a0a]">Start your streak today!</span>
         </div>
       </div>
 
