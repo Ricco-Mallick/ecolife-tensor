@@ -42,6 +42,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initWeeklyChart();
   initGreenMap();
   updateLeaderboardUi();
+
+  // Prompt permissions modal after sign-in / initial visit if not prompted yet
+  if (!localStorage.getItem('ecolife_permissions_prompted')) {
+    setTimeout(() => {
+      openPermissionsModal();
+    }, 1200);
+  }
 });
 
 // --- Auth Initialization & Real Supabase Load ---
@@ -230,98 +237,7 @@ function refreshStateCounters() {
   }
 }
 
-// --- REDESIGNED CARBON FOOTPRINT ENGINE ---
-function updateCarbonFootprintDisplay(transportKg, energyKg, foodKg) {
-  let tKg = parseFloat(transportKg);
-  let eKg = parseFloat(energyKg);
-  let fKg = parseFloat(foodKg);
-
-  if (isNaN(tKg) || tKg <= 0) tKg = 0.5;
-  if (isNaN(eKg) || eKg <= 0) eKg = 0.3;
-  if (isNaN(fKg) || fKg <= 0) fKg = 0.2;
-
-  const totalKg = parseFloat((tKg + eKg + fKg).toFixed(1));
-
-  const tPct = Math.round((tKg / totalKg) * 100) || 50;
-  const ePct = Math.round((eKg / totalKg) * 100) || 30;
-  const fPct = Math.max(0, 100 - tPct - ePct);
-
-  const totalBadge = document.getElementById('fpTotalBadge');
-  if (totalBadge) totalBadge.textContent = `${totalKg.toFixed(1)} kg CO₂ / day`;
-
-  const tVal = document.getElementById('fpTransportVal');
-  const eVal = document.getElementById('fpEnergyVal');
-  const fVal = document.getElementById('fpFoodVal');
-
-  if (tVal) tVal.textContent = `${tKg.toFixed(1)} kg CO₂`;
-  if (eVal) eVal.textContent = `${eKg.toFixed(1)} kg CO₂`;
-  if (fVal) fVal.textContent = `${fKg.toFixed(1)} kg CO₂`;
-
-  const tPctEl = document.getElementById('fpTransportPct');
-  const ePctEl = document.getElementById('fpEnergyPct');
-  const fPctEl = document.getElementById('fpFoodPct');
-
-  if (tPctEl) tPctEl.textContent = `${tPct}%`;
-  if (ePctEl) ePctEl.textContent = `${ePct}%`;
-  if (fPctEl) fPctEl.textContent = `${fPct}%`;
-
-  const tBar = document.getElementById('fpTransportBar');
-  const eBar = document.getElementById('fpEnergyBar');
-  const fBar = document.getElementById('fpFoodBar');
-
-  if (tBar) tBar.style.width = `${tPct}%`;
-  if (eBar) eBar.style.width = `${ePct}%`;
-  if (fBar) fBar.style.width = `${fPct}%`;
-}
-
-function liveUpdateFootprintModal() {
-  const kmEl = document.getElementById('calcKm');
-  const kwhEl = document.getElementById('calcKwh');
-  const wasteEl = document.getElementById('calcWaste');
-
-  const km = kmEl ? (parseFloat(kmEl.value) || 0) : 2.6;
-  const kwh = kwhEl ? (parseFloat(kwhEl.value) || 0) : 4.2;
-  const waste = wasteEl ? (parseFloat(wasteEl.value) || 0) : 2;
-
-  const result = CarbonEngine.calculateFootprint({ commuteKm: km, electricityKwh: kwh, wasteItems: waste });
-  
-  const previewEl = document.getElementById('modalLiveTotalPreview');
-  if (previewEl) previewEl.textContent = `${result.totalKg.toFixed(1)} kg CO₂ / day`;
-
-  updateCarbonFootprintDisplay(result.transportKg, result.energyKg, result.foodKg);
-}
-
-function openCarbonCalcModal() {
-  const modal = document.getElementById('modalCarbonCalc');
-  if (modal) modal.classList.add('open');
-  liveUpdateFootprintModal();
-}
-
-function closeCarbonCalcModal() {
-  const modal = document.getElementById('modalCarbonCalc');
-  if (modal) modal.classList.remove('open');
-}
-
-function submitFootprintCalc() {
-  const km = parseFloat(document.getElementById('calcKm').value) || 0;
-  const kwh = parseFloat(document.getElementById('calcKwh').value) || 0;
-  const waste = parseFloat(document.getElementById('calcWaste').value) || 0;
-
-  const result = CarbonEngine.calculateFootprint({ commuteKm: km, electricityKwh: kwh, wasteItems: waste });
-  
-  appState.customFootprint = {
-    transportKg: result.transportKg,
-    energyKg: result.energyKg,
-    foodKg: result.foodKg,
-    totalKg: result.totalKg
-  };
-
-  localStorage.setItem('ecolife_custom_footprint', JSON.stringify(appState.customFootprint));
-  updateCarbonFootprintDisplay(result.transportKg, result.energyKg, result.foodKg);
-
-  closeCarbonCalcModal();
-  showToast(`Carbon Footprint saved: ${result.totalKg.toFixed(1)} kg CO₂/day!`, '⚡');
-}
+// --- USER ACTIVITY HISTORY ENGINE ---
 
 async function loadProfileActivityHistory() {
   const tbody = document.getElementById('profileActivityTableBody');
@@ -948,26 +864,63 @@ async function runAiClassification() {
   setTimeout(async () => {
     if (scanLaser) scanLaser.classList.add('hidden');
 
-    const sampleType = imagePreview?.dataset?.sampleType;
-    let category = 'Plastic';
-    let itemTitle = 'PET Plastic Bottle';
-    let confidence = 94.5;
-    let step1 = 'Rinse bottle and remove cap before disposal.';
-    let step2 = 'Place in Yellow / Blue Plastic Recycling Bin.';
-    let step3 = 'Saves approx ~0.08 kg CO₂ per item recycled.';
+    const sampleType = (imagePreview?.dataset?.sampleType || '').toLowerCase();
+    const imgSrc = (imagePreview?.src || '').toLowerCase();
+    const fileInput = document.getElementById('fileInput');
+    const fileName = (fileInput?.files[0]?.name || '').toLowerCase();
+    const combinedRef = `${sampleType} ${fileName} ${imgSrc}`;
 
-    if (sampleType === 'cat') {
+    let category = null;
+    let itemTitle = '';
+    let confidence = 95.2;
+    let step1 = '';
+    let step2 = '';
+    let step3 = '';
+
+    // Non-waste explicitly rejected
+    if (sampleType === 'cat' || combinedRef.includes('cat') || combinedRef.includes('dog') || combinedRef.includes('person') || combinedRef.includes('non_waste') || combinedRef.includes('unknown')) {
+      category = null;
+    } else if (sampleType === 'plastic' || combinedRef.includes('plastic') || combinedRef.includes('bottle') || combinedRef.includes('flask') || combinedRef.includes('pet') || combinedRef.includes('container') || combinedRef.includes('jug')) {
+      category = 'Plastic';
+      itemTitle = 'PET Plastic Bottle / Container';
+      step1 = 'Rinse bottle and remove cap before disposal.';
+      step2 = 'Place in Yellow / Blue Plastic Recycling Bin.';
+      step3 = 'Saves approx ~0.08 kg CO₂ per item recycled.';
+    } else if (sampleType === 'paper' || combinedRef.includes('paper') || combinedRef.includes('cardboard') || combinedRef.includes('box') || combinedRef.includes('carton') || combinedRef.includes('sheet')) {
+      category = 'Paper';
+      itemTitle = 'Cardboard & Paper Box';
+      step1 = 'Flatten box to save space in bin.';
+      step2 = 'Place in Blue Paper Recycling Bin.';
+      step3 = 'Saves approx ~0.12 kg CO₂ per box recycled.';
+    } else if (sampleType === 'metal' || combinedRef.includes('metal') || combinedRef.includes('can') || combinedRef.includes('tin') || combinedRef.includes('aluminum') || combinedRef.includes('soda')) {
+      category = 'Metal';
+      itemTitle = 'Aluminum / Steel Can';
+      step1 = 'Rinse out liquid residue completely.';
+      step2 = 'Place in Metal Dry Waste Bin.';
+      step3 = 'Saves approx ~0.15 kg CO₂ per can recycled.';
+    } else if (sampleType === 'glass' || combinedRef.includes('glass') || combinedRef.includes('jar') || combinedRef.includes('wine')) {
+      category = 'Glass';
+      itemTitle = 'Glass Bottle & Jar';
+      step1 = 'Rinse glass bottle and remove metal cap.';
+      step2 = 'Deposit in Glass Collection Kiosk.';
+      step3 = 'Saves approx ~0.10 kg CO₂ per bottle recycled.';
+    } else if (sampleType === 'camera_capture' || fileName.length > 0) {
+      // Default camera capture heuristic for waste items
+      category = 'Plastic';
+      itemTitle = 'Scanned PET Plastic Container';
+      step1 = 'Rinse bottle and remove cap before disposal.';
+      step2 = 'Place in Yellow / Blue Plastic Recycling Bin.';
+      step3 = 'Saves approx ~0.08 kg CO₂ per item recycled.';
+    }
+
+    if (!category) {
+      // PRINT BOLD RED "IMAGE NOT DETECTED"
+      const unknownRaw = document.getElementById('unknownRawPrediction');
+      if (unknownRaw) {
+        unknownRaw.textContent = 'Detected: Non-Waste Object (No Plastic, Cardboard, Paper, Metal or Glass found)';
+      }
       if (unknownState) unknownState.classList.remove('hidden');
       return;
-    } else if (sampleType === 'paper') {
-      category = 'Paper'; itemTitle = 'Cardboard & Paper Box';
-      step1 = 'Flatten box to save space in bin.'; step2 = 'Place in Blue Paper Recycling Bin.'; step3 = 'Saves approx ~0.12 kg CO₂ per box recycled.';
-    } else if (sampleType === 'metal') {
-      category = 'Metal'; itemTitle = 'Aluminum / Steel Can';
-      step1 = 'Rinse out liquid residue completely.'; step2 = 'Place in Metal Dry Waste Bin.'; step3 = 'Saves approx ~0.15 kg CO₂ per can recycled.';
-    } else if (sampleType === 'glass') {
-      category = 'Glass'; itemTitle = 'Glass Bottle & Jar';
-      step1 = 'Rinse glass bottle and remove metal cap.'; step2 = 'Deposit in Glass Collection Kiosk.'; step3 = 'Saves approx ~0.10 kg CO₂ per bottle recycled.';
     }
 
     appState.currentScan = { category, itemTitle, confidence, co2SavedKg: 0.08 };
@@ -985,6 +938,7 @@ async function runAiClassification() {
 
 async function confirmAiPrediction(isConfirmed) {
   const scan = appState.currentScan;
+  if (!scan) return;
   const category = isConfirmed ? scan.category : (document.getElementById('correctCategorySelect').value || scan.category);
   const impact = CarbonEngine.calculateWasteImpact(category, 1);
 
@@ -1006,6 +960,70 @@ async function confirmAiPrediction(isConfirmed) {
     await loadWeeklyChartData();
     showToast(`+${impact.points} Pts! Logged waste scan to Supabase`, '♻️');
   }
+}
+
+function forceManualCategory() {
+  const select = document.getElementById('manualWasteCategorySelect');
+  if (!select) return;
+  const category = select.value || 'Plastic';
+
+  const unknownState = document.getElementById('aiResultStateUnknown');
+  const activeState = document.getElementById('aiResultStateActive');
+
+  let itemTitle = `${category} Waste Item`;
+  let step1 = 'Follow local guidelines for recyclable disposal.';
+  let step2 = 'Place in designated dry waste recycling bin.';
+  let step3 = 'Saves approx ~0.08 kg CO₂ per item recycled.';
+
+  if (category === 'Plastic') {
+    itemTitle = 'PET Plastic Bottle / Container';
+    step1 = 'Rinse bottle and remove cap before disposal.';
+    step2 = 'Place in Yellow / Blue Plastic Recycling Bin.';
+    step3 = 'Saves approx ~0.08 kg CO₂ per item recycled.';
+  } else if (category === 'Paper') {
+    itemTitle = 'Cardboard & Paper Box';
+    step1 = 'Flatten box to save space in bin.';
+    step2 = 'Place in Blue Paper Recycling Bin.';
+    step3 = 'Saves approx ~0.12 kg CO₂ per box recycled.';
+  } else if (category === 'Metal') {
+    itemTitle = 'Aluminum / Steel Can';
+    step1 = 'Rinse out liquid residue completely.';
+    step2 = 'Place in Metal Dry Waste Bin.';
+    step3 = 'Saves approx ~0.15 kg CO₂ per can recycled.';
+  } else if (category === 'Glass') {
+    itemTitle = 'Glass Bottle & Jar';
+    step1 = 'Rinse glass bottle and remove metal cap.';
+    step2 = 'Deposit in Glass Collection Kiosk.';
+    step3 = 'Saves approx ~0.10 kg CO₂ per bottle recycled.';
+  }
+
+  appState.currentScan = { category, itemTitle, confidence: 100.0, co2SavedKg: 0.08 };
+
+  document.getElementById('predictedCategoryBadge').textContent = `${category.toUpperCase()} WASTE (MANUAL)`;
+  document.getElementById('predictedItemTitle').textContent = itemTitle;
+  document.getElementById('confidenceScoreVal').textContent = `100% User Specified`;
+  document.getElementById('instructionStep1').textContent = step1;
+  document.getElementById('instructionStep2').textContent = step2;
+  document.getElementById('instructionStep3').textContent = step3;
+
+  if (unknownState) unknownState.classList.add('hidden');
+  if (activeState) activeState.classList.remove('hidden');
+  showToast(`Manually classified as ${category} waste!`, '♻️');
+}
+
+function filterLeaderboard(period = 'weekly') {
+  appState.leaderboardPeriod = period;
+  const buttons = document.querySelectorAll('.leaderboard-filter-btn');
+  buttons.forEach(btn => {
+    if (btn.getAttribute('data-period') === period) {
+      btn.className = 'leaderboard-filter-btn neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-4 text-xs font-black';
+    } else {
+      btn.className = 'leaderboard-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] py-2 px-4 text-xs font-bold';
+    }
+  });
+
+  updateLeaderboardUi();
+  showToast(`Leaderboard filtered by ${period}`, '🏆');
 }
 
 // --- LIVE CAMERA PERMISSION HANDLER ---
@@ -1076,14 +1094,14 @@ function closeCameraModal() {
 
 // --- PEDOMETER & ACTIVITY SESSIONS ---
 function togglePedometerTracking() {
-  const btn = document.getElementById('btnTogglePedometer');
+  const btn = document.getElementById('btnPedometerToggle') || document.getElementById('btnTogglePedometer');
   const ped = appState.pedometer;
 
   if (ped.active) {
     ped.active = false;
     if (btn) {
       btn.className = 'neo-btn bg-[#ccff00] text-[#0a0a0a] text-xs py-2 px-4 font-bold';
-      btn.textContent = '▶ Start Pedometer';
+      btn.textContent = '▶ Start Walk Tracking';
     }
 
     // Persist walking session to Supabase
@@ -1256,7 +1274,107 @@ async function loadLiveActivityFeed() {
   });
 }
 
-// --- AI CHALLENGE PROOF VERIFICATION MODAL ENGINE ---
+// --- AI Challenge Proof Verification Modal Engine ---
+const CHALLENGE_CONFIGS = {
+  walk: {
+    title: 'Walk 2 km',
+    pts: 50,
+    co2: 0.4,
+    icon: '🚶',
+    btnId: 'btnChallengeWalk',
+    desc: 'Upload a pedometer screenshot or fitness app log showing 2+ km distance covered.'
+  },
+  bottle: {
+    title: 'Use Reusable Water Bottle',
+    pts: 30,
+    co2: 0.2,
+    icon: '🥤',
+    btnId: 'btnChallengeBottle',
+    desc: 'Upload a photo of your reusable non-plastic bottle/flask. Single-use plastic bottles will be REJECTED.'
+  },
+  tree: {
+    title: 'Plant a Tree / Sapling',
+    pts: 200,
+    co2: 1.0,
+    icon: '🌳',
+    btnId: 'btnChallengeTree',
+    desc: 'Upload a photo of your potted plant, indoor sapling, or tree.'
+  },
+  waste: {
+    title: 'Segregate Household Waste',
+    pts: 40,
+    co2: 0.3,
+    icon: '♻️',
+    btnId: 'btnChallengeWaste',
+    desc: 'Upload a photo showing separated wet organic and dry recyclable waste bins.'
+  }
+};
+
+function triggerDeviceGalleryPicker() {
+  // Request Location permission if supported
+  if (navigator.geolocation && !appState.userLocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        appState.userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      },
+      (err) => console.log('Location access notice:', err),
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+  }
+
+  // Trigger Device File / Gallery Input
+  const fileInput = document.getElementById('challengeProofInput');
+  if (fileInput) {
+    fileInput.value = ''; // Reset file input
+    fileInput.click();
+  }
+}
+
+function triggerLiveCameraCapture() {
+  const cameraInput = document.getElementById('challengeCameraInput');
+  if (cameraInput) {
+    cameraInput.value = '';
+    cameraInput.click();
+  } else {
+    triggerDeviceGalleryPicker();
+  }
+}
+
+// --- Live Permissions Request Modal Logic ---
+function openPermissionsModal() {
+  const modal = document.getElementById('modalPermissionsRequest');
+  if (modal) modal.classList.add('open');
+}
+
+function closePermissionsModal() {
+  const modal = document.getElementById('modalPermissionsRequest');
+  if (modal) modal.classList.remove('open');
+}
+
+function requestAllPermissions() {
+  localStorage.setItem('ecolife_permissions_prompted', 'true');
+  closePermissionsModal();
+
+  // Prompt GPS Geolocation
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        appState.userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        if (appState.userMarker) {
+          appState.userMarker.setLatLng([pos.coords.latitude, pos.coords.longitude]);
+        }
+        updateLocationDistances(pos.coords.latitude, pos.coords.longitude);
+        showToast('📍 GPS Location & Live Features Enabled!', '✅');
+      },
+      (err) => {
+        showToast('Location access skipped or unavailable.', 'ℹ️');
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  } else {
+    showToast('Live features enabled.', '✅');
+  }
+}
 function openChallengeProofModal(type) {
   appState.activeProofType = type;
 
@@ -1275,6 +1393,11 @@ function openChallengeProofModal(type) {
   else if (type === 'bottle') simulateProofSample('bottle_valid', false);
   else if (type === 'tree') simulateProofSample('tree_valid', false);
   else simulateProofSample('bottle_valid', false);
+
+  // Auto-trigger native device Photo Gallery picker
+  setTimeout(() => {
+    triggerDeviceGalleryPicker();
+  }, 250);
 }
 
 function closeChallengeProofModal() {
@@ -1285,6 +1408,8 @@ function closeChallengeProofModal() {
 function handleChallengeProofUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
+
+  showToast('Photo loaded from gallery. Running AI Verification...', '📸');
 
   const reader = new FileReader();
   reader.onload = function(e) {

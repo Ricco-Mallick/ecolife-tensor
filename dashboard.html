@@ -189,8 +189,8 @@
         </div>
       </div>
 
-      <!-- 4 Core Overview Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- 3 Core Overview Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <div class="neo-card p-6 bg-white flex flex-col justify-between">
           <div class="flex items-center justify-between mb-4">
@@ -211,65 +211,6 @@
             <span>Based on your actions</span>
             <span class="text-[#15803d] font-black">Live from Supabase</span>
           </div>
-        </div>
-
-        <!-- Card 2: Redesigned Carbon Footprint Card -->
-        <div class="neo-card p-6 bg-white flex flex-col justify-between space-y-4">
-          <div class="flex items-center justify-between border-b-2 border-[#0a0a0a]/10 pb-3">
-            <div>
-              <h3 class="font-display font-black text-lg text-[#0a0a0a]">Carbon Footprint</h3>
-              <p class="text-[10px] text-gray-500 font-extrabold uppercase tracking-wide">Daily Emission Impact</p>
-            </div>
-            <span id="fpTotalBadge" class="neo-badge bg-[#ccff00] text-[#0a0a0a] text-xs font-black">1.0 kg CO₂ / day</span>
-          </div>
-
-          <div class="space-y-3.5">
-            <!-- 1. Transport -->
-            <div>
-              <div class="flex justify-between items-center text-xs font-bold mb-1">
-                <span class="flex items-center gap-1.5 text-[#0a0a0a]">🚗 Transport</span>
-                <div class="flex items-center gap-2">
-                  <span id="fpTransportPct" class="text-[10px] text-gray-400 font-extrabold">50%</span>
-                  <span id="fpTransportVal" class="font-black text-[#15803d]">0.5 kg CO₂</span>
-                </div>
-              </div>
-              <div class="w-full bg-[#f6f9f3] border-2 border-[#0a0a0a] h-3.5 rounded-full overflow-hidden p-0.5">
-                <div id="fpTransportBar" style="width: 50%" class="bg-[#15803d] h-full rounded-full transition-all duration-500"></div>
-              </div>
-            </div>
-
-            <!-- 2. Energy & Utilities -->
-            <div>
-              <div class="flex justify-between items-center text-xs font-bold mb-1">
-                <span class="flex items-center gap-1.5 text-[#0a0a0a]">⚡ Energy & Utilities</span>
-                <div class="flex items-center gap-2">
-                  <span id="fpEnergyPct" class="text-[10px] text-gray-400 font-extrabold">30%</span>
-                  <span id="fpEnergyVal" class="font-black text-[#15803d]">0.3 kg CO₂</span>
-                </div>
-              </div>
-              <div class="w-full bg-[#f6f9f3] border-2 border-[#0a0a0a] h-3.5 rounded-full overflow-hidden p-0.5">
-                <div id="fpEnergyBar" style="width: 30%" class="bg-[#ccff00] h-full rounded-full transition-all duration-500"></div>
-              </div>
-            </div>
-
-            <!-- 3. Food & Waste -->
-            <div>
-              <div class="flex justify-between items-center text-xs font-bold mb-1">
-                <span class="flex items-center gap-1.5 text-[#0a0a0a]">🥗 Food & Waste</span>
-                <div class="flex items-center gap-2">
-                  <span id="fpFoodPct" class="text-[10px] text-gray-400 font-extrabold">20%</span>
-                  <span id="fpFoodVal" class="font-black text-[#15803d]">0.2 kg CO₂</span>
-                </div>
-              </div>
-              <div class="w-full bg-[#f6f9f3] border-2 border-[#0a0a0a] h-3.5 rounded-full overflow-hidden p-0.5">
-                <div id="fpFoodBar" style="width: 20%" class="bg-[#38bdf8] h-full rounded-full transition-all duration-500"></div>
-              </div>
-            </div>
-          </div>
-
-          <button onclick="openCarbonCalcModal()" class="neo-btn bg-[#f6f9f3] hover:bg-[#ccff00] text-xs py-2.5 w-full font-bold">
-            <span class="material-symbols-outlined text-sm">calculate</span> Recalculate Footprint
-          </button>
         </div>
 
         <div class="neo-card p-6 bg-[#ccff00] flex flex-col justify-between">
@@ -343,35 +284,47 @@
 
     </section>
 
-
     <!-- PAGE 2: AI WASTE SCANNER -->
-    <section id="view-scanner" class="page-view space-y-8">
+    <section id="view-scanner" class="page-view space-y-6">
       
-      <div class="neo-card p-6 bg-white">
-        <div class="max-w-2xl">
-          <div class="inline-flex items-center gap-2 bg-[#ccff00] border-2 border-[#0a0a0a] font-display font-black text-xs px-3.5 py-1 rounded-full uppercase tracking-wider mb-2">
+      <!-- Top Title Bar & Test Samples Bar -->
+      <div class="neo-card p-5 bg-white w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center gap-2 bg-[#ccff00] border-2 border-[#0a0a0a] font-display font-black text-xs px-3.5 py-1 rounded-full uppercase tracking-wider mb-1">
             🤖 Computer Vision Classifier
           </div>
-          <h2 class="font-display text-3xl font-black">AI Waste Scanner</h2>
-          <p class="text-sm font-medium text-gray-600">
-            Upload an image of waste (Plastic, Paper, Metal, Glass) to receive AI prediction with confidence percentage, disposal instructions, and user verification.
-          </p>
+          <h2 class="font-display text-2xl lg:text-3xl font-black text-[#0a0a0a]">AI Waste Scanner</h2>
+          <p class="text-xs font-bold text-gray-500">Scan waste items (Plastic, Cardboard, Paper, Metal, Glass) for live AI classification & eco points</p>
+        </div>
+
+        <!-- Quick Test Vision Samples Toolbar -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-[11px] font-black text-gray-500 uppercase tracking-wider hidden sm:inline">Test Samples:</span>
+          <button onclick="simulateCameraCapture('plastic')" title="Plastic Bottle" class="neo-btn bg-white hover:bg-[#ccff00] px-3 py-1.5 text-xs font-bold flex items-center gap-1.5">🧴 Plastic</button>
+          <button onclick="simulateCameraCapture('paper')" title="Cardboard Box" class="neo-btn bg-white hover:bg-[#38bdf8] px-3 py-1.5 text-xs font-bold flex items-center gap-1.5">📦 Paper</button>
+          <button onclick="simulateCameraCapture('metal')" title="Metal Can" class="neo-btn bg-white hover:bg-[#facc15] px-3 py-1.5 text-xs font-bold flex items-center gap-1.5">🥫 Metal</button>
+          <button onclick="simulateCameraCapture('glass')" title="Glass Bottle" class="neo-btn bg-white hover:bg-[#4ade80] px-3 py-1.5 text-xs font-bold flex items-center gap-1.5">🍾 Glass</button>
+          <button onclick="simulateCameraCapture('cat')" title="Non-Waste (Cat)" class="neo-btn bg-white hover:bg-red-200 px-3 py-1.5 text-xs font-bold flex items-center gap-1.5">🐱 Other</button>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Widescreen 16:9 Landscape Scanner Console Grid (Left: Camera Viewfinder, Right: AI Result Deck) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch">
         
-        <!-- Left: Upload / Camera Drop Zone -->
-        <div class="neo-card p-6 bg-white flex flex-col justify-between space-y-6">
-          <h3 class="font-display font-black text-xl flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#15803d]">upload_file</span>
-            Step 1: Upload Waste Image
-          </h3>
+        <!-- LEFT 7 COLS: Widescreen Landscape Viewfinder Deck -->
+        <div class="lg:col-span-7 neo-card p-5 lg:p-6 bg-white flex flex-col justify-between space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display font-black text-lg flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#15803d]">center_focus_strong</span>
+              Step 1: Scanner Viewfinder
+            </h3>
+            <span class="text-[11px] font-black text-[#15803d] bg-[#ccff00] px-2.5 py-0.5 rounded-full border border-[#0a0a0a]">16:9 Widescreen</span>
+          </div>
 
-          <!-- Scanner Dropzone Frame -->
-          <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="border-4 border-dashed border-[#0a0a0a] bg-[#f6f9f3] hover:bg-[#ccff00]/15 rounded-2xl p-8 text-center cursor-pointer relative min-h-[320px] flex flex-col items-center justify-center transition-colors group">
+          <!-- 16:9 Landscape Dropzone Frame -->
+          <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="border-4 border-dashed border-[#0a0a0a] bg-[#f6f9f3] hover:bg-[#ccff00]/15 rounded-2xl p-6 text-center cursor-pointer relative aspect-[16/9] min-h-[220px] max-h-[300px] w-full flex flex-col items-center justify-center transition-colors group overflow-hidden">
             
-            <!-- Bracket Markers -->
+            <!-- Corner Bracket Markers -->
             <div class="scanner-bracket bracket-tl"></div>
             <div class="scanner-bracket bracket-tr"></div>
             <div class="bracket-bl scanner-bracket"></div>
@@ -379,150 +332,137 @@
 
             <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)"/>
 
-            <div id="uploadPrompt" class="space-y-3">
-              <div class="w-16 h-16 bg-[#ccff00] border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a] rounded-2xl flex items-center justify-center mx-auto text-3xl group-hover:scale-110 transition-transform">
+            <div id="uploadPrompt" class="space-y-2 max-w-sm mx-auto">
+              <div class="w-14 h-14 bg-[#ccff00] border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] rounded-2xl flex items-center justify-center mx-auto text-2xl group-hover:scale-110 transition-transform">
                 📸
               </div>
-              <p class="font-display font-black text-lg text-[#0a0a0a]">Click or Drag & Drop Image Here</p>
-              <p class="text-xs text-gray-500 font-medium">Supports JPG, PNG, WEBP (Plastic, Paper, Metal, Glass)</p>
+              <p class="font-display font-black text-base text-[#0a0a0a]">Click or Drag & Drop Image Here</p>
+              <p class="text-[11px] text-gray-500 font-medium">JPG, PNG, WEBP (Plastic, Cardboard, Paper, Metal, Glass)</p>
             </div>
 
             <!-- Image Preview Box -->
             <div id="previewContainer" class="hidden w-full h-full relative flex items-center justify-center overflow-hidden rounded-xl">
-              <img id="imagePreview" class="max-h-[280px] object-contain rounded-xl border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a]"/>
+              <img id="imagePreview" class="max-h-[240px] object-contain rounded-xl border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a]"/>
               <div id="scanLaser" class="hidden scan-line"></div>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button onclick="document.getElementById('fileInput').click()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-3.5 w-full text-xs font-black">
-              <span class="material-symbols-outlined text-base">file_upload</span> Upload Photo / File
+          <!-- Dual Camera & Upload Action Buttons -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <button onclick="document.getElementById('fileInput').click()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-3 px-4 text-xs font-black flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-base">file_upload</span> Upload / Choose Photo
             </button>
-            <button onclick="requestCameraAccess()" class="neo-btn bg-[#15803d] text-white py-3.5 w-full text-xs font-black">
+            <button onclick="requestCameraAccess()" class="neo-btn bg-[#15803d] text-white py-3 px-4 text-xs font-black flex items-center justify-center gap-2">
               <span class="material-symbols-outlined text-base">photo_camera</span> 📸 Open Live Camera
             </button>
           </div>
-            
-            <div class="pt-1">
-              <p class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2">Or Test Real AI Vision Samples:</p>
-              <div class="grid grid-cols-5 gap-2">
-                <button onclick="simulateCameraCapture('plastic')" title="Plastic Bottle" class="neo-btn bg-white hover:bg-[#ccff00] p-2 text-base">🧴</button>
-                <button onclick="simulateCameraCapture('paper')" title="Cardboard Box" class="neo-btn bg-white hover:bg-[#38bdf8] p-2 text-base">📦</button>
-                <button onclick="simulateCameraCapture('metal')" title="Metal Can" class="neo-btn bg-white hover:bg-[#facc15] p-2 text-base">🥫</button>
-                <button onclick="simulateCameraCapture('glass')" title="Glass Bottle" class="neo-btn bg-white hover:bg-[#4ade80] p-2 text-base">🍾</button>
-                <button onclick="simulateCameraCapture('cat')" title="Non-Waste (Cat)" class="neo-btn bg-white hover:bg-red-200 p-2 text-base" title="Test Non-Waste Item">🐱</button>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <!-- Right: AI Classification Results & Confirmation -->
-        <div class="neo-card p-6 bg-white space-y-6">
-          <h3 class="font-display font-black text-xl flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#15803d]">analytics</span>
-            Step 2: AI Prediction & Disposal Guide
-          </h3>
+        <!-- RIGHT 5 COLS: AI Prediction & Disposal Guide Deck -->
+        <div class="lg:col-span-5 neo-card p-5 lg:p-6 bg-white flex flex-col justify-between space-y-4">
+          <div>
+            <h3 class="font-display font-black text-lg flex items-center gap-2 mb-3">
+              <span class="material-symbols-outlined text-[#15803d]">analytics</span>
+              Step 2: AI Result & Guide
+            </h3>
 
-          <div id="aiResultStateEmpty" class="border-3 border-dashed border-[#0a0a0a]/30 p-8 rounded-2xl text-center text-gray-500 py-16">
-            <span class="material-symbols-outlined text-4xl mb-2 text-gray-400">center_focus_weak</span>
-            <p class="font-display font-black text-base">No waste image analyzed yet</p>
-            <p class="text-xs mt-1">Upload an image on the left to generate simulated AI prediction.</p>
-          </div>
-
-          <div id="aiResultStateActive" class="hidden space-y-6">
-            
-            <!-- Result Prediction Badge Card -->
-            <div class="bg-[#f6f9f3] border-3 border-[#0a0a0a] p-5 rounded-2xl shadow-[4px_4px_0px_0px_#0a0a0a]">
-              <div class="flex items-center justify-between mb-2">
-                <span id="predictedCategoryBadge" class="neo-badge bg-[#ccff00] text-[#0a0a0a]">PLASTIC WASTE</span>
-                <span id="confidenceScoreVal" class="font-display font-black text-sm text-[#15803d]">96% Confidence</span>
-              </div>
-              <h4 id="predictedItemTitle" class="font-display text-2xl font-black text-[#0a0a0a]">PET Plastic Bottle</h4>
-              <p id="predictedItemDesc" class="text-xs text-gray-600 mt-1 font-medium">Recyclable polyethylene terephthalate container.</p>
+            <!-- State 1: Empty -->
+            <div id="aiResultStateEmpty" class="border-3 border-dashed border-[#0a0a0a]/30 p-6 rounded-2xl text-center text-gray-500 py-12 flex flex-col items-center justify-center min-h-[260px]">
+              <span class="material-symbols-outlined text-4xl mb-2 text-gray-400">center_focus_weak</span>
+              <p class="font-display font-black text-sm text-[#0a0a0a]">No waste image analyzed yet</p>
+              <p class="text-xs font-bold text-gray-500 mt-1">Upload a photo or choose a sample to view live AI classification.</p>
             </div>
 
-            <!-- Disposal Instructions -->
-            <div class="border-3 border-[#0a0a0a] bg-white p-5 rounded-2xl space-y-3">
-              <h4 class="font-display font-black text-base flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#15803d]">recycling</span> Disposal & Recycling Steps
-              </h4>
-              <ul class="space-y-2 text-xs font-bold text-gray-700">
-                <li class="flex items-start gap-2">
-                  <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep1">Rinse bottle and remove cap before disposal.</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep2">Place in Yellow / Blue Plastic Recycling Bin.</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep3">Saves approx ~0.08 kg CO₂ per item recycled.</span>
-                </li>
-              </ul>
-            </div>
-
-            <!-- Step 3: User Confirmation / Correction Box -->
-            <div class="bg-[#ccff00]/25 border-3 border-[#0a0a0a] p-5 rounded-2xl space-y-4">
-              <div class="flex items-center justify-between">
-                <h4 class="font-display font-black text-sm text-[#0a0a0a]">Is this AI prediction correct?</h4>
-                <span class="text-xs font-black text-[#15803d]">Claim +30 Pts</span>
+            <!-- State 2: Active AI Result -->
+            <div id="aiResultStateActive" class="hidden space-y-3">
+              <div class="bg-[#f6f9f3] border-3 border-[#0a0a0a] p-4 rounded-xl shadow-[3px_3px_0px_0px_#0a0a0a]">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span id="predictedCategoryBadge" class="neo-badge bg-[#ccff00] text-[#0a0a0a] text-[10px]">PLASTIC WASTE</span>
+                  <span id="confidenceScoreVal" class="font-display font-black text-xs text-[#15803d]">96% Confidence</span>
+                </div>
+                <h4 id="predictedItemTitle" class="font-display text-lg font-black text-[#0a0a0a]">PET Plastic Bottle</h4>
+                <p id="predictedItemDesc" class="text-xs text-gray-600 mt-0.5 font-medium">Recyclable polyethylene terephthalate container.</p>
               </div>
 
-              <div class="flex flex-col sm:flex-row gap-3">
-                <button onclick="confirmAiPrediction(true)" class="neo-btn bg-[#15803d] text-white py-2.5 px-4 text-xs font-bold flex-1">
-                  <span class="material-symbols-outlined text-sm">check_circle</span> Yes, Confirm
+              <div class="border-3 border-[#0a0a0a] bg-white p-4 rounded-xl space-y-1.5">
+                <h4 class="font-display font-black text-xs flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[#15803d] text-base">recycling</span> Disposal & Recycling Steps
+                </h4>
+                <ul class="space-y-1 text-xs font-bold text-gray-700">
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep1">Rinse bottle and remove cap before disposal.</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep2">Place in Yellow / Blue Plastic Bin.</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep3">Saves approx ~0.08 kg CO₂ per item.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Confirmation Box -->
+              <div class="bg-[#ccff00]/25 border-3 border-[#0a0a0a] p-4 rounded-xl space-y-2">
+                <div class="flex items-center justify-between">
+                  <h4 class="font-display font-black text-xs text-[#0a0a0a]">Confirm AI prediction:</h4>
+                  <span class="text-xs font-black text-[#15803d]">Claim +30 Pts</span>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                  <button onclick="confirmAiPrediction(true)" class="neo-btn bg-[#15803d] text-white py-2 px-3 text-xs font-bold w-full">
+                    <span class="material-symbols-outlined text-sm">check_circle</span> Yes, Confirm Prediction
+                  </button>
+                  
+                  <div class="flex gap-2">
+                    <select id="correctCategorySelect" class="bg-white border-2 border-[#0a0a0a] font-display font-bold text-xs p-1.5 rounded-xl flex-1">
+                      <option value="">Correct to...</option>
+                      <option value="Plastic">Plastic</option>
+                      <option value="Paper">Paper / Cardboard</option>
+                      <option value="Metal">Metal Can</option>
+                      <option value="Glass">Glass Container</option>
+                    </select>
+                    <button onclick="confirmAiPrediction(false)" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-1.5 px-3 text-xs font-bold">
+                      Update
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- State 3: Bold RED Image Not Detected -->
+            <div id="aiResultStateUnknown" class="hidden space-y-3 border-3 border-[#0a0a0a] bg-red-50 p-4 rounded-xl shadow-[3px_3px_0px_0px_#0a0a0a]">
+              <div class="flex items-center gap-2">
+                <span class="w-8 h-8 bg-red-600 text-white font-black text-base rounded-lg flex items-center justify-center border-2 border-[#0a0a0a]">⚠️</span>
+                <div>
+                  <h4 class="font-display font-black text-lg text-red-600 leading-tight">IMAGE NOT DETECTED</h4>
+                  <p id="unknownRawPrediction" class="text-[10px] font-black text-red-700 uppercase tracking-wide">No Plastic, Cardboard, Paper, Metal or Glass Found</p>
+                </div>
+              </div>
+              <p class="text-xs font-bold text-red-800 leading-relaxed bg-red-100/80 p-2.5 rounded-lg border border-red-300">
+                Our real-life AI scanner analyzed this photo but could not detect recyclable waste. Please upload a clear waste photo.
+              </p>
+              <div class="border-t border-red-200 pt-2 flex flex-col gap-2">
+                <button onclick="document.getElementById('fileInput').click()" class="neo-btn bg-red-600 hover:bg-red-700 text-white py-2 px-3 text-xs font-black w-full">
+                  📸 Try Another Photo
                 </button>
-                
-                <!-- Correction Dropdown -->
-                <div class="flex-1 flex gap-2">
-                  <select id="correctCategorySelect" class="bg-white border-3 border-[#0a0a0a] font-display font-bold text-xs p-2 rounded-xl flex-1">
-                    <option value="">Correct to...</option>
-                    <option value="Plastic">Plastic</option>
-                    <option value="Paper">Paper / Cardboard</option>
-                    <option value="Metal">Metal Can</option>
-                    <option value="Glass">Glass Container</option>
+                <div class="flex gap-2">
+                  <select id="manualWasteCategorySelect" class="bg-white border-2 border-[#0a0a0a] font-display font-bold text-xs p-1.5 rounded-xl flex-1">
+                    <option value="Plastic">Force Plastic</option>
+                    <option value="Paper">Force Paper / Cardboard</option>
+                    <option value="Metal">Force Metal</option>
+                    <option value="Glass">Force Glass</option>
                   </select>
-                  <button onclick="confirmAiPrediction(false)" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 px-3 text-xs font-bold">
-                    Update
+                  <button onclick="forceManualCategory()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-1.5 px-3 text-xs font-black">
+                    Classify
                   </button>
                 </div>
               </div>
             </div>
 
           </div>
-
-          <!-- State: Unknown / Unrecognized Image -->
-          <div id="aiResultStateUnknown" class="hidden space-y-4 border-3 border-[#0a0a0a] bg-red-50 p-6 rounded-2xl shadow-[4px_4px_0px_0px_#0a0a0a]">
-            <div class="flex items-center gap-3">
-              <span class="w-10 h-10 bg-red-600 text-white font-black text-xl rounded-xl flex items-center justify-center border-2 border-[#0a0a0a]">⚠️</span>
-              <div>
-                <h4 class="font-display font-black text-lg text-[#0a0a0a]">Image Not Identified</h4>
-                <p id="unknownRawPrediction" class="text-xs font-bold text-red-700">Detected: Unknown / Non-waste Object</p>
-              </div>
-            </div>
-            <p class="text-xs text-gray-700 font-medium leading-relaxed">
-              Our AI vision model analyzed this photo but could not identify recognizable recyclable waste (Plastic, Paper, Metal, or Glass). Please upload a clear image of a waste item.
-            </p>
-            <div class="border-t-2 border-[#0a0a0a]/10 pt-3 flex flex-col sm:flex-row gap-2">
-              <button onclick="document.getElementById('fileInput').click()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-3 text-xs font-bold flex-1">
-                📸 Try Another Photo
-              </button>
-              <div class="flex-1 flex gap-2">
-                <select id="manualWasteCategorySelect" class="bg-white border-2 border-[#0a0a0a] font-display font-bold text-xs p-2 rounded-xl flex-1">
-                  <option value="Plastic">Force Plastic</option>
-                  <option value="Paper">Force Paper</option>
-                  <option value="Metal">Force Metal</option>
-                  <option value="Glass">Force Glass</option>
-                </select>
-                <button onclick="forceManualCategory()" class="neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] py-2 px-3 text-xs font-bold">
-                  Classify
-                </button>
-              </div>
-            </div>
-          </div>
-
         </div>
 
       </div>
-
     </section>
 
 
@@ -985,55 +925,9 @@
 
   </main>
 
-  <!-- Carbon Footprint Modal -->
-  <div id="modalCarbonCalc" class="modal-overlay">
-    <div class="neo-card bg-white p-6 max-w-md w-full m-4 space-y-4 relative">
-      <div class="flex items-center justify-between border-b-2 border-[#0a0a0a]/10 pb-3">
-        <div>
-          <h3 class="font-display font-black text-xl text-[#0a0a0a]">Recalculate Carbon Footprint</h3>
-          <p class="text-[10px] text-gray-500 font-bold">Type numbers below to calculate live emission impact</p>
-        </div>
-        <button onclick="closeCarbonCalcModal()" class="font-bold text-lg hover:text-red-600">✕</button>
-      </div>
-
-      <div class="space-y-3 text-xs font-bold">
-        <div>
-          <label class="block mb-1 text-[#0a0a0a]">🚗 Daily Car Commute (km/day):</label>
-          <input type="number" id="calcKm" value="2.6" min="0" max="500" step="0.1" oninput="liveUpdateFootprintModal()" class="w-full border-3 border-[#0a0a0a] p-2.5 rounded-xl font-display text-sm font-black"/>
-          <span class="text-[10px] text-gray-500 block mt-0.5">Factor: 0.192 kg CO₂ per km</span>
-        </div>
-        <div>
-          <label class="block mb-1 text-[#0a0a0a]">⚡ Household Electricity (kWh/day):</label>
-          <input type="number" id="calcKwh" value="4.2" min="0" max="500" step="0.1" oninput="liveUpdateFootprintModal()" class="w-full border-3 border-[#0a0a0a] p-2.5 rounded-xl font-display text-sm font-black"/>
-          <span class="text-[10px] text-gray-500 block mt-0.5">Factor: 0.071 kg CO₂ per kWh</span>
-        </div>
-        <div>
-          <label class="block mb-1 text-[#0a0a0a]">🥗 Daily Waste Items (items/day):</label>
-          <input type="number" id="calcWaste" value="2" min="0" max="100" step="1" oninput="liveUpdateFootprintModal()" class="w-full border-3 border-[#0a0a0a] p-2.5 rounded-xl font-display text-sm font-black"/>
-          <span class="text-[10px] text-gray-500 block mt-0.5">Factor: 0.10 kg CO₂ per item</span>
-        </div>
-      </div>
-
-      <!-- Live Calculation Preview -->
-      <div class="p-3 bg-[#f6f9f3] border-2 border-[#0a0a0a] rounded-xl text-xs font-bold flex items-center justify-between">
-        <span>Computed Total:</span>
-        <span id="modalLiveTotalPreview" class="font-display font-black text-sm text-[#15803d]">1.0 kg CO₂ / day</span>
-      </div>
-
-      <div class="flex gap-3">
-        <button onclick="closeCarbonCalcModal()" class="neo-btn bg-gray-100 text-[#0a0a0a] py-2.5 px-4 text-xs font-bold flex-1">
-          Cancel
-        </button>
-        <button onclick="submitFootprintCalc()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 px-5 text-xs font-black flex-1">
-          ⚡ Apply & Save Live Footprint
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- AI Challenge Proof Verification Modal -->
-  <div id="modalChallengeProof" class="modal-overlay">
-    <div class="neo-card bg-white p-6 max-w-lg w-full space-y-5 relative">
+  <!-- AI Challenge Proof Verification Modal (Styled like AI Waste Scanner) -->
+  <div id="modalChallengeProof" class="modal flex items-center justify-center p-4">
+    <div class="neo-card bg-white p-6 max-w-lg w-full space-y-4 relative">
       <div class="flex items-center justify-between border-b-2 border-[#0a0a0a]/10 pb-3">
         <div class="flex items-center gap-2">
           <span class="w-8 h-8 bg-[#ccff00] border-2 border-[#0a0a0a] rounded-lg font-black flex items-center justify-center text-sm">🤖</span>
@@ -1043,23 +937,43 @@
       </div>
 
       <p id="proofModalDesc" class="text-xs font-bold text-gray-600 leading-relaxed">
-        Upload a photo or screenshot as proof. Our AI vision scanner will verify if your submission satisfies the challenge criteria before awarding points.
+        Upload a photo or take a picture as proof. Our AI vision scanner will verify if your submission satisfies the challenge criteria before awarding points.
       </p>
 
-      <!-- Proof Image Upload & Preview Container -->
-      <div class="border-3 border-dashed border-[#0a0a0a]/40 bg-[#f6f9f3] p-4 rounded-2xl text-center relative overflow-hidden min-h-[180px] flex flex-col items-center justify-center">
+      <!-- Permissions Access Banner -->
+      <div class="p-2.5 bg-blue-50 border-2 border-[#0a0a0a] rounded-xl flex items-center justify-between text-[11px] font-bold text-gray-700">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm text-[#38bdf8]">security</span>
+          <span>Device Photo Gallery & GPS Location access enabled.</span>
+        </div>
+        <button onclick="openPermissionsModal()" class="text-[10px] text-[#15803d] font-black underline">Permissions</button>
+      </div>
+
+      <!-- Proof Image Upload & Drag-and-Drop Container (Identical to AI Waste Scanner) -->
+      <div class="border-3 border-dashed border-[#0a0a0a]/40 bg-[#f6f9f3] p-4 rounded-2xl text-center relative overflow-hidden min-h-[170px] flex flex-col items-center justify-center">
         <input type="file" id="challengeProofInput" accept="image/*" onchange="handleChallengeProofUpload(event)" class="hidden"/>
-        
-        <div id="proofUploadPrompt" class="space-y-2 cursor-pointer" onclick="document.getElementById('challengeProofInput').click()">
-          <span class="material-symbols-outlined text-4xl text-[#15803d]">add_a_photo</span>
-          <p class="font-display font-black text-xs text-[#0a0a0a]">Click to Upload Proof Photo / Screenshot</p>
+        <input type="file" id="challengeCameraInput" accept="image/*" capture="environment" onchange="handleChallengeProofUpload(event)" class="hidden"/>
+
+        <div id="proofUploadPrompt" class="space-y-2 cursor-pointer" onclick="triggerDeviceGalleryPicker()">
+          <span class="material-symbols-outlined text-4xl text-[#15803d]">photo_library</span>
+          <p class="font-display font-black text-xs text-[#0a0a0a]">Click to Upload Image / Choose from Gallery</p>
           <span class="text-[10px] text-gray-500 font-bold block">Supports JPG, PNG, Screenshots</span>
         </div>
 
         <div id="proofPreviewContainer" class="hidden relative w-full flex flex-col items-center justify-center">
-          <img id="proofImagePreview" class="max-h-[180px] object-contain rounded-xl border-2 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a]"/>
+          <img id="proofImagePreview" class="max-h-[170px] object-contain rounded-xl border-2 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a]"/>
           <div id="proofScanLaser" class="hidden scan-line"></div>
         </div>
+      </div>
+
+      <!-- Scanner-style Dual Action Buttons -->
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="triggerDeviceGalleryPicker()" class="neo-btn bg-[#38bdf8] text-[#0a0a0a] py-2 px-3 text-xs font-black flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-base">file_upload</span> Upload Image / Gallery
+        </button>
+        <button onclick="triggerLiveCameraCapture()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-3 text-xs font-black flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-base">photo_camera</span> Live Camera Take
+        </button>
       </div>
 
       <!-- Quick Test Proof Toolbar -->
@@ -1084,12 +998,56 @@
         </div>
       </div>
 
-      <div class="flex justify-end gap-3 border-t-2 border-[#0a0a0a]/10 pt-3">
+      <div class="flex justify-end gap-2 border-t-2 border-[#0a0a0a]/10 pt-3">
         <button onclick="closeChallengeProofModal()" class="neo-btn bg-gray-100 hover:bg-gray-200 text-[#0a0a0a] py-2 px-4 text-xs font-bold">
           Cancel
         </button>
-        <button id="btnVerifyProofSubmit" onclick="runAiProofVerification()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-5 text-xs font-black">
-          🤖 Run AI Verification
+        <button id="btnVerifyProofSubmit" onclick="runAiProofVerification()" class="neo-btn bg-[#15803d] text-white py-2 px-5 text-xs font-black flex items-center justify-center gap-1.5">
+          🤖 Run Live Verification
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Permissions Request Modal (Prompted after Sign-In / Initial Visit) -->
+  <div id="modalPermissionsRequest" class="modal flex items-center justify-center p-4">
+    <div class="neo-card bg-white p-6 max-w-md w-full space-y-5 relative">
+      <div class="flex items-center justify-between border-b-2 border-[#0a0a0a]/10 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 bg-[#ccff00] border-2 border-[#0a0a0a] rounded-lg font-black flex items-center justify-center text-sm">🔐</span>
+          <h3 class="font-display font-black text-xl text-[#0a0a0a]">Enable Live Features</h3>
+        </div>
+        <button onclick="closePermissionsModal()" class="font-black text-xl hover:text-red-600">✕</button>
+      </div>
+
+      <p class="text-xs font-bold text-gray-600 leading-relaxed">
+        To provide real-time eco tracking, local satellite map distance, and live AI proof verification, EcoLife requests device permissions:
+      </p>
+
+      <div class="space-y-3 text-xs font-bold">
+        <div class="p-3 bg-[#f6f9f3] border-2 border-[#0a0a0a] rounded-xl flex items-center gap-3">
+          <span class="material-symbols-outlined text-2xl text-[#15803d]">location_on</span>
+          <div>
+            <h4 class="font-black text-[#0a0a0a]">📍 GPS Location Access</h4>
+            <p class="text-[10px] text-gray-500 font-medium">Calculates step distance to Mumbai green spots & carbon offset.</p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-[#f6f9f3] border-2 border-[#0a0a0a] rounded-xl flex items-center gap-3">
+          <span class="material-symbols-outlined text-2xl text-[#38bdf8]">photo_camera</span>
+          <div>
+            <h4 class="font-black text-[#0a0a0a]">📸 Camera & Photo Gallery Access</h4>
+            <p class="text-[10px] text-gray-500 font-medium">Required for live AI waste scanning & proof photo uploads.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row justify-end gap-2 border-t-2 border-[#0a0a0a]/10 pt-3">
+        <button onclick="closePermissionsModal()" class="neo-btn bg-gray-100 hover:bg-gray-200 text-[#0a0a0a] py-2 px-4 text-xs font-bold w-full sm:w-auto">
+          Skip for Now
+        </button>
+        <button onclick="requestAllPermissions()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 px-5 text-xs font-black w-full sm:w-auto flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-base">verified</span> Allow Access & Enable
         </button>
       </div>
     </div>
