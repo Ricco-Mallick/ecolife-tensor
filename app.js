@@ -382,12 +382,18 @@ function renderMapMarkers(spots) {
     water: '#4ade80'
   };
 
-  spots.forEach(spot => {
+  const spotList = (spots && Array.isArray(spots) && spots.length > 0) ? spots : DEFAULT_MUMBAI_LOCATIONS;
+
+  spotList.forEach((spot, idx) => {
+    const lat = parseFloat(spot.lat);
+    const lng = parseFloat(spot.lng);
+    if (isNaN(lat) || isNaN(lng)) return;
+
     const color = categoryColors[spot.category] || '#15803d';
     const iconHtml = `<div class="custom-neo-marker" style="background:${color};border:3px solid #0a0a0a;box-shadow:3px 3px 0px #0a0a0a;border-radius:10px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;">${spot.icon || '📍'}</div>`;
     const customIcon = L.divIcon({ html: iconHtml, className: '', iconSize: [34, 34], iconAnchor: [17, 17] });
 
-    const marker = L.marker([spot.lat, spot.lng], { icon: customIcon }).addTo(appState.map);
+    const marker = L.marker([lat, lng], { icon: customIcon }).addTo(appState.map);
     const verifiedTag = spot.verified ? '<span style="background:#15803d;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;">🟢 Verified</span>' : '<span style="background:#facc15;color:#0a0a0a;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;">🟡 Community Submitted</span>';
 
     marker.bindPopup(`
@@ -399,25 +405,70 @@ function renderMapMarkers(spots) {
         <p style="font-size:11px;margin:0;"><strong>Items:</strong> ${spot.items || 'Green Facility'}</p>
       </div>
     `);
+
+    marker.on('click', () => {
+      selectMapSpot(spot);
+    });
+
     appState.markers.push(marker);
+
+    if (idx === 0 && !appState.selectedSpot) {
+      selectMapSpot(spot);
+    }
   });
+}
+
+function selectMapSpot(spot) {
+  if (!spot) return;
+  appState.selectedSpot = spot;
+
+  const typeEl = document.getElementById('selectedPinType');
+  const nameEl = document.getElementById('selectedPinName');
+  const addrEl = document.getElementById('selectedPinAddress');
+  const hoursEl = document.getElementById('selectedPinHours');
+  const distEl = document.getElementById('selectedPinDistance');
+  const itemsEl = document.getElementById('selectedPinItems');
+
+  if (typeEl) typeEl.textContent = (spot.type || spot.category || 'GREEN FACILITY').toUpperCase();
+  if (nameEl) nameEl.textContent = spot.name || 'Green Facility';
+  if (addrEl) addrEl.textContent = spot.address || 'Mumbai, Maharashtra';
+  if (hoursEl) hoursEl.textContent = spot.hours || 'Open 24 Hours';
+  if (distEl) distEl.textContent = spot.distanceKm ? `${spot.distanceKm} km from you` : (spot.distance || 'Near you');
+  if (itemsEl) itemsEl.textContent = spot.items || spot.description || 'Eco facility';
+}
+
+function getDirectionsToPin() {
+  const spot = appState.selectedSpot || (appState.mapSpots && appState.mapSpots[0]);
+  if (!spot) {
+    showToast('No location selected', '⚠️');
+    return;
+  }
+  const lat = parseFloat(spot.lat);
+  const lng = parseFloat(spot.lng);
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  window.open(url, '_blank');
 }
 
 function filterMapPins(category) {
   const btns = document.querySelectorAll('.map-filter-btn');
   btns.forEach(b => {
-    if (b.textContent.toLowerCase().includes(category) || (category === 'all' && b.textContent.includes('All'))) {
+    const text = b.textContent.toLowerCase();
+    if ((category === 'all' && text.includes('all')) || (category !== 'all' && text.includes(category))) {
       b.className = 'map-filter-btn neo-btn bg-[#ccff00] text-[#0a0a0a] text-xs py-1.5 px-2.5';
     } else {
       b.className = 'map-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-1.5 px-2.5';
     }
   });
 
+  const spots = (appState.mapSpots && appState.mapSpots.length > 0) ? appState.mapSpots : DEFAULT_MUMBAI_LOCATIONS;
+
   if (category === 'all') {
-    renderMapMarkers(appState.mapSpots);
+    renderMapMarkers(spots);
+    showToast('Showing all 14 Green Locations', '📍');
   } else {
-    const filtered = appState.mapSpots.filter(s => s.category === category);
+    const filtered = spots.filter(s => s.category === category);
     renderMapMarkers(filtered);
+    showToast(`Showing ${filtered.length} ${category.toUpperCase()} locations`, '📍');
   }
 }
 
