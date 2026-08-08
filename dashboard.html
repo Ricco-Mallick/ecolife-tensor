@@ -924,7 +924,7 @@
     </div>
   </div>
 
-  <!-- AI Challenge Proof Verification Modal -->
+  <!-- AI Challenge Proof Verification Modal (Styled like AI Waste Scanner) -->
   <div id="modalChallengeProof" class="modal flex items-center justify-center p-4">
     <div class="neo-card bg-white p-6 max-w-lg w-full space-y-4 relative">
       <div class="flex items-center justify-between border-b-2 border-[#0a0a0a]/10 pb-3">
@@ -936,22 +936,26 @@
       </div>
 
       <p id="proofModalDesc" class="text-xs font-bold text-gray-600 leading-relaxed">
-        Upload a photo or screenshot as proof. Our AI vision scanner will verify if your submission satisfies the challenge criteria before awarding points.
+        Upload a photo or take a picture as proof. Our AI vision scanner will verify if your submission satisfies the challenge criteria before awarding points.
       </p>
 
       <!-- Permissions Access Banner -->
-      <div class="p-2.5 bg-blue-50 border-2 border-[#0a0a0a] rounded-xl flex items-center gap-2 text-[11px] font-bold text-gray-700">
-        <span class="material-symbols-outlined text-sm text-[#38bdf8]">security</span>
-        <span>Device Photo Gallery & GPS Location access enabled for proof verification.</span>
+      <div class="p-2.5 bg-blue-50 border-2 border-[#0a0a0a] rounded-xl flex items-center justify-between text-[11px] font-bold text-gray-700">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm text-[#38bdf8]">security</span>
+          <span>Device Photo Gallery & GPS Location access enabled.</span>
+        </div>
+        <button onclick="openPermissionsModal()" class="text-[10px] text-[#15803d] font-black underline">Permissions</button>
       </div>
 
-      <!-- Proof Image Upload & Preview Container -->
+      <!-- Proof Image Upload & Drag-and-Drop Container (Identical to AI Waste Scanner) -->
       <div class="border-3 border-dashed border-[#0a0a0a]/40 bg-[#f6f9f3] p-4 rounded-2xl text-center relative overflow-hidden min-h-[170px] flex flex-col items-center justify-center">
         <input type="file" id="challengeProofInput" accept="image/*" onchange="handleChallengeProofUpload(event)" class="hidden"/>
-        
+        <input type="file" id="challengeCameraInput" accept="image/*" capture="environment" onchange="handleChallengeProofUpload(event)" class="hidden"/>
+
         <div id="proofUploadPrompt" class="space-y-2 cursor-pointer" onclick="triggerDeviceGalleryPicker()">
           <span class="material-symbols-outlined text-4xl text-[#15803d]">photo_library</span>
-          <p class="font-display font-black text-xs text-[#0a0a0a]">Click to Browse Photo Gallery / Take Photo</p>
+          <p class="font-display font-black text-xs text-[#0a0a0a]">Click to Upload Image / Choose from Gallery</p>
           <span class="text-[10px] text-gray-500 font-bold block">Supports JPG, PNG, Screenshots</span>
         </div>
 
@@ -959,6 +963,16 @@
           <img id="proofImagePreview" class="max-h-[170px] object-contain rounded-xl border-2 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a]"/>
           <div id="proofScanLaser" class="hidden scan-line"></div>
         </div>
+      </div>
+
+      <!-- Scanner-style Dual Action Buttons -->
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="triggerDeviceGalleryPicker()" class="neo-btn bg-[#38bdf8] text-[#0a0a0a] py-2 px-3 text-xs font-black flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-base">file_upload</span> Upload Image / Gallery
+        </button>
+        <button onclick="triggerLiveCameraCapture()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-3 text-xs font-black flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-base">photo_camera</span> Live Camera Take
+        </button>
       </div>
 
       <!-- Quick Test Proof Toolbar -->
@@ -983,18 +997,57 @@
         </div>
       </div>
 
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 border-t-2 border-[#0a0a0a]/10 pt-3">
-        <button onclick="triggerDeviceGalleryPicker()" class="neo-btn bg-[#38bdf8] text-[#0a0a0a] py-2 px-4 text-xs font-black flex items-center justify-center gap-1.5 w-full sm:w-auto">
-          <span class="material-symbols-outlined text-base">photo_library</span> 🖼️ Browse Photo Gallery
+      <div class="flex justify-end gap-2 border-t-2 border-[#0a0a0a]/10 pt-3">
+        <button onclick="closeChallengeProofModal()" class="neo-btn bg-gray-100 hover:bg-gray-200 text-[#0a0a0a] py-2 px-4 text-xs font-bold">
+          Cancel
         </button>
-        <div class="flex gap-2 w-full sm:w-auto justify-end">
-          <button onclick="closeChallengeProofModal()" class="neo-btn bg-gray-100 hover:bg-gray-200 text-[#0a0a0a] py-2 px-4 text-xs font-bold">
-            Cancel
-          </button>
-          <button id="btnVerifyProofSubmit" onclick="runAiProofVerification()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-5 text-xs font-black flex items-center justify-center gap-1.5">
-            🤖 Run AI Verification
-          </button>
+        <button id="btnVerifyProofSubmit" onclick="runAiProofVerification()" class="neo-btn bg-[#15803d] text-white py-2 px-5 text-xs font-black flex items-center justify-center gap-1.5">
+          🤖 Run Live Verification
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Permissions Request Modal (Prompted after Sign-In / Initial Visit) -->
+  <div id="modalPermissionsRequest" class="modal flex items-center justify-center p-4">
+    <div class="neo-card bg-white p-6 max-w-md w-full space-y-5 relative">
+      <div class="flex items-center justify-between border-b-2 border-[#0a0a0a]/10 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 bg-[#ccff00] border-2 border-[#0a0a0a] rounded-lg font-black flex items-center justify-center text-sm">🔐</span>
+          <h3 class="font-display font-black text-xl text-[#0a0a0a]">Enable Live Features</h3>
         </div>
+        <button onclick="closePermissionsModal()" class="font-black text-xl hover:text-red-600">✕</button>
+      </div>
+
+      <p class="text-xs font-bold text-gray-600 leading-relaxed">
+        To provide real-time eco tracking, local satellite map distance, and live AI proof verification, EcoLife requests device permissions:
+      </p>
+
+      <div class="space-y-3 text-xs font-bold">
+        <div class="p-3 bg-[#f6f9f3] border-2 border-[#0a0a0a] rounded-xl flex items-center gap-3">
+          <span class="material-symbols-outlined text-2xl text-[#15803d]">location_on</span>
+          <div>
+            <h4 class="font-black text-[#0a0a0a]">📍 GPS Location Access</h4>
+            <p class="text-[10px] text-gray-500 font-medium">Calculates step distance to Mumbai green spots & carbon offset.</p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-[#f6f9f3] border-2 border-[#0a0a0a] rounded-xl flex items-center gap-3">
+          <span class="material-symbols-outlined text-2xl text-[#38bdf8]">photo_camera</span>
+          <div>
+            <h4 class="font-black text-[#0a0a0a]">📸 Camera & Photo Gallery Access</h4>
+            <p class="text-[10px] text-gray-500 font-medium">Required for live AI waste scanning & proof photo uploads.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row justify-end gap-2 border-t-2 border-[#0a0a0a]/10 pt-3">
+        <button onclick="closePermissionsModal()" class="neo-btn bg-gray-100 hover:bg-gray-200 text-[#0a0a0a] py-2 px-4 text-xs font-bold w-full sm:w-auto">
+          Skip for Now
+        </button>
+        <button onclick="requestAllPermissions()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 px-5 text-xs font-black w-full sm:w-auto flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-base">verified</span> Allow Access & Enable
+        </button>
       </div>
     </div>
   </div>

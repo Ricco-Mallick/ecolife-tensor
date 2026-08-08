@@ -232,6 +232,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initWeeklyChart();
   initGreenMap();
   updateLeaderboardUi();
+
+  // Prompt permissions modal after sign-in / initial visit if not prompted yet
+  if (!localStorage.getItem('ecolife_permissions_prompted')) {
+    setTimeout(() => {
+      openPermissionsModal();
+    }, 1200);
+  }
 });
 
 // --- Auth Initialization ---
@@ -1137,11 +1144,57 @@ function triggerDeviceGalleryPicker() {
     );
   }
 
-  // Trigger Device File / Gallery / Camera Input
+  // Trigger Device File / Gallery Input
   const fileInput = document.getElementById('challengeProofInput');
   if (fileInput) {
     fileInput.value = ''; // Reset file input
     fileInput.click();
+  }
+}
+
+function triggerLiveCameraCapture() {
+  const cameraInput = document.getElementById('challengeCameraInput');
+  if (cameraInput) {
+    cameraInput.value = '';
+    cameraInput.click();
+  } else {
+    triggerDeviceGalleryPicker();
+  }
+}
+
+// --- Live Permissions Request Modal Logic ---
+function openPermissionsModal() {
+  const modal = document.getElementById('modalPermissionsRequest');
+  if (modal) modal.classList.add('open');
+}
+
+function closePermissionsModal() {
+  const modal = document.getElementById('modalPermissionsRequest');
+  if (modal) modal.classList.remove('open');
+}
+
+function requestAllPermissions() {
+  localStorage.setItem('ecolife_permissions_prompted', 'true');
+  closePermissionsModal();
+
+  // Prompt GPS Geolocation
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        appState.userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        if (appState.userMarker) {
+          appState.userMarker.setLatLng([pos.coords.latitude, pos.coords.longitude]);
+        }
+        updateLocationDistances(pos.coords.latitude, pos.coords.longitude);
+        showToast('📍 GPS Location & Live Features Enabled!', '✅');
+      },
+      (err) => {
+        showToast('Location access skipped or unavailable.', 'ℹ️');
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  } else {
+    showToast('Live features enabled.', '✅');
   }
 }
 
