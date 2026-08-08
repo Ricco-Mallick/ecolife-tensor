@@ -51,11 +51,26 @@ async function initAuth() {
     return;
   }
 
-  const user = await EcoAuth.getCurrentUser();
+  const hasAuthHash = window.location.hash.includes('access_token') || window.location.hash.includes('refresh_token');
+
+  let user = await EcoAuth.getCurrentUser();
+  if (!user && hasAuthHash) {
+    // Give Supabase SDK time to parse token from hash
+    await new Promise(r => setTimeout(r, 600));
+    user = await EcoAuth.getCurrentUser();
+  }
+
   if (!user) {
     // Not logged in — redirect to auth page
     window.location.href = 'auth.html';
     return;
+  }
+
+  // Clean URL hash if returning from OAuth redirect
+  if (hasAuthHash) {
+    try {
+      history.replaceState(null, '', window.location.pathname + '#overview');
+    } catch(e) {}
   }
 
   appState.user = user;
@@ -65,7 +80,7 @@ async function initAuth() {
   if (profile) {
     appState.profile = profile;
     appState.points = profile.total_points || 0;
-    appState.co2Saved = parseFloat(profile.co2_saved_tons || 0) * 1000; // stored as tons, display as kg
+    appState.co2Saved = parseFloat(profile.co2_saved_tons || 0) * 1000;
     appState.streak = profile.streak_days || 0;
     appState.dailyScore = Math.min(Math.round((profile.total_points || 0) / 10), 100);
     appState.completedChallenges = profile.completed_challenges || [];
@@ -161,12 +176,16 @@ function initTabNavigation() {
 
   window.addEventListener('hashchange', () => {
     const hash = window.location.hash.replace('#', '');
-    if (hash) switchTab(hash);
+    if (hash && !hash.includes('access_token') && !hash.includes('refresh_token')) {
+      switchTab(hash);
+    }
   });
 
   const initialHash = window.location.hash.replace('#', '');
-  if (initialHash) {
+  if (initialHash && !initialHash.includes('access_token') && !initialHash.includes('refresh_token')) {
     setTimeout(() => switchTab(initialHash), 150);
+  } else {
+    switchTab('overview');
   }
 }
 

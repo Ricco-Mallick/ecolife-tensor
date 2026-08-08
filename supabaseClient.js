@@ -59,8 +59,8 @@ const AuthResult = {
   async signInWithOAuth(provider = 'google') {
     if (!_supabaseApp) return { success: false, message: "Supabase not initialized." };
     const redirectUrl = window.location.href.includes('github.io')
-      ? 'https://ricco-mallick.github.io/ecolife-tensor/dashboard.html#overview'
-      : window.location.origin + '/dashboard.html#overview';
+      ? 'https://ricco-mallick.github.io/ecolife-tensor/dashboard.html'
+      : window.location.origin + '/dashboard.html';
 
     const { data, error } = await _supabaseApp.auth.signInWithOAuth({
       provider: provider.toLowerCase(),
@@ -79,10 +79,14 @@ const AuthResult = {
     return { success: true };
   },
 
-  // Get Current User (Auth) — requires real Supabase session
+  // Get Current User (Auth) — handles active session & OAuth tokens
   async getCurrentUser() {
     if (!_supabaseApp) return null;
     try {
+      const { data: sessionData } = await _supabaseApp.auth.getSession();
+      if (sessionData && sessionData.session && sessionData.session.user) {
+        return sessionData.session.user;
+      }
       const { data } = await _supabaseApp.auth.getUser();
       if (data && data.user) return data.user;
     } catch (e) {
