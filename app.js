@@ -53,7 +53,21 @@ async function initAuth() {
 
   const hasAuthHash = window.location.hash.includes('access_token') || window.location.hash.includes('refresh_token');
 
+  // Purge any stale or legacy corrupted footprint cache
+  try {
+    const legacy = localStorage.getItem('ecolife_custom_footprint');
+    if (legacy) {
+      const parsed = JSON.parse(legacy);
+      if (!parsed || isNaN(parseFloat(parsed.transportKg)) || isNaN(parseFloat(parsed.energyKg))) {
+        localStorage.removeItem('ecolife_custom_footprint');
+      }
+    }
+  } catch (e) {
+    localStorage.removeItem('ecolife_custom_footprint');
+  }
+
   let user = await EcoAuth.getCurrentUser();
+
   if (!user && hasAuthHash) {
     // Give Supabase SDK time to parse token from hash
     await new Promise(r => setTimeout(r, 600));
