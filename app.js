@@ -679,13 +679,40 @@ function closeAddSpotModal() {
 
 async function handleAddSpotSubmit(event) {
   event.preventDefault();
-  const name = document.getElementById('spotName').value;
+  const name = document.getElementById('spotName').value.trim();
   const category = document.getElementById('spotCategory').value;
-  const address = document.getElementById('spotAddress').value;
+  const address = document.getElementById('spotAddress').value.trim();
   const lat = parseFloat(document.getElementById('spotLat').value);
   const lng = parseFloat(document.getElementById('spotLng').value);
-  const hours = document.getElementById('spotHours').value || 'Open 24 Hours';
-  const items = document.getElementById('spotItems').value || 'Community Submitted Spot';
+  const hours = document.getElementById('spotHours').value.trim() || 'Open 24 Hours';
+  const items = document.getElementById('spotItems').value.trim() || 'Community Submitted Spot';
+
+  // Anti-Garbage Validation Rules
+  if (name.length < 3 || name.length > 60) {
+    showToast('Place name must be between 3 and 60 characters', '⚠️');
+    return;
+  }
+
+  const lowName = name.toLowerCase();
+  if (/^(.)\1{3,}$/.test(lowName) || ['test', 'asdf', 'abc', '123', 'qwerty', 'admin', 'garbage', 'null'].includes(lowName)) {
+    showToast('Please enter a valid place name', '⚠️');
+    return;
+  }
+
+  if (address.length < 5 || address.length > 120) {
+    showToast('Address must be between 5 and 120 characters', '⚠️');
+    return;
+  }
+
+  if (isNaN(lat) || lat < 18.0 || lat > 20.0) {
+    showToast('Latitude must be a valid Mumbai coordinate (e.g. 19.0760)', '⚠️');
+    return;
+  }
+
+  if (isNaN(lng) || lng < 72.0 || lng > 73.5) {
+    showToast('Longitude must be a valid Mumbai coordinate (e.g. 72.8777)', '⚠️');
+    return;
+  }
 
   const categoryIcons = { park: '🌲', ev: '⚡', recycling: '♻️', water: '💧' };
   const typeLabels = { park: 'PARK & GREEN SPACE', ev: 'EV CHARGING', recycling: 'RECYCLING HUB', water: 'WATER REFILL' };
@@ -706,7 +733,6 @@ async function handleAddSpotSubmit(event) {
   closeAddSpotModal();
   showToast('Green place submitted for community verification!', '🌱');
 
-  // Reset Form
   event.target.reset();
 }
 

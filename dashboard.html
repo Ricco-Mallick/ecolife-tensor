@@ -1069,7 +1069,7 @@
       <form id="formAddSpot" onsubmit="handleAddSpotSubmit(event)" class="space-y-3 text-xs font-bold">
         <div>
           <label class="block mb-1">Place Name *</label>
-          <input type="text" id="spotName" required placeholder="e.g. Bandra EV Charging Station" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+          <input type="text" id="spotName" minlength="3" maxlength="60" required placeholder="e.g. Bandra EV Charging Station" title="3-60 characters, no gibberish" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
         </div>
         <div>
           <label class="block mb-1">Category *</label>
@@ -1082,25 +1082,25 @@
         </div>
         <div>
           <label class="block mb-1">Address *</label>
-          <input type="text" id="spotAddress" required placeholder="Full street address in Mumbai" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+          <input type="text" id="spotAddress" minlength="5" maxlength="120" required placeholder="Full street address in Mumbai" title="5-120 characters" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block mb-1">Latitude *</label>
-            <input type="number" step="any" id="spotLat" required placeholder="19.0760" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+            <input type="number" step="any" min="18.50000" max="19.50000" id="spotLat" required placeholder="19.0760" title="Valid Mumbai latitude (18.5 to 19.5)" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
           </div>
           <div>
             <label class="block mb-1">Longitude *</label>
-            <input type="number" step="any" id="spotLng" required placeholder="72.8777" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+            <input type="number" step="any" min="72.50000" max="73.30000" id="spotLng" required placeholder="72.8777" title="Valid Mumbai longitude (72.5 to 73.3)" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
           </div>
         </div>
         <div>
           <label class="block mb-1">Opening Hours</label>
-          <input type="text" id="spotHours" placeholder="09:00 AM - 08:00 PM" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+          <input type="text" id="spotHours" maxlength="50" placeholder="e.g. 07:00 AM - 08:00 PM" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
         </div>
         <div>
           <label class="block mb-1">Items / Description</label>
-          <input type="text" id="spotItems" placeholder="Free refills, CCS2 chargers..." class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+          <input type="text" id="spotItems" maxlength="150" placeholder="e.g. PET Plastics, E-Waste, Fast Charger" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
         </div>
 
         <button type="submit" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-3 w-full text-xs font-black mt-2">
