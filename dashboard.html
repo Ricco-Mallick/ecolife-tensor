@@ -103,7 +103,7 @@
     <div class="p-4 border-t-4 border-[#0a0a0a] bg-[#f6f9f3]">
       <div class="p-3 bg-white border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a] rounded-xl flex items-center justify-between">
         <div class="flex items-center gap-2.5 overflow-hidden">
-          <span class="w-9 h-9 rounded-xl bg-[#15803d] text-white flex items-center justify-center text-sm font-black border-2 border-[#0a0a0a] shadow-[2px_2px_0px_0px_#0a0a0a]">🌿</span>
+          <div id="sidebarAvatarBox" class="w-9 h-9 rounded-xl bg-[#15803d] text-white flex items-center justify-center text-sm font-black border-2 border-[#0a0a0a] shadow-[2px_2px_0px_0px_#0a0a0a] overflow-hidden">🌿</div>
           <div class="truncate">
             <p id="sidebarUserName" class="font-display font-black text-xs truncate">Guest Warrior</p>
             <p id="sidebarUserRank" class="text-[10px] text-[#15803d] font-extrabold uppercase tracking-wide">Eco Guardian</p>
@@ -832,7 +832,7 @@
       <!-- Profile Header Card -->
       <div class="neo-card p-6 lg:p-8 bg-white flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="flex items-center gap-4">
-          <div class="w-20 h-20 rounded-2xl bg-[#15803d] text-white font-black text-3xl flex items-center justify-center border-4 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a]">
+          <div id="profileAvatarBox" class="w-20 h-20 rounded-2xl bg-[#15803d] text-white font-black text-3xl flex items-center justify-center border-4 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a] overflow-hidden">
             🌿
           </div>
           <div>
@@ -896,6 +896,68 @@
             <p class="font-display font-extrabold text-xs">Forest Guardian</p>
             <p class="text-[10px] text-gray-500">Locked (Reach 2,000 pts)</p>
           </div>
+        </div>
+      </div>
+
+      <!-- Real Environmental Impact Equivalencies Grid -->
+      <div class="neo-card p-6 bg-white space-y-4">
+        <h3 class="font-display font-black text-2xl text-[#0a0a0a]">Your Real Environmental Impact</h3>
+        <p class="text-xs text-gray-500 font-bold">Computed dynamically from your saved CO₂ metrics</p>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="border-3 border-[#0a0a0a] p-4 rounded-2xl bg-[#f6f9f3] text-center shadow-[3px_3px_0px_0px_#0a0a0a]">
+            <span class="text-3xl block mb-1">🌲</span>
+            <p id="eqTreesPlanted" class="font-display font-black text-2xl text-[#15803d]">0.1</p>
+            <p class="text-[11px] font-bold text-gray-700">Trees Planted Equivalent</p>
+          </div>
+
+          <div class="border-3 border-[#0a0a0a] p-4 rounded-2xl bg-[#f6f9f3] text-center shadow-[3px_3px_0px_0px_#0a0a0a]">
+            <span class="text-3xl block mb-1">🚗</span>
+            <p id="eqCarKm" class="font-display font-black text-2xl text-[#0a0a0a]">1.6 km</p>
+            <p class="text-[11px] font-bold text-gray-700">Car Drive Offset</p>
+          </div>
+
+          <div class="border-3 border-[#0a0a0a] p-4 rounded-2xl bg-[#f6f9f3] text-center shadow-[3px_3px_0px_0px_#0a0a0a]">
+            <span class="text-3xl block mb-1">💡</span>
+            <p id="eqBulbHours" class="font-display font-black text-2xl text-[#0a0a0a]">3.8 hrs</p>
+            <p class="text-[11px] font-bold text-gray-700">LED Bulb Hours Saved</p>
+          </div>
+
+          <div class="border-3 border-[#0a0a0a] p-4 rounded-2xl bg-[#f6f9f3] text-center shadow-[3px_3px_0px_0px_#0a0a0a]">
+            <span class="text-3xl block mb-1">📱</span>
+            <p id="eqPhoneCharges" class="font-display font-black text-2xl text-[#15803d]">36</p>
+            <p class="text-[11px] font-bold text-gray-700">Smartphone Charges</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Eco Action Activity History Ledger -->
+      <div class="neo-card p-6 bg-white space-y-4">
+        <div class="flex items-center justify-between border-b-2 border-[#0a0a0a]/10 pb-3">
+          <div>
+            <h3 class="font-display font-black text-2xl text-[#0a0a0a]">Logged Activity History</h3>
+            <p class="text-xs text-gray-500 font-bold">Real-time audit log from your Supabase profile</p>
+          </div>
+          <span class="neo-badge bg-[#15803d] text-white text-xs">Live Database Sync</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b-4 border-[#0a0a0a] text-xs font-display font-black uppercase text-gray-600">
+                <th class="py-3 px-3">Date / Time</th>
+                <th class="py-3 px-3">Action Description</th>
+                <th class="py-3 px-3">Category</th>
+                <th class="py-3 px-3 text-right">Points</th>
+                <th class="py-3 px-3 text-right">CO₂ Offset</th>
+              </tr>
+            </thead>
+            <tbody id="profileActivityTableBody" class="divide-y-2 divide-[#0a0a0a]/10 font-bold text-sm">
+              <tr>
+                <td colspan="5" class="text-center py-6 text-gray-400">Loading activity history...</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 

@@ -100,6 +100,7 @@ function updateUserUi() {
     ? (appState.user.user_metadata?.full_name || appState.user.email?.split('@')[0] || 'Eco Warrior') 
     : 'Eco Warrior';
   const email = appState.user?.email || 'warrior@ecolife.app';
+  const avatarUrl = appState.user?.user_metadata?.avatar_url || appState.user?.user_metadata?.picture || appState.profile?.avatar_url;
 
   appState.name = userName;
 
@@ -115,8 +116,21 @@ function updateUserUi() {
   if (profileEmail) profileEmail.textContent = email;
   if (leaderboardYourName) leaderboardYourName.textContent = userName + ' (You)';
 
+  // Render Real Google PFP Avatar if available
+  if (avatarUrl) {
+    const profBox = document.getElementById('profileAvatarBox');
+    const sideBox = document.getElementById('sidebarAvatarBox');
+    if (profBox) {
+      profBox.innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover rounded-2xl" alt="${userName}" onerror="this.remove()" />`;
+    }
+    if (sideBox) {
+      sideBox.innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover rounded-xl" alt="${userName}" onerror="this.remove()" />`;
+    }
+  }
+
   refreshStateCounters();
   renderChallengeButtonsState();
+  loadProfileActivityHistory();
 }
 
 function refreshStateCounters() {
@@ -135,12 +149,55 @@ function refreshStateCounters() {
   const scoreEl = document.getElementById('dailyEcoScore');
   if (scoreEl) scoreEl.textContent = appState.dailyScore;
 
+  // Compute Real Impact Equivalencies
+  const co2 = appState.co2Saved || 0;
+  const trees = (co2 / 21.77).toFixed(1);
+  const carKm = (co2 / 0.192).toFixed(1);
+  const bulbs = (co2 * 12.5).toFixed(1);
+  const phones = Math.round(co2 * 120);
+
+  const treesEl = document.getElementById('eqTreesPlanted');
+  const carEl = document.getElementById('eqCarKm');
+  const bulbEl = document.getElementById('eqBulbHours');
+  const phoneEl = document.getElementById('eqPhoneCharges');
+
+  if (treesEl) treesEl.textContent = trees;
+  if (carEl) carEl.textContent = carKm + ' km';
+  if (bulbEl) bulbEl.textContent = bulbs + ' hrs';
+  if (phoneEl) phoneEl.textContent = phones.toLocaleString();
+
   // Update streak progress bar
   const streakBar = document.getElementById('streakProgressBar');
   if (streakBar) {
     const pct = Math.min((appState.streak % 10) / 10 * 100, 100);
     streakBar.style.width = pct + '%';
   }
+}
+
+async function loadProfileActivityHistory() {
+  const tbody = document.getElementById('profileActivityTableBody');
+  if (!tbody || typeof EcoAuth === 'undefined') return;
+
+  const actions = await EcoAuth.getEcoActions();
+  if (!actions || actions.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-gray-500">No activity history logged yet. Complete eco actions or challenges to start logging!</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = '';
+  actions.slice(0, 15).forEach(act => {
+    const dateStr = act.logged_at ? new Date(act.logged_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recently';
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-gray-50';
+    tr.innerHTML = `
+      <td class="py-3 px-3 text-xs text-gray-500 font-medium">${dateStr}</td>
+      <td class="py-3 px-3 font-bold text-[#0a0a0a]">${act.title || 'Eco Action'}</td>
+      <td class="py-3 px-3"><span class="neo-badge bg-[#ccff00] text-[#0a0a0a] text-xs">${act.category || 'General'}</span></td>
+      <td class="py-3 px-3 text-right font-black text-[#15803d]">+${act.points_earned || 30} pts</td>
+      <td class="py-3 px-3 text-right font-bold text-gray-700">${parseFloat(act.co2_saved_kg || 0).toFixed(2)} kg</td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 function renderChallengeButtonsState() {
