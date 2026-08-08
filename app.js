@@ -445,46 +445,94 @@ function requestUserLocation() {
     btn.textContent = '📍 Locating...';
   }
 
-  const setLocationOnMap = (lat, lng, label = 'Your Location') => {
+  const setLocationOnMap = (lat, lng, accuracy = 50, label = 'Your Location') => {
     appState.userLat = lat;
     appState.userLng = lng;
     if (appState.map) {
-      appState.map.setView([lat, lng], 14, { animate: true });
-      if (appState.userMarker) appState.map.removeLayer(appState.userMarker);
+      const targetZoom = accuracy < 150 ? 16 : (accuracy < 1000 ? 14 : 12);
+      appState.map.setView([lat, lng], targetZoom, { animate: true });
       
+      if (appState.userMarker) appState.map.removeLayer(appState.userMarker);
+      if (appState.userAccuracyCircle) appState.map.removeLayer(appState.userAccuracyCircle);
+
+      if (accuracy && accuracy < 10000) {
+        appState.userAccuracyCircle = L.circle([lat, lng], {
+          radius: accuracy,
+          color: '#15803d',
+          fillColor: '#ccff00',
+          fillOpacity: 0.25,
+          weight: 2
+        }).addTo(appState.map);
+      }
+
       const beaconHtml = '<div class="user-location-beacon" title="Your Location"></div>';
       const beaconIcon = L.divIcon({ html: beaconHtml, className: '', iconSize: [24, 24], iconAnchor: [12, 12] });
       
       appState.userMarker = L.marker([lat, lng], { icon: beaconIcon }).addTo(appState.map);
+      const accText = accuracy ? ` (±${Math.round(accuracy)}m accuracy)` : '';
+      
       appState.userMarker.bindPopup(`
         <div style="font-family:Inter,sans-serif;padding:4px;text-align:center;">
           <span style="background:#ccff00;color:#0a0a0a;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:900;border:1.5px solid #0a0a0a;">📍 ${label}</span>
-          <p style="font-size:10px;color:#666;margin:4px 0 0 0;">Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</p>
+          <p style="font-size:10px;color:#333;margin:4px 0 0 0;font-weight:bold;">${accText}</p>
+          <p style="font-size:10px;color:#666;margin:2px 0 0 0;">Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}</p>
         </div>
       `).openPopup();
+
+      updateDistancesFromUser(lat, lng);
     }
   };
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       pos => {
-        setLocationOnMap(pos.coords.latitude, pos.coords.longitude, 'Your Live Location');
-        showToast('Located your position!', '📍');
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const acc = pos.coords.accuracy || 50;
+
+        setLocationOnMap(lat, lng, acc, 'Your Live Location');
+        showToast(`Position verified (±${Math.round(acc)}m)`, '📍');
         if (btn) { btn.disabled = false; btn.textContent = '📍 Locate Me'; }
       },
-      err => {
-        console.warn("Geolocation fallback:", err.message);
-        setLocationOnMap(19.0760, 72.8777, 'Mumbai Central (Default)');
-        showToast('Location centered on Mumbai', '📍');
+      async (err) => {
+        console.warn("HTML5 Geolocation fallback:", err);
+        try {
+          const res = await fetch('https://ipapi.co/json/');
+          const ipData = await res.json();
+          if (ipData && ipData.latitude && ipData.longitude) {
+            setLocationOnMap(ipData.latitude, ipData.longitude, 2500, `${ipData.city || 'City'} Area (IP Geolocation)`);
+            showToast(`Located area: ${ipData.city || 'Local Area'}`, '📍');
+          } else {
+            throw new Error('IP Geo failed');
+          }
+        } catch (e) {
+          setLocationOnMap(19.0760, 72.8777, 5000, 'Mumbai Central (Default)');
+          showToast('Location centered on Mumbai', '📍');
+        }
         if (btn) { btn.disabled = false; btn.textContent = '📍 Locate Me'; }
       },
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
     );
   } else {
-    setLocationOnMap(19.0760, 72.8777, 'Mumbai Central');
+    setLocationOnMap(19.0760, 72.8777, 5000, 'Mumbai Central');
     showToast('Browser geolocation unsupported', '⚠️');
     if (btn) { btn.disabled = false; btn.textContent = '📍 Locate Me'; }
   }
+}
+
+function updateDistancesFromUser(userLat, userLng) {
+  if (!appState.mapSpots) return;
+  const toRad = deg => (deg * Math.PI) / 180;
+  const R = 6371;
+
+  appState.mapSpots.forEach(spot => {
+    const dLat = toRad(spot.lat - userLat);
+    const dLng = toRad(spot.lng - userLng);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(userLat)) * Math.cos(toRad(spot.lat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distKm = R * c;
+    spot.distanceKm = parseFloat(distKm.toFixed(2));
+  });
 }
 
 // Add Spot Modal Handlers
