@@ -391,9 +391,15 @@ function renderMapMarkers(spots) {
   const spotList = (spots && Array.isArray(spots) && spots.length > 0) ? spots : DEFAULT_MUMBAI_LOCATIONS;
 
   spotList.forEach((spot, idx) => {
-    const lat = parseFloat(spot.lat);
-    const lng = parseFloat(spot.lng);
+    const rawLat = spot.lat !== undefined ? spot.lat : spot.latitude;
+    const rawLng = spot.lng !== undefined ? spot.lng : spot.longitude;
+    const lat = parseFloat(rawLat);
+    const lng = parseFloat(rawLng);
     if (isNaN(lat) || isNaN(lng)) return;
+
+    // Standardize lat & lng on object
+    spot.lat = lat;
+    spot.lng = lng;
 
     const color = categoryColors[spot.category] || '#15803d';
     const iconHtml = `<div class="custom-neo-marker" style="background:${color};border:3px solid #0a0a0a;box-shadow:3px 3px 0px #0a0a0a;border-radius:10px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;">${spot.icon || '📍'}</div>`;
@@ -449,8 +455,10 @@ function getDirectionsToPin() {
     showToast('No location selected', '⚠️');
     return;
   }
-  const lat = parseFloat(spot.lat);
-  const lng = parseFloat(spot.lng);
+  const rawLat = spot.lat !== undefined ? spot.lat : spot.latitude;
+  const rawLng = spot.lng !== undefined ? spot.lng : spot.longitude;
+  const lat = parseFloat(rawLat);
+  const lng = parseFloat(rawLng);
   const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
   window.open(url, '_blank');
 }
@@ -466,7 +474,7 @@ function filterMapPins(category) {
     }
   });
 
-  const spots = (appState.mapSpots && appState.mapSpots.length > 0) ? appState.mapSpots : DEFAULT_MUMBAI_LOCATIONS;
+  const spots = (appState.mapSpots && Array.isArray(appState.mapSpots) && appState.mapSpots.length > 0) ? appState.mapSpots : DEFAULT_MUMBAI_LOCATIONS;
 
   if (category === 'all') {
     renderMapMarkers(spots);
