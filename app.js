@@ -1387,29 +1387,8 @@ async function quickLogAction(actionTitle, co2SavedKg) {
   }
 }
 
-function openCarbonCalcModal() {
-  const modal = document.getElementById('modalCarbonCalc');
-  if (modal) modal.classList.add('open');
-}
-
-function closeCarbonCalcModal() {
-  const modal = document.getElementById('modalCarbonCalc');
-  if (modal) modal.classList.remove('open');
-}
-
-function submitFootprintCalc() {
-  const km = parseFloat(document.getElementById('calcKm').value) || 12;
-  const kwh = parseFloat(document.getElementById('calcKwh').value) || 8;
-
-  const result = CarbonEngine.calculateFootprint({ transportKmPerWeek: km * 7, electricityKwhPerMonth: kwh * 30 });
-  document.getElementById('fpTransportVal').textContent = result.transportMonthlyKg + ' kg CO₂';
-  document.getElementById('fpEnergyVal').textContent = result.energyMonthlyKg + ' kg CO₂';
-
-  closeCarbonCalcModal();
-  showToast('Carbon Footprint recalculated via CarbonEngine!', '⚡');
-}
-
 function handleAuthAction() {
+
   if (appState.user) {
     if (typeof EcoAuth !== 'undefined') EcoAuth.signOut();
     appState.user = null;
