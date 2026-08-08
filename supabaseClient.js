@@ -59,8 +59,8 @@ const AuthResult = {
   async signInWithOAuth(provider = 'google') {
     if (!_supabaseApp) return { success: false, message: "Supabase not initialized." };
     const redirectUrl = window.location.href.includes('github.io')
-      ? 'https://ricco-mallick.github.io/ecolife-tensor/dashboard.html#overview'
-      : window.location.origin + '/dashboard.html#overview';
+      ? 'https://ricco-mallick.github.io/ecolife-tensor/dashboard.html'
+      : window.location.origin + '/dashboard.html';
 
     const { data, error } = await _supabaseApp.auth.signInWithOAuth({
       provider: provider.toLowerCase(),
@@ -79,10 +79,14 @@ const AuthResult = {
     return { success: true };
   },
 
-  // Get Current User (Auth) — requires real Supabase session
+  // Get Current User (Auth) — handles active session & OAuth tokens
   async getCurrentUser() {
     if (!_supabaseApp) return null;
     try {
+      const { data: sessionData } = await _supabaseApp.auth.getSession();
+      if (sessionData && sessionData.session && sessionData.session.user) {
+        return sessionData.session.user;
+      }
       const { data } = await _supabaseApp.auth.getUser();
       if (data && data.user) return data.user;
     } catch (e) {
@@ -93,6 +97,7 @@ const AuthResult = {
 
   // Get User Profile from `profiles` table
   async getProfile() {
+    if (!_supabaseApp) return null;
     const user = await this.getCurrentUser();
     if (!user) return null;
 
@@ -134,6 +139,7 @@ const AuthResult = {
 
   // Update User Profile
   async updateProfile(updates) {
+    if (!_supabaseApp) return { success: false, message: "Supabase not initialized." };
     const user = await this.getCurrentUser();
     if (!user) return { success: false, message: "Not logged in" };
 
@@ -152,19 +158,19 @@ const AuthResult = {
 
   // Log Eco Action to DB
   async logEcoAction(category, title, co2SavedKg) {
+    if (!_supabaseApp) return { success: false, message: "Supabase not initialized." };
     const user = await this.getCurrentUser();
     if (!user) return { success: false, message: "Not logged in" };
 
-    // Ensure profile exists for Foreign Key constraint
     const profile = await this.getProfile();
     if (!profile) return { success: false, message: "Failed to load or create profile." };
 
-    // Do NOT include id — let Supabase auto-generate UUID
     const newAction = {
       user_id: user.id,
       category,
       title,
-      co2_saved_kg: parseFloat(co2SavedKg) || 0
+      co2_saved_kg: parseFloat(co2SavedKg) || 0,
+      points_earned: 30
     };
 
     const { data, error } = await _supabaseApp.from("eco_actions").insert([newAction]).select().single();
@@ -173,10 +179,9 @@ const AuthResult = {
       return { success: false, message: error.message };
     }
 
-    // After successfully logging the action, update the user's profile stats
     const co2Tons = (parseFloat(co2SavedKg) || 0) / 1000;
     await this.updateProfile({
-      total_points: (profile.total_points || 0) + 50,
+      total_points: (profile.total_points || 0) + 30,
       co2_saved_tons: (profile.co2_saved_tons || 0) + co2Tons
     });
 
@@ -185,6 +190,7 @@ const AuthResult = {
 
   // Fetch Eco Actions
   async getEcoActions() {
+    if (!_supabaseApp) return [];
     const user = await this.getCurrentUser();
     if (!user) return [];
 
@@ -218,30 +224,33 @@ const AuthResult = {
     return data;
   },
 
-  // Map Spots
+  // Map Spots (DB-driven)
   async getMapSpots() {
     if (!_supabaseApp) return [];
     const { data, error } = await _supabaseApp
       .from("map_spots")
-      .select("*");
+      .select("*")
+      .order("created_at", { ascending: true });
+
     if (error) {
       console.error("Error fetching map spots:", error);
       return [];
     }
-    return data;
+    return data || [];
   },
 
   async addMapSpot(spot) {
+    if (!_supabaseApp) return { success: false, message: "Supabase not initialized." };
     const user = await this.getCurrentUser();
     if (!user) return { success: false, message: "Not logged in" };
 
-    // Ensure profile exists for Foreign Key constraint
     const profile = await this.getProfile();
     if (!profile) return { success: false, message: "Failed to load or create profile." };
 
     const newSpot = {
       ...spot,
-      created_by: user.id
+      created_by: user.id,
+      verified: false // Community submitted places require verification
     };
 
     const { data, error } = await _supabaseApp.from("map_spots").insert([newSpot]).select();
@@ -252,13 +261,46 @@ const AuthResult = {
     return { success: true, data: data[0] };
   },
 
-  // Complete a Challenge
-  async completeChallenge(challengeId, rewardPoints) {
+  // --- CHALLENGES ENGINE ---
+  async getChallenges() {
+    if (!_supabaseApp) return [];
+    const { data, error } = await _supabaseApp
+      .from("challenges")
+      .select("*")
+      .eq("active", true);
+
+    if (error) {
+      console.error("Error fetching challenges:", error);
+      return [];
+    }
+    return data || [];
+  },
+
+  /**
+   * Complete Challenge — SERVER CONTROLLED POINTS
+   * Looks up challenge record in database to determine points & co2 target rather than accepting client parameters.
+   */
+  async completeChallenge(challengeId, evidence = {}) {
+    if (!_supabaseApp) return { success: false, message: "Supabase not initialized." };
     const user = await this.getCurrentUser();
     if (!user) return { success: false, message: "Not logged in" };
 
     const profile = await this.getProfile();
     if (!profile) return { success: false, message: "Profile not found" };
+
+    // Lookup challenge points directly from DB to prevent client point injection
+    let rewardPoints = 30;
+    let co2OffsetTons = 0.0003;
+    const { data: chalData } = await _supabaseApp
+      .from("challenges")
+      .select("*")
+      .eq("id", challengeId)
+      .maybeSingle();
+
+    if (chalData) {
+      rewardPoints = chalData.points || 30;
+      co2OffsetTons = (chalData.co2_target || 0.3) / 1000;
+    }
 
     const completed = profile.completed_challenges || [];
     if (completed.includes(challengeId)) {
@@ -267,12 +309,28 @@ const AuthResult = {
 
     const updatedCompleted = [...completed, challengeId];
     const newPoints = (profile.total_points || 0) + rewardPoints;
+    const newCo2Tons = (profile.co2_saved_tons || 0) + co2OffsetTons;
 
+    // Record challenge completion record
+    const { error: compError } = await _supabaseApp.from("challenge_completions").insert([{
+      user_id: user.id,
+      challenge_id: challengeId,
+      evidence,
+      points_awarded: rewardPoints,
+      verified: true
+    }]);
+
+    if (compError && !compError.message?.includes('duplicate key')) {
+      console.error("Error inserting completion:", compError);
+    }
+
+    // Update profile total points
     const { data, error } = await _supabaseApp
       .from("profiles")
       .update({ 
         completed_challenges: updatedCompleted,
-        total_points: newPoints 
+        total_points: newPoints,
+        co2_saved_tons: newCo2Tons
       })
       .eq("id", user.id)
       .select();
@@ -281,9 +339,94 @@ const AuthResult = {
       console.error("Error updating challenge progress:", error);
       return { success: false, message: error.message };
     }
-    return { success: true, data: data[0] };
+    return { success: true, data: data[0], pointsAwarded: rewardPoints };
+  },
+
+  // --- WASTE INTELLIGENCE & SCANS ---
+  async getWasteCategories() {
+    if (!_supabaseApp) return [];
+    const { data, error } = await _supabaseApp.from("waste_categories").select("*");
+    if (error) {
+      console.error("Error fetching waste categories:", error);
+      return [];
+    }
+    return data || [];
+  },
+
+  async logWasteScan(scanData) {
+    if (!_supabaseApp) return { success: false, message: "Supabase not initialized." };
+    const user = await this.getCurrentUser();
+    if (!user) return { success: false, message: "Not logged in" };
+
+    const newScan = {
+      user_id: user.id,
+      detected_item: scanData.detectedItem || "Waste Item",
+      category: scanData.category || "Plastic",
+      confidence: parseFloat(scanData.confidence) || 90.0,
+      disposal_method: scanData.disposalMethod || "Recycling Bin",
+      co2_saved_kg: parseFloat(scanData.co2SavedKg) || 0.08
+    };
+
+    const { data, error } = await _supabaseApp.from("waste_scans").insert([newScan]).select().single();
+    if (error) {
+      console.error("Error logging scan:", error);
+      return { success: false, message: error.message };
+    }
+    return { success: true, data };
+  },
+
+  // --- ACTIVITY SESSIONS (PEDOMETER) ---
+  async createActivitySession(sessionData) {
+    if (!_supabaseApp) return { success: false, message: "Supabase not initialized." };
+    const user = await this.getCurrentUser();
+    if (!user) return { success: false, message: "Not logged in" };
+
+    const newSession = {
+      user_id: user.id,
+      type: sessionData.type || 'walk',
+      steps: parseInt(sessionData.steps) || 0,
+      distance_km: parseFloat(sessionData.distanceKm) || 0,
+      duration_seconds: parseInt(sessionData.durationSeconds) || 0,
+      co2_saved_kg: parseFloat(sessionData.co2SavedKg) || 0,
+      points_earned: parseInt(sessionData.pointsEarned) || 0
+    };
+
+    const { data, error } = await _supabaseApp.from("activity_sessions").insert([newSession]).select().single();
+    if (error) {
+      console.error("Error logging activity session:", error);
+      return { success: false, message: error.message };
+    }
+    return { success: true, data };
+  },
+
+  // --- LIVE COMMUNITY ACTIVITY FEED ---
+  async getChallengeActivityFeed() {
+    if (!_supabaseApp) return [];
+    try {
+      const { data, error } = await _supabaseApp
+        .from("challenge_completions")
+        .select(`
+          id,
+          completed_at,
+          points_awarded,
+          verified,
+          challenge_id,
+          challenges (title, icon),
+          profiles (full_name, avatar_url)
+        `)
+        .order("completed_at", { ascending: false })
+        .limit(10);
+
+      if (error) {
+        console.error("Error fetching activity feed:", error);
+        return [];
+      }
+      return data || [];
+    } catch (e) {
+      console.error("Activity feed query exception:", e);
+      return [];
+    }
   }
 };
 
 window.EcoAuth = AuthResult;
-
