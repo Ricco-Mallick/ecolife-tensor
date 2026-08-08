@@ -25,8 +25,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
 
-  <!-- Supabase & EcoAuth Helper -->
+  <!-- Supabase, Carbon Engine & EcoAuth Helper -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="services/carbonEngine.js"></script>
   <script src="supabaseClient.js"></script>
 
   <!-- Custom Neo-Brutalist Styles -->
@@ -525,6 +526,9 @@
           <button id="btnLocateUser" onclick="requestUserLocation()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] text-xs py-2 px-3">
             📍 Locate Me
           </button>
+          <button onclick="openAddSpotModal()" class="neo-btn bg-[#15803d] text-white text-xs py-2 px-3">
+            ＋ Add Green Place
+          </button>
           
           <div class="w-full sm:w-auto flex flex-wrap gap-1.5 mt-2 sm:mt-0">
             <button onclick="filterMapPins('all')" class="map-filter-btn neo-btn bg-[#ccff00] text-[#0a0a0a] text-xs py-1.5 px-2.5">
@@ -985,6 +989,58 @@
           🤖 Run AI Verification
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Add Green Place Modal -->
+  <div id="modalAddSpot" class="modal-overlay">
+    <div class="neo-card bg-white p-6 max-w-md w-full m-4 space-y-4 relative">
+      <div class="flex items-center justify-between">
+        <h3 class="font-display font-black text-xl">＋ Add Community Green Place</h3>
+        <button onclick="closeAddSpotModal()" class="font-bold text-lg hover:text-red-600">✕</button>
+      </div>
+
+      <form id="formAddSpot" onsubmit="handleAddSpotSubmit(event)" class="space-y-3 text-xs font-bold">
+        <div>
+          <label class="block mb-1">Place Name *</label>
+          <input type="text" id="spotName" required placeholder="e.g. Bandra EV Charging Station" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+        </div>
+        <div>
+          <label class="block mb-1">Category *</label>
+          <select id="spotCategory" required class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display bg-white">
+            <option value="recycling">♻️ Recycling Hub</option>
+            <option value="ev">⚡ EV Charging Station</option>
+            <option value="water">💧 Water Refill Station</option>
+            <option value="park">🌲 Park / Green Space</option>
+          </select>
+        </div>
+        <div>
+          <label class="block mb-1">Address *</label>
+          <input type="text" id="spotAddress" required placeholder="Full street address in Mumbai" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block mb-1">Latitude *</label>
+            <input type="number" step="any" id="spotLat" required placeholder="19.0760" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+          </div>
+          <div>
+            <label class="block mb-1">Longitude *</label>
+            <input type="number" step="any" id="spotLng" required placeholder="72.8777" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+          </div>
+        </div>
+        <div>
+          <label class="block mb-1">Opening Hours</label>
+          <input type="text" id="spotHours" placeholder="09:00 AM - 08:00 PM" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+        </div>
+        <div>
+          <label class="block mb-1">Items / Description</label>
+          <input type="text" id="spotItems" placeholder="Free refills, CCS2 chargers..." class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+        </div>
+
+        <button type="submit" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-3 w-full text-xs font-black mt-2">
+          🚀 Submit Place for Community Verification
+        </button>
+      </form>
     </div>
   </div>
 
