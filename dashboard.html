@@ -948,7 +948,7 @@
 
   <!-- AI Challenge Proof Verification Modal -->
   <div id="modalChallengeProof" class="modal flex items-center justify-center p-4">
-    <div class="neo-card bg-white p-6 max-w-lg w-full space-y-5 relative">
+    <div class="neo-card bg-white p-6 max-w-lg w-full space-y-4 relative">
       <div class="flex items-center justify-between border-b-2 border-[#0a0a0a]/10 pb-3">
         <div class="flex items-center gap-2">
           <span class="w-8 h-8 bg-[#ccff00] border-2 border-[#0a0a0a] rounded-lg font-black flex items-center justify-center text-sm">🤖</span>
@@ -961,18 +961,24 @@
         Upload a photo or screenshot as proof. Our AI vision scanner will verify if your submission satisfies the challenge criteria before awarding points.
       </p>
 
+      <!-- Permissions Access Banner -->
+      <div class="p-2.5 bg-blue-50 border-2 border-[#0a0a0a] rounded-xl flex items-center gap-2 text-[11px] font-bold text-gray-700">
+        <span class="material-symbols-outlined text-sm text-[#38bdf8]">security</span>
+        <span>Device Photo Gallery & GPS Location access enabled for proof verification.</span>
+      </div>
+
       <!-- Proof Image Upload & Preview Container -->
-      <div class="border-3 border-dashed border-[#0a0a0a]/40 bg-[#f6f9f3] p-4 rounded-2xl text-center relative overflow-hidden min-h-[180px] flex flex-col items-center justify-center">
+      <div class="border-3 border-dashed border-[#0a0a0a]/40 bg-[#f6f9f3] p-4 rounded-2xl text-center relative overflow-hidden min-h-[170px] flex flex-col items-center justify-center">
         <input type="file" id="challengeProofInput" accept="image/*" onchange="handleChallengeProofUpload(event)" class="hidden"/>
         
-        <div id="proofUploadPrompt" class="space-y-2 cursor-pointer" onclick="document.getElementById('challengeProofInput').click()">
-          <span class="material-symbols-outlined text-4xl text-[#15803d]">add_a_photo</span>
-          <p class="font-display font-black text-xs text-[#0a0a0a]">Click to Upload Proof Photo / Screenshot</p>
+        <div id="proofUploadPrompt" class="space-y-2 cursor-pointer" onclick="triggerDeviceGalleryPicker()">
+          <span class="material-symbols-outlined text-4xl text-[#15803d]">photo_library</span>
+          <p class="font-display font-black text-xs text-[#0a0a0a]">Click to Browse Photo Gallery / Take Photo</p>
           <span class="text-[10px] text-gray-500 font-bold block">Supports JPG, PNG, Screenshots</span>
         </div>
 
         <div id="proofPreviewContainer" class="hidden relative w-full flex flex-col items-center justify-center">
-          <img id="proofImagePreview" class="max-h-[180px] object-contain rounded-xl border-2 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a]"/>
+          <img id="proofImagePreview" class="max-h-[170px] object-contain rounded-xl border-2 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a]"/>
           <div id="proofScanLaser" class="hidden scan-line"></div>
         </div>
       </div>
@@ -999,13 +1005,18 @@
         </div>
       </div>
 
-      <div class="flex justify-end gap-3 border-t-2 border-[#0a0a0a]/10 pt-3">
-        <button onclick="closeChallengeProofModal()" class="neo-btn bg-gray-100 hover:bg-gray-200 text-[#0a0a0a] py-2 px-4 text-xs font-bold">
-          Cancel
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 border-t-2 border-[#0a0a0a]/10 pt-3">
+        <button onclick="triggerDeviceGalleryPicker()" class="neo-btn bg-[#38bdf8] text-[#0a0a0a] py-2 px-4 text-xs font-black flex items-center justify-center gap-1.5 w-full sm:w-auto">
+          <span class="material-symbols-outlined text-base">photo_library</span> 🖼️ Browse Photo Gallery
         </button>
-        <button id="btnVerifyProofSubmit" onclick="runAiProofVerification()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-5 text-xs font-black">
-          🤖 Run AI Verification
-        </button>
+        <div class="flex gap-2 w-full sm:w-auto justify-end">
+          <button onclick="closeChallengeProofModal()" class="neo-btn bg-gray-100 hover:bg-gray-200 text-[#0a0a0a] py-2 px-4 text-xs font-bold">
+            Cancel
+          </button>
+          <button id="btnVerifyProofSubmit" onclick="runAiProofVerification()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-5 text-xs font-black flex items-center justify-center gap-1.5">
+            🤖 Run AI Verification
+          </button>
+        </div>
       </div>
     </div>
   </div>

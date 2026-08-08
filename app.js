@@ -1091,6 +1091,26 @@ const CHALLENGE_CONFIGS = {
   }
 };
 
+function triggerDeviceGalleryPicker() {
+  // Request Location permission if supported
+  if (navigator.geolocation && !appState.userLocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        appState.userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      },
+      (err) => console.log('Location access notice:', err),
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+  }
+
+  // Trigger Device File / Gallery / Camera Input
+  const fileInput = document.getElementById('challengeProofInput');
+  if (fileInput) {
+    fileInput.value = ''; // Reset file input
+    fileInput.click();
+  }
+}
+
 function openChallengeProofModal(type) {
   const config = CHALLENGE_CONFIGS[type];
   if (!config) return;
@@ -1118,6 +1138,11 @@ function openChallengeProofModal(type) {
   else if (type === 'bottle') simulateProofSample('bottle_valid', false);
   else if (type === 'tree') simulateProofSample('tree_valid', false);
   else simulateProofSample('bottle_valid', false);
+
+  // Auto-trigger native device Photo Gallery picker
+  setTimeout(() => {
+    triggerDeviceGalleryPicker();
+  }, 250);
 }
 
 function closeChallengeProofModal() {
@@ -1128,6 +1153,8 @@ function closeChallengeProofModal() {
 function handleChallengeProofUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
+
+  showToast('Photo loaded from gallery. Running AI Verification...', '📸');
 
   const reader = new FileReader();
   reader.onload = function(e) {
