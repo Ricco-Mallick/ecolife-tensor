@@ -6,11 +6,12 @@
 // Application Global State
 const appState = {
   user: null,
-  points: 1280,
-  co2Saved: 42.5,
-  streak: 7,
-  dailyScore: 88,
-  scannedCount: 4,
+  profile: null,
+  points: 0,
+  co2Saved: 0,
+  streak: 0,
+  dailyScore: 0,
+  scannedCount: 0,
   activeTab: 'overview',
   map: null,
   markers: [],
@@ -235,10 +236,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- Auth Initialization ---
 async function initAuth() {
-  if (typeof EcoAuth !== 'undefined') {
-    appState.user = await EcoAuth.getCurrentUser();
-    updateUserUi();
+  if (typeof EcoAuth === 'undefined') {
+    console.error('EcoAuth not found. Make sure supabaseClient.js is loaded.');
+    return;
   }
+
+  const user = await EcoAuth.getCurrentUser();
+  if (!user) {
+    // Not logged in — redirect to auth page
+    window.location.href = 'auth.html';
+    return;
+  }
+
+  appState.user = user;
+
+  // Load real profile from Supabase
+  const profile = await EcoAuth.getProfile();
+  if (profile) {
+    appState.profile = profile;
+    appState.points = profile.total_points || 0;
+    appState.co2Saved = parseFloat(profile.co2_saved_tons || 0) * 1000; // stored as tons, display as kg
+    appState.streak = profile.streak_days || 0;
+    appState.dailyScore = Math.min(Math.round((profile.total_points || 0) / 10), 100);
+    appState.completedChallenges = profile.completed_challenges || [];
+  }
+
+  updateUserUi();
+
+  // Load real leaderboard from Supabase
+  await loadLeaderboard();
 }
 
 function updateUserUi() {
@@ -928,70 +954,75 @@ function simulateWalkStep(stepCount = 1) {
   refreshStateCounters();
 }
 
-// --- Community Leaderboard & Live Dynamic Engine ---
-let COMMUNITY_LEADERBOARD = [
-  { id: 'u1', name: 'Aarav Sharma', badge: 'Carbon Hero', points: 3450, co2: 128.4, location: 'Mumbai, IN', isUser: false, avatar: 'A', bg: 'bg-[#ccff00]' },
-  { id: 'u2', name: 'Elena Rostova', badge: 'Tree Planter', points: 2910, co2: 98.2, location: 'Berlin, DE', isUser: false, avatar: 'E', bg: 'bg-[#38bdf8]' },
-  { id: 'u3', name: 'Marcus Vance', badge: 'Zero Waste', points: 2340, co2: 76.0, location: 'London, UK', isUser: false, avatar: 'M', bg: 'bg-[#facc15]' },
-  { id: 'user', name: 'Eco Warrior (You)', badge: 'Eco Pioneer', points: 1280, co2: 42.5, location: 'Active Participant', isUser: true, avatar: 'YOU', bg: 'bg-[#15803d]' },
-  { id: 'u4', name: 'Sophia Chen', badge: 'Green Ranger', points: 1120, co2: 38.0, location: 'Singapore, SG', isUser: false, avatar: 'S', bg: 'bg-[#a3e635]' },
-  { id: 'u5', name: 'Vikram Patel', badge: 'Eco Guardian', points: 950, co2: 31.5, location: 'Delhi, IN', isUser: false, avatar: 'V', bg: 'bg-[#4ade80]' }
-];
+// --- Community Leaderboard — Live from Supabase ---
+async function loadLeaderboard() {
+  if (typeof EcoAuth === 'undefined') return;
+  const data = await EcoAuth.getLeaderboard();
+  if (data && data.length > 0) {
+    appState.leaderboard = data;
+    updateLeaderboardUi();
+  }
+}
 
 function updateLeaderboardUi() {
   const tbody = document.getElementById('leaderboardTableBody');
   if (!tbody) return;
 
-  // Sync user stats in leaderboard array
-  const userEntry = COMMUNITY_LEADERBOARD.find(u => u.isUser);
-  if (userEntry) {
-    userEntry.name = (appState.name || 'Eco Warrior') + ' (You)';
-    userEntry.points = appState.points;
-    userEntry.co2 = parseFloat(appState.co2Saved.toFixed(1));
+  const entries = appState.leaderboard || [];
+  if (entries.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">No leaderboard data yet. Be the first!</td></tr>';
+    return;
   }
 
-  // Sort by points descending
-  COMMUNITY_LEADERBOARD.sort((a, b) => b.points - a.points);
-
-  let userRank = 4;
   tbody.innerHTML = '';
+  const currentUserId = appState.user?.id;
 
-  COMMUNITY_LEADERBOARD.forEach((item, index) => {
+  entries.forEach((item, index) => {
     const rankNum = index + 1;
-    if (item.isUser) userRank = rankNum;
+    const isUser = item.id === currentUserId;
+    const name = item.full_name || 'Eco Warrior';
+    const points = item.total_points || 0;
+    const co2Kg = ((item.co2_saved_tons || 0) * 1000).toFixed(1);
+    const avatarLetter = name.charAt(0).toUpperCase();
 
     const tr = document.createElement('tr');
-    if (item.isUser) {
+    if (isUser) {
       tr.className = 'bg-[#15803d]/15 border-l-4 border-l-[#15803d] font-black';
     } else if (rankNum === 1) {
       tr.className = 'bg-[#ccff00]/25';
     }
 
     let rankBadge = `# ${rankNum}`;
-    if (rankNum === 1) rankBadge = `🥇 1`;
-    else if (rankNum === 2) rankBadge = `🥈 2`;
-    else if (rankNum === 3) rankBadge = `🥉 3`;
+    if (rankNum === 1) rankBadge = '🥇';
+    if (rankNum === 2) rankBadge = '🥈';
+    if (rankNum === 3) rankBadge = '🥉';
 
     tr.innerHTML = `
-      <td class="py-3.5 px-3 font-display font-black text-lg text-[#15803d]">${rankBadge}</td>
-      <td class="py-3.5 px-3 flex items-center gap-3">
-        <span class="w-8 h-8 rounded-xl ${item.bg} ${item.isUser ? 'text-white' : 'text-[#0a0a0a]'} border-2 border-[#0a0a0a] flex items-center justify-center font-bold text-xs">${item.avatar}</span>
-        <div>
-          <p class="font-display font-bold text-sm ${item.isUser ? 'text-[#15803d]' : 'text-[#0a0a0a]'}">${item.name}</p>
-          <p class="text-[10px] text-gray-500 font-medium">${item.location}</p>
+      <td class="px-4 py-3 text-center font-black text-lg">${rankBadge}</td>
+      <td class="px-4 py-3">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black bg-[#15803d] text-white">
+            ${item.avatar_url ? `<img src="${item.avatar_url}" class="w-8 h-8 rounded-full object-cover" onerror="this.style.display='none';this.nextSibling.style.display='flex'" /><span style="display:none">${avatarLetter}</span>` : avatarLetter}
+          </div>
+          <div>
+            <div class="font-bold">${name}${isUser ? ' <span class="text-[#15803d]">(You)</span>' : ''}</div>
+          </div>
         </div>
       </td>
-      <td class="py-3.5 px-3"><span class="neo-badge ${item.isUser ? 'bg-[#ccff00] text-[#0a0a0a]' : (rankNum === 1 ? 'bg-[#15803d] text-white' : 'bg-gray-100 text-[#0a0a0a]')}">${item.badge}</span></td>
-      <td class="py-3.5 px-3 text-right font-display font-black text-base">${item.points.toLocaleString()}</td>
-      <td class="py-3.5 px-3 text-right font-display font-bold text-[#15803d]">${item.co2.toFixed(1)} kg</td>
+      <td class="px-4 py-3 text-center font-black">${points.toLocaleString()}</td>
+      <td class="px-4 py-3 text-center">${co2Kg} kg</td>
     `;
-
     tbody.appendChild(tr);
   });
 
-  const rankBadgeEl = document.getElementById('leaderboardUserRankBadge');
-  if (rankBadgeEl) rankBadgeEl.textContent = `Your Live Rank: #${userRank}`;
+  // Update your own rank display if element exists
+  if (currentUserId) {
+    const myRank = entries.findIndex(e => e.id === currentUserId) + 1;
+    const rankEl = document.getElementById('leaderboardYourRank');
+    if (rankEl && myRank > 0) rankEl.textContent = '#' + myRank;
+  }
 }
+
 
 function filterLeaderboard(period) {
   const btns = document.querySelectorAll('.lb-filter-btn');

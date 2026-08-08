@@ -74,38 +74,21 @@ const AuthResult = {
 
   // Sign Out
   async signOut() {
-    try { localStorage.removeItem('ecolife_demo_user'); } catch (e) {}
     if (!_supabaseApp) return { success: true };
     await _supabaseApp.auth.signOut();
     return { success: true };
   },
 
-  // Get Current User (Auth)
+  // Get Current User (Auth) — requires real Supabase session
   async getCurrentUser() {
-    if (_supabaseApp) {
-      try {
-        const { data } = await _supabaseApp.auth.getUser();
-        if (data && data.user) return data.user;
-      } catch (e) {}
+    if (!_supabaseApp) return null;
+    try {
+      const { data } = await _supabaseApp.auth.getUser();
+      if (data && data.user) return data.user;
+    } catch (e) {
+      console.error('getCurrentUser error:', e);
     }
-    try {
-      const demoUser = localStorage.getItem('ecolife_demo_user');
-      if (demoUser) return JSON.parse(demoUser);
-    } catch (e) {}
     return null;
-  },
-
-  // Demo Instant Sign In
-  async demoSignIn(fullName = 'Eco Warrior', email = 'warrior@ecolife.app') {
-    const user = {
-      id: 'demo-' + Date.now(),
-      email: email,
-      user_metadata: { full_name: fullName, avatar_url: '' }
-    };
-    try {
-      localStorage.setItem('ecolife_demo_user', JSON.stringify(user));
-    } catch (e) {}
-    return { success: true, user };
   },
 
   // Get User Profile from `profiles` table
@@ -176,30 +159,28 @@ const AuthResult = {
     const profile = await this.getProfile();
     if (!profile) return { success: false, message: "Failed to load or create profile." };
 
+    // Do NOT include id — let Supabase auto-generate UUID
     const newAction = {
-      id: "act-" + Date.now() + "-" + Math.floor(Math.random()*1000),
       user_id: user.id,
       category,
       title,
       co2_saved_kg: parseFloat(co2SavedKg) || 0
     };
 
-    const { data, error } = await _supabaseApp.from("eco_actions").insert([newAction]);
+    const { data, error } = await _supabaseApp.from("eco_actions").insert([newAction]).select().single();
     if (error) {
       console.error("Error logging action:", error);
       return { success: false, message: error.message };
     }
 
     // After successfully logging the action, update the user's profile stats
-    if (profile) {
-      const co2Tons = newAction.co2_saved_kg / 1000;
-      await this.updateProfile({
-        total_points: (profile.total_points || 0) + 50, // 50 points per action
-        co2_saved_tons: (profile.co2_saved_tons || 0) + co2Tons
-      });
-    }
+    const co2Tons = (parseFloat(co2SavedKg) || 0) / 1000;
+    await this.updateProfile({
+      total_points: (profile.total_points || 0) + 50,
+      co2_saved_tons: (profile.co2_saved_tons || 0) + co2Tons
+    });
 
-    return { success: true, data: newAction };
+    return { success: true, data };
   },
 
   // Fetch Eco Actions
