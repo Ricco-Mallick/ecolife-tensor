@@ -185,9 +185,9 @@ function refreshStateCounters() {
   if (phoneEl) phoneEl.textContent = phones.toLocaleString();
 
   // Dynamic Carbon Footprint Breakdown & Bar Animation
-  const tKg = Math.max(0.5, parseFloat((co2 * 0.45).toFixed(1)));
-  const eKg = Math.max(0.3, parseFloat((co2 * 0.35).toFixed(1)));
-  const fKg = Math.max(0.2, parseFloat((co2 * 0.20).toFixed(1)));
+  const tKg = 0.5 + parseFloat(((co2 * 0.05) || 0).toFixed(1));
+  const eKg = 0.3;
+  const fKg = 0.2;
   updateCarbonFootprintDisplay(tKg, eKg, fKg);
 
   // Update streak progress bar
@@ -198,31 +198,43 @@ function refreshStateCounters() {
   }
 }
 
-function updateCarbonFootprintDisplay(transportKg, energyKg, foodKg) {
-  const tKg = parseFloat(transportKg) || 1.2;
-  const eKg = parseFloat(energyKg) || 0.8;
-  const fKg = parseFloat(foodKg) || 0.5;
-  const total = tKg + eKg + fKg || 1;
+// --- REDESIGNED CARBON FOOTPRINT ENGINE ---
+function updateCarbonFootprintDisplay(transportKg = 0.5, energyKg = 0.3, foodKg = 0.2) {
+  const tKg = Math.max(0.1, parseFloat(transportKg) || 0.5);
+  const eKg = Math.max(0.1, parseFloat(energyKg) || 0.3);
+  const fKg = Math.max(0.1, parseFloat(foodKg) || 0.2);
+  const totalKg = parseFloat((tKg + eKg + fKg).toFixed(1));
+
+  const tPct = Math.round((tKg / totalKg) * 100);
+  const ePct = Math.round((eKg / totalKg) * 100);
+  const fPct = Math.max(0, 100 - tPct - ePct);
+
+  const totalBadge = document.getElementById('fpTotalBadge');
+  if (totalBadge) totalBadge.textContent = `${totalKg.toFixed(1)} kg CO₂ / day`;
 
   const tVal = document.getElementById('fpTransportVal');
   const eVal = document.getElementById('fpEnergyVal');
   const fVal = document.getElementById('fpFoodVal');
 
+  if (tVal) tVal.textContent = `${tKg.toFixed(1)} kg CO₂`;
+  if (eVal) eVal.textContent = `${eKg.toFixed(1)} kg CO₂`;
+  if (fVal) fVal.textContent = `${fKg.toFixed(1)} kg CO₂`;
+
+  const tPctEl = document.getElementById('fpTransportPct');
+  const ePctEl = document.getElementById('fpEnergyPct');
+  const fPctEl = document.getElementById('fpFoodPct');
+
+  if (tPctEl) tPctEl.textContent = `${tPct}%`;
+  if (ePctEl) ePctEl.textContent = `${ePct}%`;
+  if (fPctEl) fPctEl.textContent = `${fPct}%`;
+
   const tBar = document.getElementById('fpTransportBar');
   const eBar = document.getElementById('fpEnergyBar');
   const fBar = document.getElementById('fpFoodBar');
 
-  if (tVal) tVal.textContent = tKg.toFixed(1) + ' kg CO₂';
-  if (eVal) eVal.textContent = eKg.toFixed(1) + ' kg CO₂';
-  if (fVal) fVal.textContent = fKg.toFixed(1) + ' kg CO₂';
-
-  const tPct = Math.min(100, Math.max(8, Math.round((tKg / total) * 100)));
-  const ePct = Math.min(100, Math.max(8, Math.round((eKg / total) * 100)));
-  const fPct = Math.min(100, Math.max(8, Math.round((fKg / total) * 100)));
-
-  if (tBar) tBar.style.width = tPct + '%';
-  if (eBar) eBar.style.width = ePct + '%';
-  if (fBar) fBar.style.width = fPct + '%';
+  if (tBar) tBar.style.width = `${tPct}%`;
+  if (eBar) eBar.style.width = `${ePct}%`;
+  if (fBar) fBar.style.width = `${fPct}%`;
 }
 
 function openCarbonCalcModal() {
@@ -236,19 +248,14 @@ function closeCarbonCalcModal() {
 }
 
 function submitFootprintCalc() {
-  const km = parseFloat(document.getElementById('calcKm').value) || 12;
-  const kwh = parseFloat(document.getElementById('calcKwh').value) || 8;
+  const km = parseFloat(document.getElementById('calcKm').value) || 2.6;
+  const kwh = parseFloat(document.getElementById('calcKwh').value) || 4.2;
 
-  const result = CarbonEngine.calculateFootprint({ transportKmPerWeek: km * 7, electricityKwhPerMonth: kwh * 30 });
-  
-  const tKg = parseFloat(((result.breakdown?.transportCo2Month || 36) / 30).toFixed(1));
-  const eKg = parseFloat(((result.breakdown?.electricityCo2Month || 24) / 30).toFixed(1));
-  const fKg = parseFloat(((result.breakdown?.meatCo2Month || 15) / 30).toFixed(1));
-
-  updateCarbonFootprintDisplay(tKg, eKg, fKg);
+  const result = CarbonEngine.calculateFootprint({ commuteKm: km, electricityKwh: kwh, wasteItems: 2 });
+  updateCarbonFootprintDisplay(result.transportKg, result.energyKg, result.foodKg);
 
   closeCarbonCalcModal();
-  showToast('Carbon Footprint recalculated & progress bars updated!', '⚡');
+  showToast('Carbon Footprint recalculated from scratch!', '🌱');
 }
 
 async function loadProfileActivityHistory() {
