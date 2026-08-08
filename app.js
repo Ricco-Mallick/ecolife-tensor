@@ -698,6 +698,72 @@ async function confirmAiPrediction(isConfirmed) {
   }
 }
 
+// --- LIVE CAMERA PERMISSION HANDLER ---
+let activeMediaStream = null;
+
+async function requestCameraAccess() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showToast('Camera access not supported by your browser', '⚠️');
+    return;
+  }
+
+  showToast('Requesting camera permission...', '📷');
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    activeMediaStream = stream;
+
+    const videoEl = document.getElementById('cameraStream');
+    if (videoEl) {
+      videoEl.srcObject = stream;
+      videoEl.play();
+    }
+
+    const modal = document.getElementById('modalLiveCamera');
+    if (modal) modal.classList.add('open');
+  } catch (err) {
+    console.error("Camera permission error:", err);
+    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+      showToast('Camera permission denied by user', '🚫');
+    } else {
+      showToast(`Camera error: ${err.message}`, '⚠️');
+    }
+  }
+}
+
+function captureCameraPhoto() {
+  const videoEl = document.getElementById('cameraStream');
+  const canvasEl = document.getElementById('cameraCanvas');
+  if (!videoEl || !canvasEl) return;
+
+  const width = videoEl.videoWidth || 640;
+  const height = videoEl.videoHeight || 480;
+
+  canvasEl.width = width;
+  canvasEl.height = height;
+
+  const ctx = canvasEl.getContext('2d');
+  ctx.drawImage(videoEl, 0, 0, width, height);
+
+  const photoDataUrl = canvasEl.toDataURL('image/jpeg', 0.92);
+
+  closeCameraModal();
+  displayScanPreview(photoDataUrl, 'camera_capture');
+  runAiClassification();
+  showToast('Live photo captured & sent to AI Scanner!', '📸');
+}
+
+function closeCameraModal() {
+  if (activeMediaStream) {
+    activeMediaStream.getTracks().forEach(track => track.stop());
+    activeMediaStream = null;
+  }
+  const modal = document.getElementById('modalLiveCamera');
+  if (modal) modal.classList.remove('open');
+}
+
 // --- PEDOMETER & ACTIVITY SESSIONS ---
 function togglePedometerTracking() {
   const btn = document.getElementById('btnTogglePedometer');
@@ -725,15 +791,28 @@ function togglePedometerTracking() {
     }
   } else {
     ped.active = true;
+
+    // Explicitly request Motion Sensor Permission on iOS 13+ / Safari
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission()
+        .then(response => {
+          if (response === 'granted') {
+            window.addEventListener('devicemotion', handleDeviceMotion);
+            showToast('Motion sensor permission granted!', '👟');
+          } else {
+            showToast('Motion sensor permission denied', '⚠️');
+          }
+        })
+        .catch(err => console.warn('Motion permission catch:', err));
+    } else if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', handleDeviceMotion);
+      showToast('Pedometer active. Start walking!', '👟');
+    }
+
     if (btn) {
       btn.className = 'neo-btn bg-red-500 text-white text-xs py-2 px-4 font-bold';
       btn.textContent = '⏹ Stop Pedometer';
     }
-
-    if (window.DeviceMotionEvent) {
-      window.addEventListener('devicemotion', handleDeviceMotion);
-    }
-    showToast('Pedometer active. Start walking!', '👟');
   }
 }
 
