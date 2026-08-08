@@ -59,8 +59,8 @@ const AuthResult = {
   async signInWithOAuth(provider = 'google') {
     if (!_supabaseApp) return { success: false, message: "Supabase not initialized." };
     const redirectUrl = window.location.href.includes('github.io')
-      ? 'https://ricco-mallick.github.io/ecolife-tensor/dashboard.html'
-      : window.location.origin + '/dashboard.html';
+      ? 'https://ricco-mallick.github.io/ecolife-tensor/dashboard.html#overview'
+      : window.location.origin + '/dashboard.html#overview';
 
     const { data, error } = await _supabaseApp.auth.signInWithOAuth({
       provider: provider.toLowerCase(),
