@@ -382,21 +382,51 @@ function toggleSatelliteView() {
 }
 
 function requestUserLocation() {
+  const btn = document.getElementById('btnLocateUser');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '📍 Locating...';
+  }
+
+  const setLocationOnMap = (lat, lng, label = 'Your Location') => {
+    appState.userLat = lat;
+    appState.userLng = lng;
+    if (appState.map) {
+      appState.map.setView([lat, lng], 14, { animate: true });
+      if (appState.userMarker) appState.map.removeLayer(appState.userMarker);
+      
+      const beaconHtml = '<div class="user-location-beacon" title="Your Location"></div>';
+      const beaconIcon = L.divIcon({ html: beaconHtml, className: '', iconSize: [24, 24], iconAnchor: [12, 12] });
+      
+      appState.userMarker = L.marker([lat, lng], { icon: beaconIcon }).addTo(appState.map);
+      appState.userMarker.bindPopup(`
+        <div style="font-family:Inter,sans-serif;padding:4px;text-align:center;">
+          <span style="background:#ccff00;color:#0a0a0a;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:900;border:1.5px solid #0a0a0a;">📍 ${label}</span>
+          <p style="font-size:10px;color:#666;margin:4px 0 0 0;">Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</p>
+        </div>
+      `).openPopup();
+    }
+  };
+
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      appState.userLat = pos.coords.latitude;
-      appState.userLng = pos.coords.longitude;
-      if (appState.map) {
-        appState.map.setView([appState.userLat, appState.userLng], 14);
-        if (appState.userMarker) appState.map.removeLayer(appState.userMarker);
-        const beaconHtml = '<div class="user-location-beacon"></div>';
-        const beaconIcon = L.divIcon({ html: beaconHtml, className: '', iconSize: [24, 24] });
-        appState.userMarker = L.marker([appState.userLat, appState.userLng], { icon: beaconIcon }).addTo(appState.map);
-      }
-      showToast('Location updated!', '📍');
-    }, err => {
-      showToast('Geolocation permission denied', '⚠️');
-    });
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setLocationOnMap(pos.coords.latitude, pos.coords.longitude, 'Your Live Location');
+        showToast('Located your position!', '📍');
+        if (btn) { btn.disabled = false; btn.textContent = '📍 Locate Me'; }
+      },
+      err => {
+        console.warn("Geolocation fallback:", err.message);
+        setLocationOnMap(19.0760, 72.8777, 'Mumbai Central (Default)');
+        showToast('Location centered on Mumbai', '📍');
+        if (btn) { btn.disabled = false; btn.textContent = '📍 Locate Me'; }
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    );
+  } else {
+    setLocationOnMap(19.0760, 72.8777, 'Mumbai Central');
+    showToast('Browser geolocation unsupported', '⚠️');
+    if (btn) { btn.disabled = false; btn.textContent = '📍 Locate Me'; }
   }
 }
 
