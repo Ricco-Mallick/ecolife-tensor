@@ -185,21 +185,26 @@ function refreshStateCounters() {
   if (phoneEl) phoneEl.textContent = phones.toLocaleString();
 
   // Dynamic Carbon Footprint Breakdown & Bar Animation
-  if (appState.customFootprint) {
+  if (appState.customFootprint && !isNaN(parseFloat(appState.customFootprint.transportKg))) {
     updateCarbonFootprintDisplay(appState.customFootprint.transportKg, appState.customFootprint.energyKg, appState.customFootprint.foodKg);
   } else {
     const savedCustom = localStorage.getItem('ecolife_custom_footprint');
     if (savedCustom) {
       try {
-        appState.customFootprint = JSON.parse(savedCustom);
-        updateCarbonFootprintDisplay(appState.customFootprint.transportKg, appState.customFootprint.energyKg, appState.customFootprint.foodKg);
+        const parsed = JSON.parse(savedCustom);
+        if (parsed && !isNaN(parseFloat(parsed.transportKg)) && !isNaN(parseFloat(parsed.energyKg))) {
+          appState.customFootprint = parsed;
+          updateCarbonFootprintDisplay(parsed.transportKg, parsed.energyKg, parsed.foodKg);
+        } else {
+          localStorage.removeItem('ecolife_custom_footprint');
+          updateCarbonFootprintDisplay(0.5, 0.3, 0.2);
+        }
       } catch (e) {
-        const tKg = 0.5 + parseFloat(((co2 * 0.05) || 0).toFixed(1));
-        updateCarbonFootprintDisplay(tKg, 0.3, 0.2);
+        localStorage.removeItem('ecolife_custom_footprint');
+        updateCarbonFootprintDisplay(0.5, 0.3, 0.2);
       }
     } else {
-      const tKg = 0.5 + parseFloat(((co2 * 0.05) || 0).toFixed(1));
-      updateCarbonFootprintDisplay(tKg, 0.3, 0.2);
+      updateCarbonFootprintDisplay(0.5, 0.3, 0.2);
     }
   }
 
@@ -212,14 +217,19 @@ function refreshStateCounters() {
 }
 
 // --- REDESIGNED CARBON FOOTPRINT ENGINE ---
-function updateCarbonFootprintDisplay(transportKg = 0.5, energyKg = 0.3, foodKg = 0.2) {
-  const tKg = Math.max(0.01, parseFloat(transportKg) || 0.5);
-  const eKg = Math.max(0.01, parseFloat(energyKg) || 0.3);
-  const fKg = Math.max(0.01, parseFloat(foodKg) || 0.2);
+function updateCarbonFootprintDisplay(transportKg, energyKg, foodKg) {
+  let tKg = parseFloat(transportKg);
+  let eKg = parseFloat(energyKg);
+  let fKg = parseFloat(foodKg);
+
+  if (isNaN(tKg) || tKg <= 0) tKg = 0.5;
+  if (isNaN(eKg) || eKg <= 0) eKg = 0.3;
+  if (isNaN(fKg) || fKg <= 0) fKg = 0.2;
+
   const totalKg = parseFloat((tKg + eKg + fKg).toFixed(1));
 
-  const tPct = Math.round((tKg / totalKg) * 100);
-  const ePct = Math.round((eKg / totalKg) * 100);
+  const tPct = Math.round((tKg / totalKg) * 100) || 50;
+  const ePct = Math.round((eKg / totalKg) * 100) || 30;
   const fPct = Math.max(0, 100 - tPct - ePct);
 
   const totalBadge = document.getElementById('fpTotalBadge');
