@@ -470,11 +470,22 @@ function filterMapPins(category) {
 
   if (category === 'all') {
     renderMapMarkers(spots);
-    showToast('Showing all 14 Green Locations', '📍');
+    if (spots.length > 0) selectMapSpot(spots[0]);
+    showToast(`Showing all ${spots.length} Green Locations`, '📍');
   } else {
-    const filtered = spots.filter(s => s.category === category);
+    const target = category.toLowerCase();
+    const filtered = spots.filter(s => {
+      const c = (s.category || '').toLowerCase();
+      return c === target || c.includes(target) || (target === 'ev' && (c.includes('ev') || c.includes('charge'))) || (target === 'park' && (c.includes('park') || c.includes('green'))) || (target === 'recycling' && (c.includes('recycle') || c.includes('waste'))) || (target === 'water' && (c.includes('water') || c.includes('refill')));
+    });
+
     renderMapMarkers(filtered);
-    showToast(`Showing ${filtered.length} ${category.toUpperCase()} locations`, '📍');
+    if (filtered.length > 0) {
+      selectMapSpot(filtered[0]);
+      showToast(`Showing ${filtered.length} ${category.toUpperCase()} locations`, '📍');
+    } else {
+      showToast(`No locations found for ${category.toUpperCase()}`, '⚠️');
+    }
   }
 }
 
