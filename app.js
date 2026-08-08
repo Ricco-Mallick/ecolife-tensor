@@ -275,12 +275,29 @@ async function loadWeeklyChartData() {
   }
 }
 
+// Fallback Mumbai Green Locations Seed Data
+const DEFAULT_MUMBAI_LOCATIONS = [
+  { id: 1, category: 'park', type: 'PARK & NATIONAL PARK', name: 'Sanjay Gandhi National Park (SGNP)', address: 'Borivali East, Mumbai, Maharashtra 400066', lat: 19.2312, lng: 72.8656, hours: '07:30 AM - 06:30 PM', items: 'Dense Forest, Cycling Trails, Kanheri Caves', icon: '🌲', verified: true },
+  { id: 2, category: 'park', type: 'URBAN PARK & GROUND', name: 'Shivaji Park Promenade & Grounds', address: 'Dadar West, Mumbai, Maharashtra 400028', lat: 19.0269, lng: 72.8378, hours: 'Open 24 Hours', items: 'Walking Tracks, Tree Canopy', icon: '🌲', verified: true },
+  { id: 3, category: 'park', type: 'BOTANICAL GARDENS', name: 'Hanging Gardens & Kamala Nehru Park', address: 'Ridge Road, Malabar Hill, Mumbai 400006', lat: 18.9566, lng: 72.8052, hours: '05:00 AM - 09:00 PM', items: 'Topiary Gardens, Arabian Sea Sunset Views', icon: '🌲', verified: true },
+  { id: 4, category: 'park', type: 'HERITAGE PARK', name: 'Horniman Circle Heritage Garden', address: 'Fort, South Mumbai, Maharashtra 400001', lat: 18.9322, lng: 72.8354, hours: '06:00 AM - 08:30 PM', items: 'Historic Circular Garden, Native Flora', icon: '🌲', verified: true },
+  { id: 5, category: 'ev', type: 'EV FAST CHARGING', name: 'Tata Power EZ Charge Supercharger', address: 'BKC G-Block, Bandra Kurla Complex, Mumbai 400051', lat: 19.0657, lng: 72.8687, hours: '24 Hours Open', items: 'CCS2 150kW Dual Fast Chargers', icon: '⚡', verified: true },
+  { id: 6, category: 'ev', type: 'EV CHARGING HUB', name: 'Magenta ChargeGrid Station', address: 'Phoenix Palladium, Lower Parel, Mumbai 400013', lat: 19.0012, lng: 72.8276, hours: '24 Hours Open', items: 'Fast DC Chargers, Solar Canopy', icon: '⚡', verified: true },
+  { id: 7, category: 'ev', type: 'EV BIKE & CAR GRID', name: 'Ather Grid Fast Charging Point', address: 'Hiranandani Gardens, Powai, Mumbai 400076', lat: 19.1176, lng: 72.9060, hours: '24 Hours Open', items: 'Fast Ather Grid 2W/4W Chargers', icon: '⚡', verified: true },
+  { id: 8, category: 'recycling', type: 'PLASTICS RECYCLING HUB', name: 'Dharavi Eco Plastics Processing Center', address: '90 Feet Road, Dharavi, Mumbai 400017', lat: 19.0434, lng: 72.8526, hours: '08:00 AM - 07:00 PM', items: 'PET, HDPE Plastics, Polyethylene Granulation', icon: '♻️', verified: true },
+  { id: 9, category: 'recycling', type: 'E-WASTE DEPOT', name: 'EcoRecycle E-Waste Facility', address: 'MIDC Industrial Area, Andheri East, Mumbai 400093', lat: 19.1155, lng: 72.8677, hours: '09:00 AM - 06:00 PM', items: 'Computers, Phones, Batteries, PCBs', icon: '♻️', verified: true },
+  { id: 10, category: 'recycling', type: 'COMMUNITY WASTE HUB', name: 'Bandra Dry Waste Transfer Depot', address: 'Halkara Marg, Bandra West, Mumbai 400050', lat: 19.0544, lng: 72.8402, hours: '07:00 AM - 06:00 PM', items: 'Paper, Cardboard, Glass, Metal Cans', icon: '♻️', verified: true },
+  { id: 11, category: 'water', type: 'WATER REFILL KIOSK', name: 'BMC Pure Water Station (Marine Drive)', address: 'Netaji Subhash Road, Marine Drive, Mumbai', lat: 18.9432, lng: 72.8235, hours: 'Open 24 Hours', items: 'RO Purified Cold Water, Free Refill', icon: '💧', verified: true },
+  { id: 12, category: 'water', type: 'WATER REFILL BAR', name: 'EcoTap Mineral Water Bar (Juhu Beach)', address: 'Juhu Tara Road, Juhu Promenade, Mumbai 400049', lat: 19.0988, lng: 72.8264, hours: '06:00 AM - 11:00 PM', items: 'UV Filtered Cold Water Kiosk', icon: '💧', verified: true },
+  { id: 13, category: 'water', type: 'HERITAGE REFILL KIOSK', name: 'AquaPure Refill Hub (Gateway of India)', address: 'Apollo Bunder, Colaba, South Mumbai 400001', lat: 18.9220, lng: 72.8347, hours: '06:00 AM - 10:00 PM', items: 'Zero-Single-Use-Plastic Mineral Refill', icon: '💧', verified: true }
+];
+
 // --- Database-Driven Green Locations Map ---
 async function initGreenMap() {
-  const mapElement = document.getElementById('greenMapContainer');
+  const mapElement = document.getElementById('greenMap');
   if (!mapElement || typeof L === 'undefined') return;
 
-  appState.map = L.map('greenMapContainer').setView([appState.userLat, appState.userLng], 12);
+  appState.map = L.map('greenMap').setView([appState.userLat, appState.userLng], 12);
 
   appState.tileLayerStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
@@ -290,10 +307,10 @@ async function initGreenMap() {
     attribution: 'Esri, DigitalGlobe, GeoEye'
   });
 
-  // Fetch map spots from Supabase DB
+  // Fetch map spots from Supabase DB (with fallback to default seed locations)
   const spots = await EcoAuth.getMapSpots();
-  appState.mapSpots = spots;
-  renderMapMarkers(spots);
+  appState.mapSpots = (spots && spots.length > 0) ? spots : DEFAULT_MUMBAI_LOCATIONS;
+  renderMapMarkers(appState.mapSpots);
 }
 
 function renderMapMarkers(spots) {
