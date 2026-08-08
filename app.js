@@ -270,8 +270,7 @@ function switchTab(tabId) {
     setTimeout(() => {
       if (appState.map) {
         appState.map.invalidateSize();
-        const spots = (appState.mapSpots && appState.mapSpots.length > 0) ? appState.mapSpots : DEFAULT_MUMBAI_LOCATIONS;
-        renderMapMarkers(spots);
+        filterMapPins('all');
       }
     }, 250);
   }
@@ -391,7 +390,7 @@ async function initGreenMap() {
   const mapElement = document.getElementById('greenMap');
   if (!mapElement || typeof L === 'undefined') return;
 
-  appState.map = L.map('greenMap').setView([appState.userLat, appState.userLng], 12);
+  appState.map = L.map('greenMap').setView([19.0760, 72.8777], 11);
 
   appState.tileLayerStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
@@ -404,8 +403,7 @@ async function initGreenMap() {
   const spots = await EcoAuth.getMapSpots();
   if (spots && spots.length > 0) appState.mapSpots = spots;
   
-  const allSpots = getCombinedMapSpots();
-  renderMapMarkers(allSpots);
+  filterMapPins('all');
 }
 
 function renderMapMarkers(spots) {
@@ -460,6 +458,15 @@ function renderMapMarkers(spots) {
       selectMapSpot(spot);
     }
   });
+
+  if (appState.markers.length > 0 && appState.map) {
+    try {
+      const group = L.featureGroup(appState.markers);
+      appState.map.fitBounds(group.getBounds().pad(0.08));
+    } catch (e) {
+      console.warn("fitBounds warning:", e);
+    }
+  }
 }
 
 function selectMapSpot(spot) {
