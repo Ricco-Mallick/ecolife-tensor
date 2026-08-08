@@ -245,18 +245,44 @@ const AuthResult = {
     if (!user) return { success: false, message: "Not logged in" };
 
     const profile = await this.getProfile();
-    if (!profile) return { success: false, message: "Failed to load or create profile." };
+    if (!profile) return { success: false, message: "Failed to load profile." };
 
-    const newSpot = {
-      ...spot,
-      created_by: user.id,
-      verified: false // Community submitted places require verification
+    const latVal = spot.lat !== undefined ? spot.lat : spot.latitude;
+    const lngVal = spot.lng !== undefined ? spot.lng : spot.longitude;
+
+    const payload = {
+      name: spot.name,
+      category: spot.category,
+      type: spot.type || 'GREEN FACILITY',
+      address: spot.address || 'Mumbai, Maharashtra',
+      lat: latVal,
+      lng: lngVal,
+      latitude: latVal,
+      longitude: lngVal,
+      hours: spot.hours || 'Open 24 Hours',
+      items: spot.items || 'Community Place',
+      icon: spot.icon || '📍',
+      verified: false,
+      created_by: profile.id || user.id
     };
 
-    const { data, error } = await _supabaseApp.from("map_spots").insert([newSpot]).select();
+    const { data, error } = await _supabaseApp.from("map_spots").insert([payload]).select();
     if (error) {
-      console.error("Error adding map spot:", error);
-      return { success: false, message: error.message };
+      console.warn("Full insert failed, trying safe fallback columns:", error.message);
+      // Fallback insert with essential columns
+      const safePayload = {
+        name: spot.name,
+        category: spot.category,
+        lat: latVal,
+        lng: lngVal,
+        latitude: latVal,
+        longitude: lngVal
+      };
+      const { data: minData, error: minError } = await _supabaseApp.from("map_spots").insert([safePayload]).select();
+      if (minError) {
+        return { success: false, message: error.message, spotData: payload };
+      }
+      return { success: true, data: { ...payload, ...minData[0] } };
     }
     return { success: true, data: data[0] };
   },

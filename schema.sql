@@ -63,11 +63,13 @@ CREATE TABLE IF NOT EXISTS map_spots (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
   category TEXT NOT NULL, -- 'park', 'ev', 'recycling', 'water'
-  type TEXT NOT NULL,
+  type TEXT DEFAULT 'GREEN FACILITY',
   description TEXT,
-  address TEXT NOT NULL,
-  lat NUMERIC(10,7) NOT NULL,
-  lng NUMERIC(10,7) NOT NULL,
+  address TEXT DEFAULT 'Mumbai, Maharashtra',
+  lat NUMERIC(10,7),
+  lng NUMERIC(10,7),
+  latitude NUMERIC(10,7),
+  longitude NUMERIC(10,7),
   hours TEXT DEFAULT 'Open 24 Hours',
   items TEXT,
   icon TEXT DEFAULT '📍',
@@ -75,6 +77,21 @@ CREATE TABLE IF NOT EXISTS map_spots (
   created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure all columns exist on map_spots table for schema compatibility
+ALTER TABLE map_spots ADD COLUMN IF NOT EXISTS address TEXT DEFAULT 'Mumbai, Maharashtra';
+ALTER TABLE map_spots ADD COLUMN IF NOT EXISTS type TEXT DEFAULT 'GREEN FACILITY';
+ALTER TABLE map_spots ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE map_spots ADD COLUMN IF NOT EXISTS hours TEXT DEFAULT 'Open 24 Hours';
+ALTER TABLE map_spots ADD COLUMN IF NOT EXISTS items TEXT;
+ALTER TABLE map_spots ADD COLUMN IF NOT EXISTS icon TEXT DEFAULT '📍';
+ALTER TABLE map_spots ADD COLUMN IF NOT EXISTS verified BOOLEAN DEFAULT TRUE;
+ALTER TABLE map_spots ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES profiles(id) ON DELETE SET NULL;
+ALTER TABLE map_spots ADD COLUMN IF NOT EXISTS lat NUMERIC(10,7);
+ALTER TABLE map_spots ADD COLUMN IF NOT EXISTS lng NUMERIC(10,7);
+ALTER TABLE map_spots ADD COLUMN IF NOT EXISTS latitude NUMERIC(10,7);
+ALTER TABLE map_spots ADD COLUMN IF NOT EXISTS longitude NUMERIC(10,7);
+
 
 -- 6. WASTE CATEGORIES TABLE
 CREATE TABLE IF NOT EXISTS waste_categories (

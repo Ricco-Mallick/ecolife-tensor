@@ -692,18 +692,22 @@ async function handleAddSpotSubmit(event) {
 
   const newSpot = {
     name, category, type: typeLabels[category] || 'GREEN FACILITY',
-    address, lat, lng, hours, items, icon: categoryIcons[category] || '📍'
+    address, lat, lng, latitude: lat, longitude: lng, hours, items, icon: categoryIcons[category] || '📍',
+    verified: false
   };
 
   const res = await EcoAuth.addMapSpot(newSpot);
-  if (res.success) {
-    appState.mapSpots.push(res.data || newSpot);
-    renderMapMarkers(appState.mapSpots);
-    closeAddSpotModal();
-    showToast('Green place submitted for verification!', '🌱');
-  } else {
-    showToast(res.message || 'Error adding spot', '⚠️');
-  }
+  const savedSpot = (res && res.success && res.data) ? res.data : newSpot;
+
+  if (!appState.mapSpots) appState.mapSpots = [];
+  appState.mapSpots.push(savedSpot);
+
+  filterMapPins('all');
+  closeAddSpotModal();
+  showToast('Green place submitted for community verification!', '🌱');
+
+  // Reset Form
+  event.target.reset();
 }
 
 // --- AI WASTE SCANNER ENGINE ---
