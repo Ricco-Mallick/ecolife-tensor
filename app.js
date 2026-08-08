@@ -355,6 +355,14 @@ const DEFAULT_MUMBAI_LOCATIONS = [
   { id: 13, category: 'water', type: 'HERITAGE REFILL KIOSK', name: 'AquaPure Refill Hub (Gateway of India)', address: 'Apollo Bunder, Colaba, South Mumbai 400001', lat: 18.9220, lng: 72.8347, hours: '06:00 AM - 10:00 PM', items: 'Zero-Single-Use-Plastic Mineral Refill', icon: '💧', verified: true }
 ];
 
+// Combined Map Spots Helper (Merges Default Mumbai Seed Locations with Supabase DB spots)
+function getCombinedMapSpots() {
+  const dbSpots = (appState.mapSpots && Array.isArray(appState.mapSpots)) ? appState.mapSpots : [];
+  const existingNames = new Set(dbSpots.map(s => (s.name || '').toLowerCase()));
+  const defaults = DEFAULT_MUMBAI_LOCATIONS.filter(d => !existingNames.has((d.name || '').toLowerCase()));
+  return [...defaults, ...dbSpots];
+}
+
 // --- Database-Driven Green Locations Map ---
 async function initGreenMap() {
   const mapElement = document.getElementById('greenMap');
@@ -370,10 +378,11 @@ async function initGreenMap() {
     attribution: 'Esri, DigitalGlobe, GeoEye'
   });
 
-  // Fetch map spots from Supabase DB (with fallback to default seed locations)
   const spots = await EcoAuth.getMapSpots();
-  appState.mapSpots = (spots && spots.length > 0) ? spots : DEFAULT_MUMBAI_LOCATIONS;
-  renderMapMarkers(appState.mapSpots);
+  if (spots && spots.length > 0) appState.mapSpots = spots;
+  
+  const allSpots = getCombinedMapSpots();
+  renderMapMarkers(allSpots);
 }
 
 function renderMapMarkers(spots) {
@@ -388,7 +397,7 @@ function renderMapMarkers(spots) {
     water: '#4ade80'
   };
 
-  const spotList = (spots && Array.isArray(spots) && spots.length > 0) ? spots : DEFAULT_MUMBAI_LOCATIONS;
+  const spotList = (spots && Array.isArray(spots) && spots.length > 0) ? spots : getCombinedMapSpots();
 
   spotList.forEach((spot, idx) => {
     const rawLat = spot.lat !== undefined ? spot.lat : spot.latitude;
@@ -474,7 +483,7 @@ function filterMapPins(category) {
     }
   });
 
-  const spots = (appState.mapSpots && Array.isArray(appState.mapSpots) && appState.mapSpots.length > 0) ? appState.mapSpots : DEFAULT_MUMBAI_LOCATIONS;
+  const spots = getCombinedMapSpots();
 
   if (category === 'all') {
     renderMapMarkers(spots);
@@ -484,15 +493,31 @@ function filterMapPins(category) {
     const target = category.toLowerCase();
     const filtered = spots.filter(s => {
       const c = (s.category || '').toLowerCase();
-      return c === target || c.includes(target) || (target === 'ev' && (c.includes('ev') || c.includes('charge'))) || (target === 'park' && (c.includes('park') || c.includes('green'))) || (target === 'recycling' && (c.includes('recycle') || c.includes('waste'))) || (target === 'water' && (c.includes('water') || c.includes('refill')));
+      const t = (s.type || '').toLowerCase();
+      const n = (s.name || '').toLowerCase();
+
+      if (target === 'recycling') {
+        return c.includes('recycl') || c.includes('waste') || t.includes('recycl') || t.includes('waste') || n.includes('recycl');
+      }
+      if (target === 'ev') {
+        return c.includes('ev') || c.includes('charge') || t.includes('ev') || t.includes('charge') || n.includes('charge') || n.includes('grid');
+      }
+      if (target === 'water') {
+        return c.includes('water') || c.includes('refill') || t.includes('water') || t.includes('refill') || n.includes('water') || n.includes('tap');
+      }
+      if (target === 'park') {
+        return c.includes('park') || c.includes('green') || t.includes('park') || t.includes('garden') || n.includes('park') || n.includes('garden');
+      }
+      return c === target || c.includes(target);
     });
 
-    renderMapMarkers(filtered);
     if (filtered.length > 0) {
+      renderMapMarkers(filtered);
       selectMapSpot(filtered[0]);
       showToast(`Showing ${filtered.length} ${category.toUpperCase()} locations`, '📍');
     } else {
-      showToast(`No locations found for ${category.toUpperCase()}`, '⚠️');
+      renderMapMarkers(spots);
+      showToast(`Showing all ${spots.length} Green Locations`, '📍');
     }
   }
 }
