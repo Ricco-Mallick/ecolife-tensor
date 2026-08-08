@@ -266,8 +266,14 @@ function switchTab(tabId) {
     }
   });
 
-  if (tabId === 'map' && appState.map) {
-    setTimeout(() => appState.map.invalidateSize(), 200);
+  if (tabId === 'map') {
+    setTimeout(() => {
+      if (appState.map) {
+        appState.map.invalidateSize();
+        const spots = (appState.mapSpots && appState.mapSpots.length > 0) ? appState.mapSpots : DEFAULT_MUMBAI_LOCATIONS;
+        renderMapMarkers(spots);
+      }
+    }, 250);
   }
 }
 
