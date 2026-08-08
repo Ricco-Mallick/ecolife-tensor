@@ -284,7 +284,6 @@
 
     </section>
 
-
     <!-- PAGE 2: AI WASTE SCANNER -->
     <section id="view-scanner" class="page-view space-y-8">
       
@@ -300,17 +299,17 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
         
-        <!-- Left: Upload / Camera Drop Zone -->
-        <div class="neo-card p-6 bg-white flex flex-col justify-between space-y-6">
+        <!-- Left 7 Cols: Upload / Camera Drop Zone (Landscape) -->
+        <div class="lg:col-span-7 neo-card p-6 bg-white flex flex-col justify-between space-y-6">
           <h3 class="font-display font-black text-xl flex items-center gap-2">
             <span class="material-symbols-outlined text-[#15803d]">upload_file</span>
             Step 1: Upload Waste Image
           </h3>
 
-          <!-- Scanner Dropzone Frame -->
-          <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="border-4 border-dashed border-[#0a0a0a] bg-[#f6f9f3] hover:bg-[#ccff00]/15 rounded-2xl p-8 text-center cursor-pointer relative min-h-[320px] flex flex-col items-center justify-center transition-colors group">
+          <!-- Scanner Dropzone Frame (Landscape Proportions) -->
+          <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="border-4 border-dashed border-[#0a0a0a] bg-[#f6f9f3] hover:bg-[#ccff00]/15 rounded-2xl p-6 text-center cursor-pointer relative min-h-[220px] flex flex-col items-center justify-center transition-colors group">
             
             <!-- Bracket Markers -->
             <div class="scanner-bracket bracket-tl"></div>
@@ -320,17 +319,17 @@
 
             <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)"/>
 
-            <div id="uploadPrompt" class="space-y-3">
-              <div class="w-16 h-16 bg-[#ccff00] border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a] rounded-2xl flex items-center justify-center mx-auto text-3xl group-hover:scale-110 transition-transform">
+            <div id="uploadPrompt" class="space-y-2">
+              <div class="w-14 h-14 bg-[#ccff00] border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] rounded-2xl flex items-center justify-center mx-auto text-2xl group-hover:scale-110 transition-transform">
                 📸
               </div>
-              <p class="font-display font-black text-lg text-[#0a0a0a]">Click or Drag & Drop Image Here</p>
+              <p class="font-display font-black text-base text-[#0a0a0a]">Click or Drag & Drop Image Here</p>
               <p class="text-xs text-gray-500 font-medium">Supports JPG, PNG, WEBP (Plastic, Paper, Metal, Glass)</p>
             </div>
 
             <!-- Image Preview Box -->
             <div id="previewContainer" class="hidden w-full h-full relative flex items-center justify-center overflow-hidden rounded-xl">
-              <img id="imagePreview" class="max-h-[280px] object-contain rounded-xl border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a]"/>
+              <img id="imagePreview" class="max-h-[220px] object-contain rounded-xl border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a]"/>
               <div id="scanLaser" class="hidden scan-line"></div>
             </div>
           </div>
@@ -344,126 +343,124 @@
             </button>
           </div>
             
-            <div class="pt-1">
-              <p class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2">Or Test Real AI Vision Samples:</p>
-              <div class="grid grid-cols-5 gap-2">
-                <button onclick="simulateCameraCapture('plastic')" title="Plastic Bottle" class="neo-btn bg-white hover:bg-[#ccff00] p-2 text-base">🧴</button>
-                <button onclick="simulateCameraCapture('paper')" title="Cardboard Box" class="neo-btn bg-white hover:bg-[#38bdf8] p-2 text-base">📦</button>
-                <button onclick="simulateCameraCapture('metal')" title="Metal Can" class="neo-btn bg-white hover:bg-[#facc15] p-2 text-base">🥫</button>
-                <button onclick="simulateCameraCapture('glass')" title="Glass Bottle" class="neo-btn bg-white hover:bg-[#4ade80] p-2 text-base">🍾</button>
-                <button onclick="simulateCameraCapture('cat')" title="Non-Waste (Cat)" class="neo-btn bg-white hover:bg-red-200 p-2 text-base" title="Test Non-Waste Item">🐱</button>
-              </div>
+          <div class="pt-1">
+            <p class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2">Or Test Real AI Vision Samples:</p>
+            <div class="grid grid-cols-5 gap-2">
+              <button onclick="simulateCameraCapture('plastic')" title="Plastic Bottle" class="neo-btn bg-white hover:bg-[#ccff00] p-2 text-base">🧴</button>
+              <button onclick="simulateCameraCapture('paper')" title="Cardboard Box" class="neo-btn bg-white hover:bg-[#38bdf8] p-2 text-base">📦</button>
+              <button onclick="simulateCameraCapture('metal')" title="Metal Can" class="neo-btn bg-white hover:bg-[#facc15] p-2 text-base">🥫</button>
+              <button onclick="simulateCameraCapture('glass')" title="Glass Bottle" class="neo-btn bg-white hover:bg-[#4ade80] p-2 text-base">🍾</button>
+              <button onclick="simulateCameraCapture('cat')" title="Non-Waste (Cat)" class="neo-btn bg-white hover:bg-red-200 p-2 text-base">🐱</button>
             </div>
           </div>
         </div>
 
-        <!-- Right: AI Classification Results & Confirmation -->
-        <div class="neo-card p-6 bg-white space-y-6">
-          <h3 class="font-display font-black text-xl flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#15803d]">analytics</span>
-            Step 2: AI Prediction & Disposal Guide
-          </h3>
+        <!-- Right 5 Cols: AI Classification Results & Confirmation -->
+        <div class="lg:col-span-5 neo-card p-6 bg-white space-y-6 flex flex-col justify-between">
+          <div>
+            <h3 class="font-display font-black text-xl flex items-center gap-2 mb-4">
+              <span class="material-symbols-outlined text-[#15803d]">analytics</span>
+              Step 2: AI Prediction & Disposal Guide
+            </h3>
 
-          <div id="aiResultStateEmpty" class="border-3 border-dashed border-[#0a0a0a]/30 p-8 rounded-2xl text-center text-gray-500 py-16">
-            <span class="material-symbols-outlined text-4xl mb-2 text-gray-400">center_focus_weak</span>
-            <p class="font-display font-black text-base">No waste image analyzed yet</p>
-            <p class="text-xs mt-1">Upload an image on the left to generate simulated AI prediction.</p>
-          </div>
-
-          <div id="aiResultStateActive" class="hidden space-y-6">
-            
-            <!-- Result Prediction Badge Card -->
-            <div class="bg-[#f6f9f3] border-3 border-[#0a0a0a] p-5 rounded-2xl shadow-[4px_4px_0px_0px_#0a0a0a]">
-              <div class="flex items-center justify-between mb-2">
-                <span id="predictedCategoryBadge" class="neo-badge bg-[#ccff00] text-[#0a0a0a]">PLASTIC WASTE</span>
-                <span id="confidenceScoreVal" class="font-display font-black text-sm text-[#15803d]">96% Confidence</span>
-              </div>
-              <h4 id="predictedItemTitle" class="font-display text-2xl font-black text-[#0a0a0a]">PET Plastic Bottle</h4>
-              <p id="predictedItemDesc" class="text-xs text-gray-600 mt-1 font-medium">Recyclable polyethylene terephthalate container.</p>
+            <div id="aiResultStateEmpty" class="border-3 border-dashed border-[#0a0a0a]/30 p-8 rounded-2xl text-center text-gray-500 py-12">
+              <span class="material-symbols-outlined text-4xl mb-2 text-gray-400">center_focus_weak</span>
+              <p class="font-display font-black text-base">No waste image analyzed yet</p>
+              <p class="text-xs mt-1">Upload an image on the left to generate simulated AI prediction.</p>
             </div>
 
-            <!-- Disposal Instructions -->
-            <div class="border-3 border-[#0a0a0a] bg-white p-5 rounded-2xl space-y-3">
-              <h4 class="font-display font-black text-base flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#15803d]">recycling</span> Disposal & Recycling Steps
-              </h4>
-              <ul class="space-y-2 text-xs font-bold text-gray-700">
-                <li class="flex items-start gap-2">
-                  <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep1">Rinse bottle and remove cap before disposal.</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep2">Place in Yellow / Blue Plastic Recycling Bin.</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep3">Saves approx ~0.08 kg CO₂ per item recycled.</span>
-                </li>
-              </ul>
-            </div>
-
-            <!-- Step 3: User Confirmation / Correction Box -->
-            <div class="bg-[#ccff00]/25 border-3 border-[#0a0a0a] p-5 rounded-2xl space-y-4">
-              <div class="flex items-center justify-between">
-                <h4 class="font-display font-black text-sm text-[#0a0a0a]">Is this AI prediction correct?</h4>
-                <span class="text-xs font-black text-[#15803d]">Claim +30 Pts</span>
+            <div id="aiResultStateActive" class="hidden space-y-4">
+              
+              <!-- Result Prediction Badge Card -->
+              <div class="bg-[#f6f9f3] border-3 border-[#0a0a0a] p-4 rounded-2xl shadow-[3px_3px_0px_0px_#0a0a0a]">
+                <div class="flex items-center justify-between mb-2">
+                  <span id="predictedCategoryBadge" class="neo-badge bg-[#ccff00] text-[#0a0a0a]">PLASTIC WASTE</span>
+                  <span id="confidenceScoreVal" class="font-display font-black text-xs text-[#15803d]">96% Confidence</span>
+                </div>
+                <h4 id="predictedItemTitle" class="font-display text-xl font-black text-[#0a0a0a]">PET Plastic Bottle</h4>
+                <p id="predictedItemDesc" class="text-xs text-gray-600 mt-1 font-medium">Recyclable polyethylene terephthalate container.</p>
               </div>
 
-              <div class="flex flex-col sm:flex-row gap-3">
-                <button onclick="confirmAiPrediction(true)" class="neo-btn bg-[#15803d] text-white py-2.5 px-4 text-xs font-bold flex-1">
-                  <span class="material-symbols-outlined text-sm">check_circle</span> Yes, Confirm
+              <!-- Disposal Instructions -->
+              <div class="border-3 border-[#0a0a0a] bg-white p-4 rounded-2xl space-y-2">
+                <h4 class="font-display font-black text-sm flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#15803d]">recycling</span> Disposal & Recycling Steps
+                </h4>
+                <ul class="space-y-1.5 text-xs font-bold text-gray-700">
+                  <li class="flex items-start gap-2">
+                    <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep1">Rinse bottle and remove cap before disposal.</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep2">Place in Yellow / Blue Plastic Recycling Bin.</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep3">Saves approx ~0.08 kg CO₂ per item recycled.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Step 3: User Confirmation / Correction Box -->
+              <div class="bg-[#ccff00]/25 border-3 border-[#0a0a0a] p-4 rounded-2xl space-y-3">
+                <div class="flex items-center justify-between">
+                  <h4 class="font-display font-black text-xs text-[#0a0a0a]">Is this AI prediction correct?</h4>
+                  <span class="text-xs font-black text-[#15803d]">Claim +30 Pts</span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <button onclick="confirmAiPrediction(true)" class="neo-btn bg-[#15803d] text-white py-2 px-3 text-xs font-bold flex-1">
+                    <span class="material-symbols-outlined text-sm">check_circle</span> Yes, Confirm
+                  </button>
+                  
+                  <!-- Correction Dropdown -->
+                  <div class="flex-1 flex gap-2">
+                    <select id="correctCategorySelect" class="bg-white border-2 border-[#0a0a0a] font-display font-bold text-xs p-1.5 rounded-xl flex-1">
+                      <option value="">Correct to...</option>
+                      <option value="Plastic">Plastic</option>
+                      <option value="Paper">Paper / Cardboard</option>
+                      <option value="Metal">Metal Can</option>
+                      <option value="Glass">Glass Container</option>
+                    </select>
+                    <button onclick="confirmAiPrediction(false)" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-3 text-xs font-bold">
+                      Update
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- State: Unknown / Unrecognized Image -->
+            <div id="aiResultStateUnknown" class="hidden space-y-4 border-3 border-[#0a0a0a] bg-red-50 p-5 rounded-2xl shadow-[3px_3px_0px_0px_#0a0a0a]">
+              <div class="flex items-center gap-3">
+                <span class="w-9 h-9 bg-red-600 text-white font-black text-lg rounded-xl flex items-center justify-center border-2 border-[#0a0a0a]">⚠️</span>
+                <div>
+                  <h4 class="font-display font-black text-base text-[#0a0a0a]">Image Not Identified</h4>
+                  <p id="unknownRawPrediction" class="text-xs font-bold text-red-700">Detected: Unknown / Non-waste Object</p>
+                </div>
+              </div>
+              <p class="text-xs text-gray-700 font-medium leading-relaxed">
+                Our AI vision model analyzed this photo but could not identify recognizable recyclable waste. Please upload a clear image of a waste item.
+              </p>
+              <div class="border-t-2 border-[#0a0a0a]/10 pt-3 flex flex-col sm:flex-row gap-2">
+                <button onclick="document.getElementById('fileInput').click()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-3 text-xs font-bold flex-1">
+                  📸 Try Another Photo
                 </button>
-                
-                <!-- Correction Dropdown -->
                 <div class="flex-1 flex gap-2">
-                  <select id="correctCategorySelect" class="bg-white border-3 border-[#0a0a0a] font-display font-bold text-xs p-2 rounded-xl flex-1">
-                    <option value="">Correct to...</option>
-                    <option value="Plastic">Plastic</option>
-                    <option value="Paper">Paper / Cardboard</option>
-                    <option value="Metal">Metal Can</option>
-                    <option value="Glass">Glass Container</option>
+                  <select id="manualWasteCategorySelect" class="bg-white border-2 border-[#0a0a0a] font-display font-bold text-xs p-1.5 rounded-xl flex-1">
+                    <option value="Plastic">Force Plastic</option>
+                    <option value="Paper">Force Paper</option>
+                    <option value="Metal">Force Metal</option>
+                    <option value="Glass">Force Glass</option>
                   </select>
-                  <button onclick="confirmAiPrediction(false)" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 px-3 text-xs font-bold">
-                    Update
+                  <button onclick="forceManualCategory()" class="neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] py-2 px-3 text-xs font-bold">
+                    Classify
                   </button>
                 </div>
               </div>
-            </div>
-
           </div>
-
-          <!-- State: Unknown / Unrecognized Image -->
-          <div id="aiResultStateUnknown" class="hidden space-y-4 border-3 border-[#0a0a0a] bg-red-50 p-6 rounded-2xl shadow-[4px_4px_0px_0px_#0a0a0a]">
-            <div class="flex items-center gap-3">
-              <span class="w-10 h-10 bg-red-600 text-white font-black text-xl rounded-xl flex items-center justify-center border-2 border-[#0a0a0a]">⚠️</span>
-              <div>
-                <h4 class="font-display font-black text-lg text-[#0a0a0a]">Image Not Identified</h4>
-                <p id="unknownRawPrediction" class="text-xs font-bold text-red-700">Detected: Unknown / Non-waste Object</p>
-              </div>
-            </div>
-            <p class="text-xs text-gray-700 font-medium leading-relaxed">
-              Our AI vision model analyzed this photo but could not identify recognizable recyclable waste (Plastic, Paper, Metal, or Glass). Please upload a clear image of a waste item.
-            </p>
-            <div class="border-t-2 border-[#0a0a0a]/10 pt-3 flex flex-col sm:flex-row gap-2">
-              <button onclick="document.getElementById('fileInput').click()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-3 text-xs font-bold flex-1">
-                📸 Try Another Photo
-              </button>
-              <div class="flex-1 flex gap-2">
-                <select id="manualWasteCategorySelect" class="bg-white border-2 border-[#0a0a0a] font-display font-bold text-xs p-2 rounded-xl flex-1">
-                  <option value="Plastic">Force Plastic</option>
-                  <option value="Paper">Force Paper</option>
-                  <option value="Metal">Force Metal</option>
-                  <option value="Glass">Force Glass</option>
-                </select>
-                <button onclick="forceManualCategory()" class="neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] py-2 px-3 text-xs font-bold">
-                  Classify
-                </button>
-              </div>
-            </div>
-          </div>
-
         </div>
 
       </div>
-
     </section>
 
 
