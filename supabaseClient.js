@@ -74,16 +74,38 @@ const AuthResult = {
 
   // Sign Out
   async signOut() {
-    if (!_supabaseApp) return { success: false };
+    try { localStorage.removeItem('ecolife_demo_user'); } catch (e) {}
+    if (!_supabaseApp) return { success: true };
     await _supabaseApp.auth.signOut();
     return { success: true };
   },
 
   // Get Current User (Auth)
   async getCurrentUser() {
-    if (!_supabaseApp) return null;
-    const { data } = await _supabaseApp.auth.getUser();
-    return (data && data.user) ? data.user : null;
+    if (_supabaseApp) {
+      try {
+        const { data } = await _supabaseApp.auth.getUser();
+        if (data && data.user) return data.user;
+      } catch (e) {}
+    }
+    try {
+      const demoUser = localStorage.getItem('ecolife_demo_user');
+      if (demoUser) return JSON.parse(demoUser);
+    } catch (e) {}
+    return null;
+  },
+
+  // Demo Instant Sign In
+  async demoSignIn(fullName = 'Eco Warrior', email = 'warrior@ecolife.app') {
+    const user = {
+      id: 'demo-' + Date.now(),
+      email: email,
+      user_metadata: { full_name: fullName, avatar_url: '' }
+    };
+    try {
+      localStorage.setItem('ecolife_demo_user', JSON.stringify(user));
+    } catch (e) {}
+    return { success: true, user };
   },
 
   // Get User Profile from `profiles` table
@@ -169,7 +191,6 @@ const AuthResult = {
     }
 
     // After successfully logging the action, update the user's profile stats
-    const profile = await this.getProfile();
     if (profile) {
       const co2Tons = newAction.co2_saved_kg / 1000;
       await this.updateProfile({

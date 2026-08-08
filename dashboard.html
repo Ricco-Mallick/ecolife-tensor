@@ -1,592 +1,1019 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EcoLife - Sustainable Living Dashboard | Team .Tensor</title>
+  <title>EcoLife — Sustainable Intelligence | Neo-Brutalist Dashboard</title>
 
   <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Fonts & Material Symbols -->
+  <!-- Google Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700;800;900&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
-  <!-- Google Maps API will be dynamically loaded via app.js -->
+  <!-- Leaflet Maps CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Supabase JS CDN & Client Helper -->
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- TensorFlow.js & MobileNet AI Vision CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
+
+  <!-- Supabase & EcoAuth Helper -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabaseClient.js"></script>
 
-  <!-- Custom Styles -->
+  <!-- Custom Neo-Brutalist Styles -->
   <link rel="stylesheet" href="styles.css"/>
 
-  <script id="tailwind-config">
+  <script>
     tailwind.config = {
-      darkMode: "class",
       theme: {
         extend: {
           colors: {
-            "primary": "#0d631b",
-            "primary-container": "#2e7d32",
-            "primary-fixed": "#a3f69c",
-            "primary-fixed-dim": "#88d982",
-            "secondary": "#5d6300",
-            "secondary-container": "#dee950",
-            "secondary-fixed": "#e1eb53",
-            "surface": "#f9f9f9",
-            "surface-container": "#eeeeee",
-            "surface-container-high": "#e8e8e8",
-            "surface-container-highest": "#e2e2e2",
-            "surface-container-lowest": "#ffffff",
-            "on-surface": "#1a1c1c",
-            "on-surface-variant": "#40493d",
-            "on-primary": "#ffffff",
-            "on-secondary": "#ffffff",
-            "on-secondary-container": "#616700",
-            "background": "#f9f9f9",
-            "error": "#ba1a1a",
-            "error-container": "#ffdad6"
+            "forest-green": "#15803d",
+            "forest-dark": "#0f5127",
+            "lime-accent": "#ccff00",
+            "lime-bright": "#a3e635",
+            "dark-black": "#0a0a0a",
+            "surface-bg": "#f6f9f3"
           },
           fontFamily: {
-            "body-md": ["Inter"],
-            "headline-lg": ["Space Grotesk"],
-            "display-lg": ["Space Grotesk"]
-          },
-          spacing: {
-            "margin-desktop": "48px",
-            "gutter": "24px",
-            "unit": "4px",
-            "stack-md": "16px",
-            "margin-mobile": "16px",
-            "stack-sm": "8px",
-            "stack-lg": "32px"
+            "sans": ["Inter", "sans-serif"],
+            "display": ["Space Grotesk", "sans-serif"]
           }
         }
       }
     }
   </script>
 </head>
-<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col antialiased">
+<body class="bg-[#f6f9f3] text-[#0a0a0a] font-sans min-h-screen flex flex-col antialiased bg-bauhaus-grid">
 
   <!-- Desktop Sidebar Navigation -->
-  <nav class="hidden lg:flex flex-col h-full fixed left-0 top-0 z-40 bg-surface w-64 border-r-4 border-on-surface shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-    <div class="p-stack-md border-b-4 border-on-surface flex items-center gap-3">
-      <div class="w-10 h-10 bg-primary text-on-primary font-bold text-xl flex items-center justify-center border-2 border-on-surface neo-shadow-sm">
-        🌱
-      </div>
-      <div>
-        <h1 class="font-headline-lg text-2xl font-bold text-primary">EcoLife</h1>
+  <aside class="hidden lg:flex flex-col h-full fixed left-0 top-0 z-40 bg-white w-64 border-r-4 border-[#0a0a0a] shadow-[6px_0px_0px_0px_#0a0a0a]">
+    <!-- Brand Header -->
+    <div class="p-6 border-b-4 border-[#0a0a0a] bg-[#ccff00] flex items-center justify-between relative overflow-hidden">
+      <div class="flex items-center gap-3 relative z-10">
+        <div class="w-11 h-11 bg-[#15803d] text-white font-black text-2xl flex items-center justify-center border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] rounded-xl transform -rotate-3">
+          🌱
+        </div>
+        <div>
+          <h1 class="font-display text-2xl font-black text-[#0a0a0a] tracking-tight">EcoLife</h1>
+          <span class="text-[10px] font-black uppercase tracking-widest bg-[#0a0a0a] text-[#ccff00] px-2 py-0.5 rounded border border-[#0a0a0a]">.Tensor AI</span>
+        </div>
       </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-gutter flex flex-col gap-stack-sm">
-      <a href="landing.html" class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-surface-container-high transition-all font-label-bold text-label-bold">
-        <span class="material-symbols-outlined">home</span> Minimalist Landing
+    <!-- Navigation Menu Links -->
+    <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+      <a href="landing.html" class="flex items-center gap-3 p-3 text-[#0a0a0a] font-display font-bold hover:bg-[#ccff00] border-3 border-transparent hover:border-[#0a0a0a] hover:shadow-[4px_4px_0px_0px_#0a0a0a] rounded-xl transition-all">
+        <span class="material-symbols-outlined">home</span> Landing Page
       </a>
-      <a data-nav="overview" href="#overview" class="flex items-center gap-stack-md p-stack-md bg-secondary-container text-on-secondary-container neo-border-thin neo-shadow-sm font-label-bold text-label-bold">
-        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span> Overview
+
+      <div class="my-2 border-t-2 border-[#0a0a0a]/20"></div>
+
+      <a data-nav="overview" href="#overview" onclick="switchTab('overview'); return false;" class="nav-link flex items-center gap-3 p-3 bg-[#ccff00] text-[#0a0a0a] font-display font-extrabold border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a] rounded-xl">
+        <span class="material-symbols-outlined">dashboard</span> Overview
       </a>
-      <a data-nav="scanner" href="#scanner" class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-surface-container-high transition-all font-label-bold text-label-bold">
-        <span class="material-symbols-outlined">barcode_scanner</span> Waste Scanner
+      <a data-nav="scanner" href="#scanner" onclick="switchTab('scanner'); return false;" class="nav-link flex items-center gap-3 p-3 text-[#0a0a0a] font-display font-bold hover:bg-[#ccff00] border-3 border-transparent hover:border-[#0a0a0a] hover:shadow-[4px_4px_0px_0px_#0a0a0a] rounded-xl transition-all">
+        <span class="material-symbols-outlined">center_focus_strong</span> AI Waste Scanner
       </a>
-      <a data-nav="map" href="#map" class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-surface-container-high transition-all font-label-bold text-label-bold">
-        <span class="material-symbols-outlined">map</span> Green Map
+      <a data-nav="map" href="#map" onclick="switchTab('map'); return false;" class="nav-link flex items-center gap-3 p-3 text-[#0a0a0a] font-display font-bold hover:bg-[#ccff00] border-3 border-transparent hover:border-[#0a0a0a] hover:shadow-[4px_4px_0px_0px_#0a0a0a] rounded-xl transition-all">
+        <span class="material-symbols-outlined">map</span> Local Green Map
       </a>
-      <a data-nav="challenges" href="#challenges" class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-surface-container-high transition-all font-label-bold text-label-bold">
-        <span class="material-symbols-outlined">emoji_events</span> Challenges
+      <a data-nav="challenges" href="#challenges" onclick="switchTab('challenges'); return false;" class="nav-link flex items-center gap-3 p-3 text-[#0a0a0a] font-display font-bold hover:bg-[#ccff00] border-3 border-transparent hover:border-[#0a0a0a] hover:shadow-[4px_4px_0px_0px_#0a0a0a] rounded-xl transition-all">
+        <span class="material-symbols-outlined">emoji_events</span> Eco Challenges
       </a>
-      <a data-nav="leaderboard" href="#leaderboard" class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-surface-container-high transition-all font-label-bold text-label-bold">
+      <a data-nav="leaderboard" href="#leaderboard" onclick="switchTab('leaderboard'); return false;" class="nav-link flex items-center gap-3 p-3 text-[#0a0a0a] font-display font-bold hover:bg-[#ccff00] border-3 border-transparent hover:border-[#0a0a0a] hover:shadow-[4px_4px_0px_0px_#0a0a0a] rounded-xl transition-all">
         <span class="material-symbols-outlined">leaderboard</span> Leaderboard
       </a>
-      <a data-nav="profile" href="#profile" class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-surface-container-high transition-all font-label-bold text-label-bold mt-auto">
-        <span class="material-symbols-outlined">account_circle</span> Profile & Settings
+      <a data-nav="profile" href="#profile" onclick="switchTab('profile'); return false;" class="nav-link flex items-center gap-3 p-3 text-[#0a0a0a] font-display font-bold hover:bg-[#ccff00] border-3 border-transparent hover:border-[#0a0a0a] hover:shadow-[4px_4px_0px_0px_#0a0a0a] rounded-xl transition-all">
+        <span class="material-symbols-outlined">person</span> Profile & Stats
       </a>
     </div>
 
-    <div class="p-gutter border-t-4 border-on-surface bg-surface">
-      <button class="btn-open-log-action w-full bg-primary text-on-primary font-label-bold text-label-bold p-stack-md neo-btn">
-        + Log Eco Action
-      </button>
-    </div>
-  </nav>
-
-  <!-- Top App Header -->
-  <header class="sticky top-0 z-30 bg-background border-b-4 border-on-surface flex justify-between items-center px-margin-mobile md:px-margin-desktop py-3 lg:ml-64">
-    <div class="flex items-center gap-3">
-      <div class="lg:hidden flex items-center gap-2">
-        <span class="font-headline-lg text-xl font-bold text-primary">EcoLife</span>
-      </div>
-      <div class="hidden md:inline-block bg-secondary-container px-3 py-1 neo-border-thin font-label-bold text-xs">
-        PIXXELHACK 2.0 • TEAM .TENSOR
-      </div>
-    </div>
-
-    <div class="flex items-center gap-4">
-      <div class="hidden sm:flex items-center gap-2 bg-primary-fixed px-3 py-1 neo-border-thin font-bold text-sm">
-        <span class="material-symbols-outlined text-primary text-lg">stars</span>
-        <span>Points: <strong class="user-pts-val">0</strong></span>
-      </div>
-      <button class="btn-open-log-action sm:hidden bg-primary text-on-primary px-3 py-1 font-bold text-xs neo-border-thin">
-        + Log
-      </button>
-
-      <div id="userAuthPill" class="flex items-center gap-2">
-        <span id="headerUserName" class="hidden md:inline-block font-bold text-xs bg-surface px-3 py-1.5 neo-border-thin border-2">Guest</span>
-        <button id="btnAuthAction" onclick="handleAuthAction()" class="bg-surface text-on-surface px-3 py-1.5 neo-border-thin border-2 font-bold text-xs hover:bg-surface-container-high neo-btn">
-          Sign In
+    <!-- User Auth Status Box -->
+    <div class="p-4 border-t-4 border-[#0a0a0a] bg-[#f6f9f3]">
+      <div class="p-3 bg-white border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a] rounded-xl flex items-center justify-between">
+        <div class="flex items-center gap-2.5 overflow-hidden">
+          <span class="w-9 h-9 rounded-xl bg-[#15803d] text-white flex items-center justify-center text-sm font-black border-2 border-[#0a0a0a] shadow-[2px_2px_0px_0px_#0a0a0a]">🌿</span>
+          <div class="truncate">
+            <p id="sidebarUserName" class="font-display font-black text-xs truncate">Guest Warrior</p>
+            <p id="sidebarUserRank" class="text-[10px] text-[#15803d] font-extrabold uppercase tracking-wide">Eco Guardian</p>
+          </div>
+        </div>
+        <button id="btnAuthAction" onclick="handleAuthAction()" class="p-2 bg-[#ccff00] hover:bg-[#a3e635] border-2 border-[#0a0a0a] font-bold text-xs rounded-xl shadow-[2px_2px_0px_0px_#0a0a0a] transition-transform hover:scale-105">
+          <span class="material-symbols-outlined text-sm">login</span>
         </button>
       </div>
     </div>
+  </aside>
+
+  <!-- Mobile Top Bar Header -->
+  <header class="lg:hidden sticky top-0 z-50 bg-[#ccff00] border-b-4 border-[#0a0a0a] shadow-[0px_4px_0px_0px_#0a0a0a] px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-9 h-9 bg-[#15803d] text-white font-black flex items-center justify-center border-2 border-[#0a0a0a] text-sm rounded-lg">
+        🌱
+      </div>
+      <span class="font-display font-black text-xl text-[#0a0a0a]">EcoLife</span>
+    </div>
+    <button onclick="handleAuthAction()" class="px-3 py-1.5 bg-white font-display font-black text-xs border-2 border-[#0a0a0a] shadow-[2px_2px_0px_0px_#0a0a0a] rounded-xl">
+      Account
+    </button>
   </header>
 
-  <!-- Main Content Body -->
-  <main class="flex-1 lg:ml-64 pb-20 lg:pb-10">
-
-    <!-- PAGE 2: OVERVIEW DASHBOARD -->
-    <section id="page-overview" class="page-view active p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
-      <div class="mb-stack-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 class="font-display-lg text-3xl md:text-5xl font-bold">Welcome back, <span class="profile-name-val">Eco Warrior</span>.</h2>
-          <p class="font-body-lg text-on-surface-variant mt-1">Your impact is looking solid today. Let's keep the streak alive!</p>
-        </div>
-        <button class="btn-open-log-action bg-secondary-container text-on-surface px-5 py-3 neo-btn font-label-bold text-sm">
-          + Log Action
-        </button>
-      </div>
-
-      <!-- Dashboard Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
-        <!-- Daily Eco Score Gauge -->
-        <div class="bg-surface-container-lowest p-gutter neo-border neo-shadow flex flex-col items-center justify-center col-span-1 min-h-[300px]">
-          <h3 class="font-headline-md text-xl font-bold w-full text-left mb-stack-md border-b-2 border-on-surface pb-stack-sm">Daily Score</h3>
-          <div class="relative w-44 h-44">
-            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 160 160">
-              <circle cx="80" cy="80" r="70" fill="transparent" stroke="#eeeeee" stroke-width="16"></circle>
-              <circle id="score-gauge" cx="80" cy="80" r="70" fill="transparent" stroke="#0d631b" stroke-width="16" stroke-linecap="butt" class="gauge-circle"></circle>
-              <circle cx="80" cy="80" r="78" fill="transparent" stroke="#1a1c1c" stroke-width="4"></circle>
-              <circle cx="80" cy="80" r="62" fill="transparent" stroke="#1a1c1c" stroke-width="4"></circle>
-            </svg>
-            <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <span class="font-display-lg text-4xl font-bold user-score-val">82</span>
-              <span class="font-label-bold text-xs text-on-surface-variant uppercase tracking-widest font-bold">GREAT</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Carbon Footprint Card -->
-        <div class="bg-secondary-container p-gutter neo-border neo-shadow col-span-1 flex flex-col justify-between min-h-[300px]">
-          <div>
-            <h3 class="font-headline-md text-xl font-bold border-b-2 border-on-surface pb-stack-sm mb-stack-md flex items-center justify-between">
-              Carbon Offset
-              <span class="material-symbols-outlined text-2xl">co2</span>
-            </h3>
-            <div class="font-display-lg text-5xl font-bold mt-4"><span class="user-co2-val">0.0</span> <span class="text-xl font-normal">Tons</span></div>
-            <p class="font-label-bold text-xs mt-2 uppercase tracking-wide font-bold">Total Mitigated Emissions</p>
-          </div>
-          <div class="mt-auto bg-surface p-stack-sm neo-border-thin flex items-center gap-stack-sm">
-            <span class="material-symbols-outlined text-primary">eco</span>
-            <span class="font-body-md text-sm">Keep logging actions to grow!</span>
-          </div>
-        </div>
-
-        <!-- Action Streak Counter -->
-        <div class="bg-on-surface text-surface p-gutter neo-border neo-shadow col-span-1 md:col-span-2 xl:col-span-1 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[300px]">
-          <h3 class="font-headline-md text-xl font-bold w-full text-left mb-stack-md border-b-2 border-surface-container-high pb-stack-sm text-surface">Action Streak</h3>
-          <div class="flex items-center justify-center gap-4 z-10 my-auto">
-            <span class="material-symbols-outlined text-6xl text-secondary-container">local_fire_department</span>
-            <div class="text-left">
-              <span class="font-display-lg text-5xl font-bold block text-secondary-container user-streak-val">0</span>
-              <span class="font-label-bold text-xs uppercase tracking-widest text-surface-container-high font-bold">Days Active</span>
-            </div>
-          </div>
-          <div class="mt-auto text-on-surface-variant font-label-bold text-xs z-10">
-            Log actions daily to build your streak!
-          </div>
-        </div>
-
-        <!-- Weekly Impact Chart Placeholder -->
-        <div class="bg-surface-container-lowest p-gutter neo-border neo-shadow col-span-1 md:col-span-2 xl:col-span-3 flex flex-col justify-center items-center text-center min-h-[300px]">
-          <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-2">monitoring</span>
-          <h3 class="font-headline-md text-xl font-bold text-on-surface-variant">Weekly Impact Actions</h3>
-          <p class="font-body-md text-on-surface-variant mt-2 max-w-md">Data visualization coming soon. Keep logging actions to build your history!</p>
-        </div>
-
-        <!-- Recent Actions Feed -->
-        <div class="bg-surface p-gutter neo-border neo-shadow col-span-1 md:col-span-2 xl:col-span-3">
-          <h3 class="font-headline-md text-xl font-bold border-b-2 border-on-surface pb-stack-sm mb-stack-md">Recent Logged Actions</h3>
-          <div id="recent-actions-list" class="flex flex-col neo-border-thin bg-surface-container-lowest">
-            <!-- Dynamic items rendered by JS -->
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- PAGE 3: AI WASTE SCANNER -->
-    <section id="page-scanner" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
-      <div class="bg-surface p-gutter border-4 border-on-surface neo-shadow mb-gutter">
-        <h1 class="font-headline-lg text-3xl font-bold uppercase">AI Waste Classifier</h1>
-        <p class="font-body-md text-on-surface-variant mt-1">Point your camera at an item or select a preset sample to classify waste and retrieve disposal rules instantly.</p>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-        <!-- Viewport -->
-        <div class="lg:col-span-7 flex flex-col gap-gutter">
-          <div class="relative bg-on-surface w-full aspect-[4/3] border-4 border-on-surface neo-shadow overflow-hidden group">
-            <video id="scanner-video" class="w-full h-full object-cover hidden" autoplay playsinline></video>
-            <div id="scanner-bg" class="absolute inset-0 bg-cover bg-center opacity-80" style="background-image: url('https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
-
-            <!-- HUD brackets -->
-            <div class="scanner-bracket bracket-tl"></div>
-            <div class="scanner-bracket bracket-tr"></div>
-            <div class="scanner-bracket bracket-bl"></div>
-            <div class="scanner-bracket bracket-br"></div>
-            <div class="scan-line"></div>
-
-            <div class="absolute top-4 left-4 bg-surface text-on-surface font-label-bold text-xs px-3 py-1 border-2 border-on-surface flex items-center gap-2 neo-shadow-sm">
-              <span class="w-2.5 h-2.5 rounded-full bg-error animate-pulse block"></span> AI VISION ACTIVE
-            </div>
-          </div>
-
-          <!-- Camera & Sample Controls -->
-          <div class="flex flex-wrap gap-stack-md bg-surface p-stack-md neo-border neo-shadow">
-            <button id="btn-start-cam" class="flex-1 bg-primary text-on-primary font-bold py-3 px-4 neo-btn flex items-center justify-center gap-2">
-              <span class="material-symbols-outlined">videocam</span> Enable Live Camera
-            </button>
-            <button id="btn-capture-ai" class="flex-1 bg-secondary text-on-secondary font-bold py-3 px-4 neo-btn flex items-center justify-center gap-2 hidden">
-              <span class="material-symbols-outlined">center_focus_strong</span> Capture & Analyze
-            </button>
-            <div id="ai-loading" class="w-full hidden items-center justify-center gap-2 p-2 bg-primary-fixed text-on-surface font-bold neo-border-thin">
-              <span class="material-symbols-outlined animate-spin">refresh</span> Gemini AI is analyzing...
-            </div>
-
-            <div class="w-full h-1 bg-on-surface my-1"></div>
-
-            <div class="flex-1 flex gap-2">
-              <select id="preset-select" class="flex-1 bg-surface-container-lowest neo-border-thin font-bold px-3 py-2 text-sm">
-                <option value="bottle">PET Plastic Water Bottle</option>
-                <option value="can">Aluminum Beverage Can</option>
-                <option value="e_waste">Lithium Phone Battery (E-Waste)</option>
-                <option value="compost">Apple Core & Food Scraps</option>
-              </select>
-              <button id="btn-scan-preset" class="bg-secondary-container text-on-surface font-bold px-4 py-2 neo-btn text-sm">
-                Classify
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Scanner Prediction Results -->
-        <div class="lg:col-span-5 flex flex-col gap-gutter h-full">
-          <div class="bg-surface border-4 border-on-surface p-gutter neo-shadow flex-1">
-            <div class="flex justify-between items-start mb-stack-md">
-              <h3 id="scan-item-title" class="font-headline-md text-2xl font-bold text-on-surface leading-tight">PET Plastic Bottle</h3>
-              <div id="scan-match-tag" class="bg-secondary text-on-secondary font-label-bold text-xs px-3 py-1 border-2 border-on-surface font-bold">
-                98% MATCH
-              </div>
-            </div>
-            <p class="font-body-md text-sm text-on-surface-variant mb-stack-lg border-b-2 border-on-surface pb-stack-md">
-              Category: <strong id="scan-category" class="text-on-surface">Recyclable Plastic (Type 1 - PET)</strong>
-            </p>
-
-            <h4 class="font-label-bold text-xs text-on-surface uppercase tracking-wider mb-stack-sm font-bold">Disposal Guide</h4>
-            <div id="scan-disposal-steps" class="flex flex-col border-2 border-on-surface bg-surface-container-lowest">
-              <div class="flex items-center p-stack-sm border-b-2 border-on-surface group hover:bg-surface-container-high transition-colors">
-                <div class="w-8 h-8 shrink-0 bg-primary text-on-primary font-label-bold flex items-center justify-center border-2 border-on-surface mr-stack-md font-bold">1</div>
-                <span class="font-body-md text-sm">Empty all remaining liquids thoroughly.</span>
-              </div>
-              <div class="flex items-center p-stack-sm border-b-2 border-on-surface group hover:bg-surface-container-high transition-colors">
-                <div class="w-8 h-8 shrink-0 bg-primary text-on-primary font-label-bold flex items-center justify-center border-2 border-on-surface mr-stack-md font-bold">2</div>
-                <span class="font-body-md text-sm">Crush bottle flat to conserve recycling space.</span>
-              </div>
-              <div class="flex items-center p-stack-sm group hover:bg-surface-container-high transition-colors">
-                <div class="w-8 h-8 shrink-0 bg-primary text-on-primary font-label-bold flex items-center justify-center border-2 border-on-surface mr-stack-md font-bold">3</div>
-                <span class="font-body-md text-sm">Place in local recycling bin or drop off.</span>
-              </div>
-            </div>
-
-            <div class="mt-6">
-              <button id="btn-confirm-scan" class="w-full bg-primary text-on-primary font-bold py-3 px-4 neo-btn flex items-center justify-center gap-2">
-                <span class="material-symbols-outlined">check_circle</span> Confirm Proper Disposal (+60 Pts)
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- PAGE 4: GREEN MAP -->
-    <section id="page-map" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
-      <div class="bg-surface p-gutter border-4 border-on-surface neo-shadow mb-gutter flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 class="font-headline-lg text-3xl font-bold uppercase">Interactive Green Map</h1>
-          <p class="font-body-md text-on-surface-variant mt-1">Locate community recycling bins, EV charging hubs, compost stations, and bike docks.</p>
-        </div>
-        <button id="btn-add-map-spot" class="bg-secondary-container text-on-surface px-4 py-2 font-bold neo-btn text-sm flex items-center gap-1">
-          <span class="material-symbols-outlined">add_location_alt</span> Add Green Spot
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter min-h-[500px]">
-        <!-- Map Filters -->
-        <aside class="lg:col-span-4 bg-surface neo-border neo-shadow p-stack-md flex flex-col gap-4">
-          <h3 class="font-headline-md text-xl font-bold border-b-2 border-on-surface pb-2">Filter Locations</h3>
-          <div class="flex flex-col gap-3">
-            <label class="flex items-center gap-3 cursor-pointer p-2 border-2 border-on-surface bg-surface-container-lowest">
-              <input type="checkbox" value="recycling" checked class="map-filter-checkbox w-5 h-5 accent-primary"/>
-              <span class="font-bold text-sm flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary">recycling</span> Recycling Centers
-              </span>
-            </label>
-            <label class="flex items-center gap-3 cursor-pointer p-2 border-2 border-on-surface bg-surface-container-lowest">
-              <input type="checkbox" value="ev" checked class="map-filter-checkbox w-5 h-5 accent-primary"/>
-              <span class="font-bold text-sm flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary">ev_station</span> EV Chargers
-              </span>
-            </label>
-            <label class="flex items-center gap-3 cursor-pointer p-2 border-2 border-on-surface bg-surface-container-lowest">
-              <input type="checkbox" value="compost" checked class="map-filter-checkbox w-5 h-5 accent-primary"/>
-              <span class="font-bold text-sm flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary">compost</span> Compost Bins
-              </span>
-            </label>
-            <label class="flex items-center gap-3 cursor-pointer p-2 border-2 border-on-surface bg-surface-container-lowest">
-              <input type="checkbox" value="bike" checked class="map-filter-checkbox w-5 h-5 accent-primary"/>
-              <span class="font-bold text-sm flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary">directions_bike</span> Bike Stations
-              </span>
-            </label>
-          </div>
-
-          <div class="mt-auto p-3 bg-secondary-container neo-border-thin text-xs font-bold">
-            💡 Click on any map marker to see full details and get directions.
-          </div>
-        </aside>
-
-        <!-- Leaflet Container -->
-        <div class="lg:col-span-8 bg-surface neo-border neo-shadow min-h-[450px] relative overflow-hidden">
-          <div id="eco-map" class="w-full h-full min-h-[450px] z-10"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- PAGE 5: CHALLENGES -->
-    <section id="page-challenges" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
-      <div class="mb-stack-lg border-b-4 border-on-surface pb-stack-md flex justify-between items-end">
-        <div>
-          <h1 class="font-headline-lg text-3xl font-bold uppercase">Active Eco Challenges</h1>
-          <p class="font-body-lg text-on-surface-variant mt-1">Complete daily tasks to gain green score and reduce emissions.</p>
-        </div>
-      </div>
-
-      <div id="challenges-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
-        <!-- Rendered by JS -->
-      </div>
-    </section>
-
-    <!-- PAGE 6: LEADERBOARD -->
-    <section id="page-leaderboard" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-stack-lg">
-        <div>
-          <h2 class="font-display-lg text-4xl font-bold uppercase border-b-4 border-on-surface inline-block pb-1">Leaderboard</h2>
-          <p class="font-body-lg text-on-surface-variant mt-2">Compete. Act. Dominate.</p>
-        </div>
-        <div class="flex border-4 border-on-surface bg-surface neo-shadow-sm p-1">
-          <button class="px-4 py-2 font-bold bg-secondary-container border-2 border-on-surface text-sm">Global</button>
-          <button onclick="showToast('Filtered to TCET Campus Leaderboard!')" class="px-4 py-2 font-bold hover:bg-surface-container-high text-sm">Campus</button>
-        </div>
-      </div>
-
-      <!-- Podium Top 3 (Coming Soon) -->
-      <section id="leaderboard-podium" class="flex flex-col justify-center items-center mt-stack-lg min-h-[300px] border-4 border-on-surface bg-surface neo-shadow text-center p-gutter">
-        <span class="material-symbols-outlined text-6xl text-on-surface-variant mb-4">emoji_events</span>
-        <h3 class="font-headline-md text-2xl font-bold">Leaderboard syncing...</h3>
-        <p class="font-body-md text-on-surface-variant mt-2">Compete with friends once the global leaderboard comes online.</p>
-      </section>
-
-      <!-- Rest of Pack Table -->
-      <section class="mt-stack-lg">
-        <h3 class="font-headline-md text-xl uppercase mb-stack-md bg-on-surface text-surface inline-block px-3 py-1 font-bold">The Rest of the Pack</h3>
-        <div id="leaderboard-list" class="flex flex-col border-4 border-on-surface bg-surface neo-shadow">
-          <!-- Rendered by JS -->
-        </div>
-      </section>
-    </section>
-
-    <!-- PAGE 7: PROFILE & SETTINGS -->
-    <section id="page-profile" class="page-view p-margin-mobile lg:p-margin-desktop max-w-7xl mx-auto">
-      <section class="flex flex-col md:flex-row items-center md:items-start gap-gutter bg-secondary-fixed p-margin-desktop neo-border neo-shadow relative overflow-hidden">
-        <div class="shrink-0 relative z-10">
-          <img class="w-32 h-32 md:w-44 md:h-44 rounded-full neo-border object-cover bg-white profile-avatar-val" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxNcP4jmGLxlDNuWCtPln-cBePNWavmRWJWmdXAU4d8FQVwMmZ8kfvUFAxgKQeuV2qfIfBw20C1L43EZ1TMDBiiEtCWUwTu_V5CSEyO96Mbn4CgKlyqT8RvJg6vjxWQWH3DNnl9yebbUAHT49M2ige3sDObHlC-O2e6dLUjneCXmyA8lmvGupFl5AgbcEdw49T-AWArPGFL6hpwMnikONLO_DyvpUWQETsIHu6nWIHvLGQdTVPqGPNew" alt="User Avatar"/>
-          <div class="absolute -bottom-2 -right-2 bg-primary-fixed neo-border px-2 py-1 font-bold text-xs transform rotate-[-5deg]">LVL 12</div>
-        </div>
-        <div class="relative z-10 text-center md:text-left flex flex-col h-full justify-center">
-          <h2 class="font-display-lg text-4xl md:text-5xl font-bold uppercase leading-none profile-name-val">Eco Warrior</h2>
-          <p class="font-body-lg text-base font-bold text-on-surface-variant bg-white inline-block px-3 py-1 neo-border-thin mt-2 self-center md:self-start">Team .Tensor • Eco-Warrior Innovator</p>
-        </div>
-      </section>
-
-      <!-- Edit Profile Settings -->
-      <section class="mt-gutter bg-surface-container p-gutter neo-border neo-shadow-sm">
-        <h3 class="font-headline-md text-2xl font-bold uppercase border-b-4 border-on-surface pb-1 w-fit mb-stack-md">Edit Profile</h3>
-        <form id="profile-edit-form" class="flex flex-col gap-stack-sm max-w-md">
-          <div class="flex flex-col">
-            <label class="font-label-bold text-sm mb-1">Full Name</label>
-            <input type="text" id="edit-profile-name" class="p-2 border-2 border-on-surface bg-white" placeholder="Elena Rodriguez" required />
-          </div>
-          <div class="flex flex-col">
-            <label class="font-label-bold text-sm mb-1">Avatar URL (Optional)</label>
-            <input type="url" id="edit-profile-avatar" class="p-2 border-2 border-on-surface bg-white" placeholder="https://..." />
-          </div>
-          <button type="submit" class="mt-2 bg-primary text-on-primary font-bold py-2 px-4 neo-border hover:-translate-y-1 transition-transform self-start">Save Changes</button>
-        </form>
-        <button id="btn-sign-out" class="mt-stack-lg bg-error text-on-error font-bold py-2 px-4 neo-border hover:-translate-y-1 transition-transform self-start">Sign Out</button>
-      </section>
-
-      <!-- Impact Stats Grid -->
-      <section class="grid grid-cols-1 md:grid-cols-2 gap-gutter mt-gutter">
-        <div class="bg-primary text-on-primary p-gutter flex flex-col justify-between h-44 neo-border neo-shadow">
-          <div class="flex justify-between items-start w-full">
-            <span class="font-bold text-xs uppercase bg-white text-on-surface px-2 py-1 neo-border-thin">Total Points</span>
-            <span class="material-symbols-outlined text-4xl">eco</span>
-          </div>
-          <div class="font-display-lg text-5xl font-bold user-pts-val">0</div>
-        </div>
-
-        <div class="bg-surface-container-highest text-on-surface p-gutter flex flex-col justify-between h-44 neo-border neo-shadow">
-          <div class="flex justify-between items-start w-full">
-            <span class="font-bold text-xs uppercase bg-black text-white px-2 py-1 neo-border-thin">CO2 Offset</span>
-            <span class="material-symbols-outlined text-4xl">co2</span>
-          </div>
-          <div class="font-display-lg text-5xl font-bold"><span class="user-co2-val">0.0</span> <span class="text-xl font-normal">Tons</span></div>
-        </div>
-      </section>
-
-      <!-- Trophies & Badges (Coming Soon) -->
-      <section class="flex flex-col gap-stack-md mt-gutter">
-        <h3 class="font-headline-md text-2xl font-bold uppercase border-b-4 border-on-surface pb-1 w-fit">Trophies</h3>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-gutter">
-          <div class="bg-surface-container-high p-4 neo-border flex flex-col items-center justify-center gap-2 text-center aspect-square neo-shadow-sm opacity-60">
-            <span class="material-symbols-outlined text-4xl font-bold">lock</span>
-            <span class="font-bold text-xs uppercase">More Challenges Coming Soon</span>
-          </div>
-        </div>
-      </section>
-    </section>
-  </main>
-
-  <!-- Mobile Navigation Bar -->
-  <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t-4 border-on-surface z-40 flex justify-around p-1">
-    <a data-nav="overview" href="#overview" class="flex flex-col items-center p-1 text-primary">
-      <span class="material-symbols-outlined text-xl">dashboard</span>
-      <span class="font-bold text-[10px]">Overview</span>
+  <!-- Mobile Bottom Navigation -->
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t-4 border-[#0a0a0a] shadow-[0px_-4px_0px_0px_#0a0a0a] flex justify-around p-2">
+    <a data-nav="overview" href="#overview" onclick="switchTab('overview'); return false;" class="nav-link flex flex-col items-center p-1 text-[#0a0a0a] font-display font-bold text-[10px]">
+      <span class="material-symbols-outlined text-xl">dashboard</span> Overview
     </a>
-    <a data-nav="scanner" href="#scanner" class="flex flex-col items-center p-1 text-on-surface-variant">
-      <span class="material-symbols-outlined text-xl">barcode_scanner</span>
-      <span class="font-bold text-[10px]">Scanner</span>
+    <a data-nav="scanner" href="#scanner" onclick="switchTab('scanner'); return false;" class="nav-link flex flex-col items-center p-1 text-[#0a0a0a] font-display font-bold text-[10px]">
+      <span class="material-symbols-outlined text-xl">center_focus_strong</span> Scanner
     </a>
-    <a data-nav="map" href="#map" class="flex flex-col items-center p-1 text-on-surface-variant">
-      <span class="material-symbols-outlined text-xl">map</span>
-      <span class="font-bold text-[10px]">Map</span>
+    <a data-nav="map" href="#map" onclick="switchTab('map'); return false;" class="nav-link flex flex-col items-center p-1 text-[#0a0a0a] font-display font-bold text-[10px]">
+      <span class="material-symbols-outlined text-xl">map</span> Map
     </a>
-    <a data-nav="challenges" href="#challenges" class="flex flex-col items-center p-1 text-on-surface-variant">
-      <span class="material-symbols-outlined text-xl">emoji_events</span>
-      <span class="font-bold text-[10px]">Challenges</span>
+    <a data-nav="challenges" href="#challenges" onclick="switchTab('challenges'); return false;" class="nav-link flex flex-col items-center p-1 text-[#0a0a0a] font-display font-bold text-[10px]">
+      <span class="material-symbols-outlined text-xl">emoji_events</span> Challenges
     </a>
-    <a data-nav="profile" href="#profile" class="flex flex-col items-center p-1 text-on-surface-variant">
-      <span class="material-symbols-outlined text-xl">account_circle</span>
-      <span class="font-bold text-[10px]">Profile</span>
+    <a data-nav="profile" href="#profile" onclick="switchTab('profile'); return false;" class="nav-link flex flex-col items-center p-1 text-[#0a0a0a] font-display font-bold text-[10px]">
+      <span class="material-symbols-outlined text-xl">person</span> Profile
     </a>
   </nav>
 
-  <!-- Log Action Modal -->
-  <div id="action-modal" class="modal-overlay">
-    <div class="bg-surface border-4 border-on-surface neo-shadow-lg p-margin-desktop max-w-md w-full mx-4 relative">
-      <div class="flex justify-between items-center border-b-4 border-on-surface pb-3 mb-4">
-        <h3 class="font-headline-md text-2xl font-bold">Log Eco Action</h3>
-        <button class="btn-close-modal text-2xl font-bold hover:text-error">✕</button>
+  <!-- Main Content Area -->
+  <main class="lg:ml-64 flex-1 p-4 lg:p-8 mb-16 lg:mb-0 max-w-7xl mx-auto w-full">
+
+    <!-- PAGE 1: OVERVIEW -->
+    <section id="view-overview" class="page-view active space-y-8">
+      
+      <!-- Top Hero Banner Card -->
+      <div class="neo-card bg-gradient-to-r from-[#15803d] via-[#166534] to-[#0f5127] text-white p-6 lg:p-8 relative overflow-hidden">
+        
+        <!-- Decorative Bauhaus Geometric Accent Shapes -->
+        <div class="absolute -right-10 -bottom-10 w-48 h-48 rounded-full bg-[#ccff00] border-4 border-[#0a0a0a] opacity-20 pointer-events-none"></div>
+        <div class="absolute right-32 -top-10 w-24 h-24 bg-[#facc15] border-4 border-[#0a0a0a] opacity-20 rotate-45 pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div>
+            <div class="inline-flex items-center gap-2 bg-[#ccff00] text-[#0a0a0a] border-2 border-[#0a0a0a] font-display font-black text-xs px-3.5 py-1 rounded-full uppercase tracking-wider mb-3 shadow-[2px_2px_0px_0px_#0a0a0a]">
+              ⚡ Live Sustainability Intelligence
+            </div>
+            <h2 class="font-display text-3xl lg:text-5xl font-black tracking-tight mb-2 text-white">
+              Welcome back, <span id="welcomeUserName" class="text-[#ccff00]">Eco Warrior</span>!
+            </h2>
+            <p class="text-white/90 text-sm lg:text-base font-medium max-w-xl leading-relaxed">
+              Track carbon impact, scan waste items for AI recycling instructions, complete daily eco challenges, and explore local green facilities.
+            </p>
+          </div>
+
+          <!-- Quick Stats Pill Badges -->
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="bg-white text-[#0a0a0a] border-3 border-[#0a0a0a] shadow-[5px_5px_0px_0px_#0a0a0a] p-4 rounded-2xl text-center min-w-[120px] transform hover:scale-105 transition-transform">
+              <p class="text-[10px] font-black uppercase text-[#15803d] tracking-wider">Total Points</p>
+              <p id="headerUserPoints" class="font-display font-black text-3xl text-[#0a0a0a]">1,280</p>
+            </div>
+            <div class="bg-[#ccff00] text-[#0a0a0a] border-3 border-[#0a0a0a] shadow-[5px_5px_0px_0px_#0a0a0a] p-4 rounded-2xl text-center min-w-[120px] transform hover:scale-105 transition-transform">
+              <p class="text-[10px] font-black uppercase text-[#0a0a0a] tracking-wider">CO₂ Saved</p>
+              <p id="headerCo2Saved" class="font-display font-black text-3xl text-[#0a0a0a]">42.5 kg</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <form id="log-action-form" class="flex flex-col gap-4">
-        <div>
-          <label class="block font-bold text-sm mb-1">Action Category</label>
-          <select id="action-type" class="w-full bg-surface-container-lowest neo-border-thin p-3 font-bold text-sm">
-            <option value="Recycling">Recycling & Waste Segregation</option>
-            <option value="Transit">Low-Carbon Transit (Bike/Walk/Bus)</option>
-            <option value="Energy">Solar & Energy Conservation</option>
-            <option value="Food">Zero-Waste / Plant-Based Meal</option>
-          </select>
+      <!-- 4 Core Overview Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        <!-- Card 1: Daily Eco Score Gauge -->
+        <div class="neo-card p-6 bg-white flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-display font-black text-lg text-[#0a0a0a]">Daily Eco Score</h3>
+            <span class="neo-badge bg-[#ccff00] text-[#0a0a0a]">Tier: Guardian</span>
+          </div>
+
+          <div class="flex items-center justify-center my-2 relative">
+            <div class="w-36 h-36 rounded-full border-8 border-[#f6f9f3] border-t-[#15803d] border-r-[#ccff00] border-b-[#a3e635] flex items-center justify-center shadow-inner relative">
+              <div class="text-center">
+                <span id="dailyEcoScore" class="font-display font-black text-4xl text-[#15803d]">88</span>
+                <span class="text-xs font-black block text-gray-400">/ 100</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-4 border-t-2 border-[#0a0a0a]/10 flex justify-between text-xs font-bold text-gray-700">
+            <span>Daily Target Met!</span>
+            <span class="text-[#15803d] font-black">+12% vs Yesterday</span>
+          </div>
         </div>
 
-        <div>
-          <label class="block font-bold text-sm mb-1">Activity Description</label>
-          <input type="text" id="action-detail" placeholder="e.g. Cycled 10km to college" required class="w-full bg-surface-container-lowest neo-border-thin p-3 text-sm"/>
+        <!-- Card 2: Carbon Footprint Card -->
+        <div class="neo-card p-6 bg-white flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-display font-black text-lg text-[#0a0a0a]">Carbon Footprint</h3>
+            <span class="material-symbols-outlined text-[#15803d] text-2xl">co2</span>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>Transport</span>
+                <span id="fpTransportVal" class="font-black text-[#15803d]">1.2 kg CO₂</span>
+              </div>
+              <div class="w-full bg-[#f6f9f3] border-2 border-[#0a0a0a] h-3 rounded-full overflow-hidden">
+                <div class="bg-[#15803d] h-full w-[45%]"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>Energy & Utilities</span>
+                <span id="fpEnergyVal" class="font-black text-[#15803d]">0.8 kg CO₂</span>
+              </div>
+              <div class="w-full bg-[#f6f9f3] border-2 border-[#0a0a0a] h-3 rounded-full overflow-hidden">
+                <div class="bg-[#ccff00] h-full w-[30%]"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>Food & Waste</span>
+                <span id="fpFoodVal" class="font-black text-[#15803d]">0.5 kg CO₂</span>
+              </div>
+              <div class="w-full bg-[#f6f9f3] border-2 border-[#0a0a0a] h-3 rounded-full overflow-hidden">
+                <div class="bg-[#38bdf8] h-full w-[25%]"></div>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="openCarbonCalcModal()" class="mt-4 neo-btn bg-[#f6f9f3] hover:bg-[#ccff00] text-xs py-2.5 w-full">
+            <span class="material-symbols-outlined text-sm">calculate</span> Recalculate Footprint
+          </button>
         </div>
 
-        <div>
-          <label class="block font-bold text-sm mb-1">Estimated Eco Points</label>
-          <input type="number" id="action-pts" value="50" min="10" max="500" class="w-full bg-surface-container-lowest neo-border-thin p-3 font-bold text-sm"/>
+        <!-- Card 3: Streak Counter -->
+        <div class="neo-card p-6 bg-[#ccff00] flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display font-black text-lg text-[#0a0a0a]">Active Streak</h3>
+            <span class="text-3xl animate-bounce">🔥</span>
+          </div>
+
+          <div class="my-4 text-center">
+            <span id="streakDaysCount" class="font-display font-black text-5xl text-[#0a0a0a]">7</span>
+            <span class="font-display font-black text-xs block uppercase tracking-widest text-[#0a0a0a] mt-1">Days Active Streak</span>
+          </div>
+
+          <div class="bg-white border-3 border-[#0a0a0a] p-3 rounded-xl shadow-[3px_3px_0px_0px_#0a0a0a]">
+            <p class="text-[11px] font-black text-[#0a0a0a] mb-1">Next Milestone: 10 Days</p>
+            <div class="w-full bg-[#f6f9f3] border-2 border-[#0a0a0a] h-2.5 rounded-full overflow-hidden">
+              <div class="bg-[#15803d] h-full w-[70%]"></div>
+            </div>
+          </div>
         </div>
 
-        <div class="flex gap-3 mt-2">
-          <button type="button" class="btn-close-modal flex-1 bg-surface-container-high py-3 font-bold neo-btn">Cancel</button>
-          <button type="submit" class="flex-1 bg-primary text-on-primary py-3 font-bold neo-btn">Save Action</button>
+        <!-- Card 4: Quick Action Hub -->
+        <div class="neo-card p-6 bg-[#15803d] text-white flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-display font-black text-lg">Quick Eco Action</h3>
+              <span class="material-symbols-outlined text-[#ccff00]">add_circle</span>
+            </div>
+            <p class="text-xs text-white/90 font-medium">Log an action to instantly earn 30+ points.</p>
+          </div>
+
+          <div class="space-y-2 my-3">
+            <button onclick="quickLogAction('Used Public Transport', 0.8)" class="w-full text-left p-2.5 bg-white/10 hover:bg-white/20 border-2 border-white/40 rounded-xl text-xs font-bold flex items-center justify-between transition-colors">
+              <span>🚆 Public Transport</span>
+              <span class="text-[#ccff00] font-black">+30 pts</span>
+            </button>
+            <button onclick="quickLogAction('Plant-Based Meal', 0.5)" class="w-full text-left p-2.5 bg-white/10 hover:bg-white/20 border-2 border-white/40 rounded-xl text-xs font-bold flex items-center justify-between transition-colors">
+              <span>🥗 Plant-based Meal</span>
+              <span class="text-[#ccff00] font-black">+25 pts</span>
+            </button>
+          </div>
+
+          <button onclick="switchTab('scanner')" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 w-full text-xs font-bold">
+            <span class="material-symbols-outlined text-sm">photo_camera</span> Scan Waste Item
+          </button>
         </div>
-      </form>
+
+      </div>
+
+      <!-- Weekly Progress Graph Section -->
+      <div class="neo-card p-6 bg-white">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 class="font-display text-2xl font-black text-[#0a0a0a]">Weekly Eco Score & Impact Progress</h3>
+            <p class="text-xs font-bold text-gray-500">Track your daily performance score over the last 7 days</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#15803d] bg-[#f6f9f3] border-2 border-[#0a0a0a] px-3 py-1.5 rounded-xl">
+              <span class="w-3 h-3 rounded-full bg-[#15803d] border border-[#0a0a0a]"></span> Daily Score
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#0a0a0a] bg-[#ccff00] border-2 border-[#0a0a0a] px-3 py-1.5 rounded-xl">
+              <span class="w-3 h-3 rounded-full bg-[#ccff00] border border-[#0a0a0a]"></span> CO₂ Saved (kg)
+            </span>
+          </div>
+        </div>
+
+        <div class="w-full h-72 lg:h-80 relative">
+          <canvas id="weeklyProgressChart"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- PAGE 2: AI WASTE SCANNER -->
+    <section id="view-scanner" class="page-view space-y-8">
+      
+      <div class="neo-card p-6 bg-white">
+        <div class="max-w-2xl">
+          <div class="inline-flex items-center gap-2 bg-[#ccff00] border-2 border-[#0a0a0a] font-display font-black text-xs px-3.5 py-1 rounded-full uppercase tracking-wider mb-2">
+            🤖 Computer Vision Classifier
+          </div>
+          <h2 class="font-display text-3xl font-black">AI Waste Scanner</h2>
+          <p class="text-sm font-medium text-gray-600">
+            Upload an image of waste (Plastic, Paper, Metal, Glass) to receive AI prediction with confidence percentage, disposal instructions, and user verification.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Left: Upload / Camera Drop Zone -->
+        <div class="neo-card p-6 bg-white flex flex-col justify-between space-y-6">
+          <h3 class="font-display font-black text-xl flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#15803d]">upload_file</span>
+            Step 1: Upload Waste Image
+          </h3>
+
+          <!-- Scanner Dropzone Frame -->
+          <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="border-4 border-dashed border-[#0a0a0a] bg-[#f6f9f3] hover:bg-[#ccff00]/15 rounded-2xl p-8 text-center cursor-pointer relative min-h-[320px] flex flex-col items-center justify-center transition-colors group">
+            
+            <!-- Bracket Markers -->
+            <div class="scanner-bracket bracket-tl"></div>
+            <div class="scanner-bracket bracket-tr"></div>
+            <div class="bracket-bl scanner-bracket"></div>
+            <div class="scanner-bracket bracket-br"></div>
+
+            <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)"/>
+
+            <div id="uploadPrompt" class="space-y-3">
+              <div class="w-16 h-16 bg-[#ccff00] border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a] rounded-2xl flex items-center justify-center mx-auto text-3xl group-hover:scale-110 transition-transform">
+                📸
+              </div>
+              <p class="font-display font-black text-lg text-[#0a0a0a]">Click or Drag & Drop Image Here</p>
+              <p class="text-xs text-gray-500 font-medium">Supports JPG, PNG, WEBP (Plastic, Paper, Metal, Glass)</p>
+            </div>
+
+            <!-- Image Preview Box -->
+            <div id="previewContainer" class="hidden w-full h-full relative flex items-center justify-center overflow-hidden rounded-xl">
+              <img id="imagePreview" class="max-h-[280px] object-contain rounded-xl border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a]"/>
+              <div id="scanLaser" class="hidden scan-line"></div>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <button onclick="document.getElementById('fileInput').click()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-3.5 w-full">
+              <span class="material-symbols-outlined">file_upload</span> Upload Any Photo / File
+            </button>
+            
+            <div class="pt-1">
+              <p class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2">Or Test Real AI Vision Samples:</p>
+              <div class="grid grid-cols-5 gap-2">
+                <button onclick="simulateCameraCapture('plastic')" title="Plastic Bottle" class="neo-btn bg-white hover:bg-[#ccff00] p-2 text-base">🧴</button>
+                <button onclick="simulateCameraCapture('paper')" title="Cardboard Box" class="neo-btn bg-white hover:bg-[#38bdf8] p-2 text-base">📦</button>
+                <button onclick="simulateCameraCapture('metal')" title="Metal Can" class="neo-btn bg-white hover:bg-[#facc15] p-2 text-base">🥫</button>
+                <button onclick="simulateCameraCapture('glass')" title="Glass Bottle" class="neo-btn bg-white hover:bg-[#4ade80] p-2 text-base">🍾</button>
+                <button onclick="simulateCameraCapture('cat')" title="Non-Waste (Cat)" class="neo-btn bg-white hover:bg-red-200 p-2 text-base" title="Test Non-Waste Item">🐱</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: AI Classification Results & Confirmation -->
+        <div class="neo-card p-6 bg-white space-y-6">
+          <h3 class="font-display font-black text-xl flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#15803d]">analytics</span>
+            Step 2: AI Prediction & Disposal Guide
+          </h3>
+
+          <div id="aiResultStateEmpty" class="border-3 border-dashed border-[#0a0a0a]/30 p-8 rounded-2xl text-center text-gray-500 py-16">
+            <span class="material-symbols-outlined text-4xl mb-2 text-gray-400">center_focus_weak</span>
+            <p class="font-display font-black text-base">No waste image analyzed yet</p>
+            <p class="text-xs mt-1">Upload an image on the left to generate simulated AI prediction.</p>
+          </div>
+
+          <div id="aiResultStateActive" class="hidden space-y-6">
+            
+            <!-- Result Prediction Badge Card -->
+            <div class="bg-[#f6f9f3] border-3 border-[#0a0a0a] p-5 rounded-2xl shadow-[4px_4px_0px_0px_#0a0a0a]">
+              <div class="flex items-center justify-between mb-2">
+                <span id="predictedCategoryBadge" class="neo-badge bg-[#ccff00] text-[#0a0a0a]">PLASTIC WASTE</span>
+                <span id="confidenceScoreVal" class="font-display font-black text-sm text-[#15803d]">96% Confidence</span>
+              </div>
+              <h4 id="predictedItemTitle" class="font-display text-2xl font-black text-[#0a0a0a]">PET Plastic Bottle</h4>
+              <p id="predictedItemDesc" class="text-xs text-gray-600 mt-1 font-medium">Recyclable polyethylene terephthalate container.</p>
+            </div>
+
+            <!-- Disposal Instructions -->
+            <div class="border-3 border-[#0a0a0a] bg-white p-5 rounded-2xl space-y-3">
+              <h4 class="font-display font-black text-base flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#15803d]">recycling</span> Disposal & Recycling Steps
+              </h4>
+              <ul class="space-y-2 text-xs font-bold text-gray-700">
+                <li class="flex items-start gap-2">
+                  <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep1">Rinse bottle and remove cap before disposal.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep2">Place in Yellow / Blue Plastic Recycling Bin.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep3">Saves approx ~0.08 kg CO₂ per item recycled.</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Step 3: User Confirmation / Correction Box -->
+            <div class="bg-[#ccff00]/25 border-3 border-[#0a0a0a] p-5 rounded-2xl space-y-4">
+              <div class="flex items-center justify-between">
+                <h4 class="font-display font-black text-sm text-[#0a0a0a]">Is this AI prediction correct?</h4>
+                <span class="text-xs font-black text-[#15803d]">Claim +30 Pts</span>
+              </div>
+
+              <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="confirmAiPrediction(true)" class="neo-btn bg-[#15803d] text-white py-2.5 px-4 text-xs font-bold flex-1">
+                  <span class="material-symbols-outlined text-sm">check_circle</span> Yes, Confirm
+                </button>
+                
+                <!-- Correction Dropdown -->
+                <div class="flex-1 flex gap-2">
+                  <select id="correctCategorySelect" class="bg-white border-3 border-[#0a0a0a] font-display font-bold text-xs p-2 rounded-xl flex-1">
+                    <option value="">Correct to...</option>
+                    <option value="Plastic">Plastic</option>
+                    <option value="Paper">Paper / Cardboard</option>
+                    <option value="Metal">Metal Can</option>
+                    <option value="Glass">Glass Container</option>
+                  </select>
+                  <button onclick="confirmAiPrediction(false)" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 px-3 text-xs font-bold">
+                    Update
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- State: Unknown / Unrecognized Image -->
+          <div id="aiResultStateUnknown" class="hidden space-y-4 border-3 border-[#0a0a0a] bg-red-50 p-6 rounded-2xl shadow-[4px_4px_0px_0px_#0a0a0a]">
+            <div class="flex items-center gap-3">
+              <span class="w-10 h-10 bg-red-600 text-white font-black text-xl rounded-xl flex items-center justify-center border-2 border-[#0a0a0a]">⚠️</span>
+              <div>
+                <h4 class="font-display font-black text-lg text-[#0a0a0a]">Image Not Identified</h4>
+                <p id="unknownRawPrediction" class="text-xs font-bold text-red-700">Detected: Unknown / Non-waste Object</p>
+              </div>
+            </div>
+            <p class="text-xs text-gray-700 font-medium leading-relaxed">
+              Our AI vision model analyzed this photo but could not identify recognizable recyclable waste (Plastic, Paper, Metal, or Glass). Please upload a clear image of a waste item.
+            </p>
+            <div class="border-t-2 border-[#0a0a0a]/10 pt-3 flex flex-col sm:flex-row gap-2">
+              <button onclick="document.getElementById('fileInput').click()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-3 text-xs font-bold flex-1">
+                📸 Try Another Photo
+              </button>
+              <div class="flex-1 flex gap-2">
+                <select id="manualWasteCategorySelect" class="bg-white border-2 border-[#0a0a0a] font-display font-bold text-xs p-2 rounded-xl flex-1">
+                  <option value="Plastic">Force Plastic</option>
+                  <option value="Paper">Force Paper</option>
+                  <option value="Metal">Force Metal</option>
+                  <option value="Glass">Force Glass</option>
+                </select>
+                <button onclick="forceManualCategory()" class="neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] py-2 px-3 text-xs font-bold">
+                  Classify
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- PAGE 3: LOCAL GREEN MAP -->
+    <section id="view-map" class="page-view space-y-6">
+      
+      <div class="neo-card p-6 bg-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center gap-2 bg-[#ccff00] border-2 border-[#0a0a0a] font-display font-black text-xs px-3 py-0.5 rounded-full uppercase tracking-wider mb-1">
+            📍 Mumbai Green Locations & Satellite Map
+          </div>
+          <h2 class="font-display text-3xl font-black">Local Green Map</h2>
+          <p class="text-sm text-gray-600 font-medium">Explore Parks 🌲, EV Charging ⚡, Recycling Hubs ♻️, and Water Refill Stations 💧 across Mumbai.</p>
+        </div>
+
+        <!-- Map Layer Controls & Filter Tabs -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btnSatelliteToggle" onclick="toggleSatelliteView()" class="neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-2 px-3">
+            📡 Satellite View
+          </button>
+          <button id="btnLocateUser" onclick="requestUserLocation()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] text-xs py-2 px-3">
+            📍 Locate Me
+          </button>
+          
+          <div class="w-full sm:w-auto flex flex-wrap gap-1.5 mt-2 sm:mt-0">
+            <button onclick="filterMapPins('all')" class="map-filter-btn neo-btn bg-[#ccff00] text-[#0a0a0a] text-xs py-1.5 px-2.5">
+              All Pins
+            </button>
+            <button onclick="filterMapPins('recycling')" class="map-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-1.5 px-2.5">
+              ♻️ Recycling
+            </button>
+            <button onclick="filterMapPins('ev')" class="map-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-1.5 px-2.5">
+              ⚡ EV Charging
+            </button>
+            <button onclick="filterMapPins('water')" class="map-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-1.5 px-2.5">
+              💧 Water Refill
+            </button>
+            <button onclick="filterMapPins('park')" class="map-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-1.5 px-2.5">
+              🌲 Parks
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Footstep Pedometer & Carbon Footprint Card -->
+      <div class="neo-card p-6 bg-gradient-to-r from-[#15803d] to-[#0f5127] text-white space-y-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-white/20 pb-4">
+          <div>
+            <div class="inline-flex items-center gap-2 bg-[#ccff00] text-[#0a0a0a] border-2 border-[#0a0a0a] font-display font-black text-xs px-3 py-0.5 rounded-full uppercase">
+              👟 Live Footstep & Real Carbon Offset Tracker
+            </div>
+            <h3 class="font-display font-black text-2xl mt-1 text-white">Live Footstep Pedometer</h3>
+            <p class="text-xs text-white/90 font-medium">Captures your real steps walked & computes live saved vehicle CO₂ emissions in real time.</p>
+          </div>
+
+          <!-- Live Controls -->
+          <div class="flex flex-wrap gap-2">
+            <button id="btnPedometerToggle" onclick="togglePedometerTracking()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-4 text-xs font-black">
+              ▶ Start Walk Tracking
+            </button>
+            <button onclick="simulateWalkStep(15)" class="neo-btn bg-white text-[#0a0a0a] py-2 px-3 text-xs font-black" title="Simulate 15 Steps">
+              👟 Step Walk (+15)
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Live Metric Counter Displays -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-white/10 border-2 border-white/30 p-4 rounded-xl text-center">
+            <p class="text-[10px] font-black uppercase text-[#ccff00] tracking-wider">Live Steps Walked</p>
+            <p id="livePedometerSteps" class="font-display font-black text-3xl text-white my-1">0</p>
+            <span class="text-[10px] text-white/80 font-bold">Captured via motion/GPS</span>
+          </div>
+
+          <div class="bg-white/10 border-2 border-white/30 p-4 rounded-xl text-center">
+            <p class="text-[10px] font-black uppercase text-[#ccff00] tracking-wider">Distance Covered</p>
+            <p id="livePedometerDistance" class="font-display font-black text-3xl text-white my-1">0.00 km</p>
+            <span class="text-[10px] text-white/80 font-bold">~0.75 meters per step</span>
+          </div>
+
+          <div class="bg-[#ccff00] text-[#0a0a0a] border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a] p-4 rounded-xl text-center">
+            <p class="text-[10px] font-black uppercase text-[#0a0a0a] tracking-wider">Real CO₂ Offset Saved</p>
+            <p id="livePedometerCo2Saved" class="font-display font-black text-3xl text-[#0a0a0a] my-1">0.000 kg</p>
+            <span class="text-[10px] font-black text-[#15803d]">0.192 kg CO₂ saved per km</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map & Location Info Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Interactive Map Container -->
+        <div class="lg:col-span-2 neo-card bg-white p-2 min-h-[480px] relative">
+          <div id="greenMap" class="w-full h-[470px] rounded-2xl"></div>
+        </div>
+
+        <!-- Selected Location Details Drawer -->
+        <div class="neo-card p-6 bg-white space-y-4 flex flex-col justify-between">
+          <div>
+            <span id="selectedPinType" class="neo-badge bg-[#ccff00] text-[#0a0a0a]">PARK & GREEN SPACE</span>
+            <h3 id="selectedPinName" class="font-display text-2xl font-black text-[#0a0a0a] mt-2">Sanjay Gandhi National Park (SGNP)</h3>
+            <p id="selectedPinAddress" class="text-xs font-bold text-gray-500 mt-1">Borivali East, Mumbai, Maharashtra</p>
+            
+            <div class="my-4 border-t-2 border-[#0a0a0a]/10 pt-4 space-y-3 text-xs font-bold text-gray-700">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-500">Operating Hours:</span>
+                <span id="selectedPinHours" class="text-[#15803d]">07:30 AM - 06:30 PM</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-500">Distance:</span>
+                <span id="selectedPinDistance">0.8 km from location</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-500">Facility / Features:</span>
+                <span id="selectedPinItems" class="text-right max-w-[150px] truncate">Dense Forest, Cycling, Kanheri Caves</span>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="getDirectionsToPin()" class="neo-btn bg-[#15803d] text-white py-3.5 w-full text-xs font-bold">
+            <span class="material-symbols-outlined">directions</span> Get Directions in Google Maps
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- PAGE 4: ECO CHALLENGES -->
+    <section id="view-challenges" class="page-view space-y-6">
+      
+      <div class="neo-card p-6 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center gap-2 bg-[#ccff00] border-2 border-[#0a0a0a] font-display font-black text-xs px-3 py-0.5 rounded-full uppercase tracking-wider mb-1">
+            🤖 AI Proof Scanner Verification Active
+          </div>
+          <h2 class="font-display text-3xl font-black">Daily Eco Challenges</h2>
+          <p class="text-sm text-gray-600 font-medium">Upload photo/screenshot proof for AI verification to earn points, boost your streak, and climb the leaderboard.</p>
+        </div>
+        <div class="bg-[#ccff00] border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] px-4 py-2 rounded-xl font-display font-black text-sm">
+          Active Streak: <span id="challengeStreakDisplay">7 Days 🔥</span>
+        </div>
+      </div>
+
+      <!-- Challenges Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Challenge 1: Walk 2 km -->
+        <div class="neo-card p-6 bg-white flex flex-col justify-between space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-[#ccff00] border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] rounded-xl flex items-center justify-center text-2xl font-bold">
+                🚶
+              </div>
+              <div>
+                <h3 class="font-display font-black text-xl text-[#0a0a0a]">Walk 2 km</h3>
+                <p class="text-xs font-bold text-gray-500">Upload fitness app screenshot / step proof</p>
+              </div>
+            </div>
+            <span class="neo-badge bg-[#15803d] text-white">+50 Pts</span>
+          </div>
+
+          <p class="text-xs text-gray-600 font-medium">AI verifies pedometer screenshot showing 2+ km distance covered.</p>
+
+          <div class="pt-2">
+            <button id="btnChallengeWalk" onclick="openChallengeProofModal('walk')" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 w-full text-xs font-extrabold flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-sm">photo_camera</span> Submit Proof & Verify (+50 Pts)
+            </button>
+          </div>
+        </div>
+
+        <!-- Challenge 2: Use Reusable Bottle -->
+        <div class="neo-card p-6 bg-white flex flex-col justify-between space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-[#38bdf8] border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] rounded-xl flex items-center justify-center text-2xl font-bold">
+                🥤
+              </div>
+              <div>
+                <h3 class="font-display font-black text-xl text-[#0a0a0a]">Use Reusable Water Bottle</h3>
+                <p class="text-xs font-bold text-gray-500">Upload photo of non-plastic bottle/flask</p>
+              </div>
+            </div>
+            <span class="neo-badge bg-[#15803d] text-white">+30 Pts</span>
+          </div>
+
+          <p class="text-xs text-gray-600 font-medium">AI rejects single-use plastic bottles. Metal, glass, or hydro flasks earn points!</p>
+
+          <div class="pt-2">
+            <button id="btnChallengeBottle" onclick="openChallengeProofModal('bottle')" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 w-full text-xs font-extrabold flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-sm">photo_camera</span> Submit Proof & Verify (+30 Pts)
+            </button>
+          </div>
+        </div>
+
+        <!-- Challenge 3: Plant a Tree -->
+        <div class="neo-card p-6 bg-white flex flex-col justify-between space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-[#4ade80] border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] rounded-xl flex items-center justify-center text-2xl font-bold">
+                🌳
+              </div>
+              <div>
+                <h3 class="font-display font-black text-xl text-[#0a0a0a]">Plant a Tree / Sapling</h3>
+                <p class="text-xs font-bold text-gray-500">Upload photo of your potted plant or sapling</p>
+              </div>
+            </div>
+            <span class="neo-badge bg-[#15803d] text-white">+200 Pts</span>
+          </div>
+
+          <p class="text-xs text-gray-600 font-medium">AI scans image for green flora, tree, pot, or sapling features.</p>
+
+          <div class="pt-2">
+            <button id="btnChallengeTree" onclick="openChallengeProofModal('tree')" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 w-full text-xs font-extrabold flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-sm">photo_camera</span> Submit Proof & Verify (+200 Pts)
+            </button>
+          </div>
+        </div>
+
+        <!-- Challenge 4: Segregate Waste -->
+        <div class="neo-card p-6 bg-white flex flex-col justify-between space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-[#facc15] border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] rounded-xl flex items-center justify-center text-2xl font-bold">
+                ♻️
+              </div>
+              <div>
+                <h3 class="font-display font-black text-xl text-[#0a0a0a]">Segregate Household Waste</h3>
+                <p class="text-xs font-bold text-gray-500">Upload photo of separated dry/wet bins</p>
+              </div>
+            </div>
+            <span class="neo-badge bg-[#15803d] text-white">+40 Pts</span>
+          </div>
+
+          <p class="text-xs text-gray-600 font-medium">AI verifies separated dry recyclables and organic compost bins.</p>
+
+          <div class="pt-2">
+            <button id="btnChallengeWaste" onclick="openChallengeProofModal('waste')" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 w-full text-xs font-extrabold flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-sm">photo_camera</span> Submit Proof & Verify (+40 Pts)
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- PAGE 5: LIVE LEADERBOARD -->
+    <section id="view-leaderboard" class="page-view space-y-6">
+      
+      <div class="neo-card p-6 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center gap-2 bg-[#ccff00] border-2 border-[#0a0a0a] font-display font-black text-xs px-3 py-0.5 rounded-full uppercase tracking-wider mb-1">
+            ⚡ Live Dynamic Ranking Engine
+          </div>
+          <h2 class="font-display text-3xl font-black">Community Leaderboard</h2>
+          <p class="text-sm text-gray-600 font-medium">Real-time rankings updated instantly when eco challenges and actions are completed.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="leaderboardUserRankBadge" class="neo-badge bg-[#15803d] text-white text-xs py-1.5 px-3">Your Live Rank: #4</span>
+        </div>
+      </div>
+
+      <!-- Leaderboard & Activity Feed Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Leaderboard Table (Col 2) -->
+        <div class="lg:col-span-2 neo-card p-6 bg-white overflow-x-auto">
+          <div class="flex items-center justify-between mb-4 border-b-2 border-[#0a0a0a]/10 pb-3">
+            <h3 class="font-display font-black text-lg text-[#0a0a0a]">Top Eco Champions</h3>
+            <div class="flex gap-2">
+              <button onclick="filterLeaderboard('weekly')" class="lb-filter-btn neo-btn bg-[#ccff00] text-[#0a0a0a] text-xs py-1 px-2.5">Weekly</button>
+              <button onclick="filterLeaderboard('all')" class="lb-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-1 px-2.5">All-Time</button>
+            </div>
+          </div>
+
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b-4 border-[#0a0a0a] text-xs font-display font-black uppercase text-gray-600">
+                <th class="py-3 px-3">Rank</th>
+                <th class="py-3 px-3">User</th>
+                <th class="py-3 px-3">Badge Title</th>
+                <th class="py-3 px-3 text-right">Points</th>
+                <th class="py-3 px-3 text-right">CO₂ Saved</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardTableBody" class="divide-y-2 divide-[#0a0a0a]/10 font-bold text-sm">
+              <!-- Rendered dynamically by updateLeaderboardUi() -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Live Activity Feed Drawer (Col 1) -->
+        <div class="neo-card p-6 bg-white space-y-4 flex flex-col justify-between">
+          <div>
+            <h3 class="font-display font-black text-lg text-[#0a0a0a] flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-[#15803d] animate-ping"></span> Live Challenge Activity
+            </h3>
+            <p class="text-xs text-gray-500 font-medium mt-0.5">Real-time verified challenge feed from the community.</p>
+
+            <div id="liveActivityFeed" class="mt-4 space-y-3 max-h-[380px] overflow-y-auto pr-1">
+              <!-- Dynamic activity items -->
+              <div class="p-3 bg-[#f6f9f3] border-2 border-[#0a0a0a] rounded-xl flex items-center gap-3">
+                <span class="text-xl">🚶</span>
+                <div class="text-xs">
+                  <p class="font-black text-[#0a0a0a]">Aarav S. completed Walk 2km</p>
+                  <p class="text-[10px] font-bold text-[#15803d]">+50 Pts • AI Verified 2m ago</p>
+                </div>
+              </div>
+
+              <div class="p-3 bg-[#f6f9f3] border-2 border-[#0a0a0a] rounded-xl flex items-center gap-3">
+                <span class="text-xl">🥤</span>
+                <div class="text-xs">
+                  <p class="font-black text-[#0a0a0a]">Elena R. completed Reusable Bottle</p>
+                  <p class="text-[10px] font-bold text-[#15803d]">+30 Pts • AI Verified 8m ago</p>
+                </div>
+              </div>
+
+              <div class="p-3 bg-[#f6f9f3] border-2 border-[#0a0a0a] rounded-xl flex items-center gap-3">
+                <span class="text-xl">🌳</span>
+                <div class="text-xs">
+                  <p class="font-black text-[#0a0a0a]">You completed Plant a Tree</p>
+                  <p class="text-[10px] font-bold text-[#15803d]">+200 Pts • AI Verified Just Now</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-[#ccff00]/30 border-2 border-[#0a0a0a] p-3 rounded-xl text-center">
+            <span class="text-xs font-black text-[#0a0a0a]">Complete challenges to climb live rank!</span>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- PAGE 6: PROFILE -->
+    <section id="view-profile" class="page-view space-y-8">
+      
+      <!-- Profile Header Card -->
+      <div class="neo-card p-6 lg:p-8 bg-white flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+          <div class="w-20 h-20 rounded-2xl bg-[#15803d] text-white font-black text-3xl flex items-center justify-center border-4 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a]">
+            🌿
+          </div>
+          <div>
+            <h2 id="profileFullName" class="font-display text-3xl font-black text-[#0a0a0a]">Eco Warrior</h2>
+            <p id="profileEmail" class="text-xs font-bold text-gray-500">warrior@ecolife.app</p>
+            <span class="neo-badge bg-[#ccff00] text-[#0a0a0a] mt-2 inline-block">Tier: Eco Guardian</span>
+          </div>
+        </div>
+
+        <button onclick="handleAuthAction()" class="neo-btn bg-[#f6f9f3] hover:bg-[#ccff00] py-2.5 px-5 text-xs font-extrabold">
+          <span class="material-symbols-outlined text-sm">logout</span> Sign Out
+        </button>
+      </div>
+
+      <!-- User Stats Counter Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="neo-card p-6 bg-white text-center">
+          <p class="text-xs font-extrabold uppercase text-gray-500">Total CO₂ Saved</p>
+          <p id="profCo2Saved" class="font-display font-black text-4xl text-[#15803d] my-2">42.5 kg</p>
+          <span class="text-[11px] font-bold text-gray-500">Equivalent to ~2 trees planted</span>
+        </div>
+
+        <div class="neo-card p-6 bg-white text-center">
+          <p class="text-xs font-extrabold uppercase text-gray-500">Total Points Earned</p>
+          <p id="profTotalPoints" class="font-display font-black text-4xl text-[#0a0a0a] my-2">1,280</p>
+          <span class="text-[11px] font-bold text-[#15803d]">Level 4 Achieved</span>
+        </div>
+
+        <div class="neo-card p-6 bg-[#ccff00] text-center">
+          <p class="text-xs font-extrabold uppercase text-[#0a0a0a]">Active Streak</p>
+          <p id="profActiveStreak" class="font-display font-black text-4xl text-[#0a0a0a] my-2">7 Days 🔥</p>
+          <span class="text-[11px] font-extrabold text-[#0a0a0a]">3 Days to Next Trophy</span>
+        </div>
+      </div>
+
+      <!-- Achievements Showcase -->
+      <div class="neo-card p-6 bg-white space-y-4">
+        <h3 class="font-display font-black text-2xl text-[#0a0a0a]">Unlocked Achievements</h3>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="border-3 border-[#0a0a0a] p-4 rounded-2xl bg-[#f6f9f3] text-center shadow-[3px_3px_0px_0px_#0a0a0a]">
+            <span class="text-3xl block mb-1">🥇</span>
+            <p class="font-display font-extrabold text-xs">Carbon Hero</p>
+            <p class="text-[10px] text-gray-500">Saved >30kg CO₂</p>
+          </div>
+
+          <div class="border-3 border-[#0a0a0a] p-4 rounded-2xl bg-[#f6f9f3] text-center shadow-[3px_3px_0px_0px_#0a0a0a]">
+            <span class="text-3xl block mb-1">🤖</span>
+            <p class="font-display font-extrabold text-xs">AI Waste Master</p>
+            <p class="text-[10px] text-gray-500">Scanned 10+ items</p>
+          </div>
+
+          <div class="border-3 border-[#0a0a0a] p-4 rounded-2xl bg-[#f6f9f3] text-center shadow-[3px_3px_0px_0px_#0a0a0a]">
+            <span class="text-3xl block mb-1">🔥</span>
+            <p class="font-display font-extrabold text-xs">7-Day Streak</p>
+            <p class="text-[10px] text-gray-500">Consistent actions</p>
+          </div>
+
+          <div class="border-3 border-[#0a0a0a] p-4 rounded-2xl bg-gray-100 text-center opacity-60">
+            <span class="text-3xl block mb-1">🌳</span>
+            <p class="font-display font-extrabold text-xs">Forest Guardian</p>
+            <p class="text-[10px] text-gray-500">Locked (Reach 2,000 pts)</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Carbon Footprint Modal -->
+  <div id="modalCarbonCalc" class="modal-overlay">
+    <div class="neo-card bg-white p-6 max-w-md w-full m-4 space-y-4 relative">
+      <div class="flex items-center justify-between">
+        <h3 class="font-display font-black text-xl">Recalculate Carbon Footprint</h3>
+        <button onclick="closeCarbonCalcModal()" class="font-bold text-lg hover:text-red-600">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs font-bold">
+        <div>
+          <label class="block mb-1">Daily Commute (km by car):</label>
+          <input type="number" id="calcKm" value="12" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+        </div>
+        <div>
+          <label class="block mb-1">Electricity Usage (kWh/day):</label>
+          <input type="number" id="calcKwh" value="8" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+        </div>
+      </div>
+
+      <button onclick="submitFootprintCalc()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 w-full text-xs font-bold">
+        Update Footprint
+      </button>
     </div>
   </div>
 
-  <!-- Auth State Handler -->
-  <script>
-    async function checkAuthStatus() {
-      if (typeof EcoAuth === 'undefined') return;
-      const user = await EcoAuth.getCurrentUser();
-      const headerUserName = document.getElementById('headerUserName');
-      const btnAuthAction = document.getElementById('btnAuthAction');
+  <!-- AI Challenge Proof Verification Modal -->
+  <div id="modalChallengeProof" class="modal flex items-center justify-center p-4">
+    <div class="neo-card bg-white p-6 max-w-lg w-full space-y-5 relative">
+      <div class="flex items-center justify-between border-b-2 border-[#0a0a0a]/10 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 bg-[#ccff00] border-2 border-[#0a0a0a] rounded-lg font-black flex items-center justify-center text-sm">🤖</span>
+          <h3 id="proofModalTitle" class="font-display font-black text-xl text-[#0a0a0a]">AI Proof Verification</h3>
+        </div>
+        <button onclick="closeChallengeProofModal()" class="font-black text-xl hover:text-red-600">✕</button>
+      </div>
 
-      if (headerUserName && btnAuthAction) {
-        if (user) {
-          const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-          headerUserName.textContent = '👤 ' + name;
-          btnAuthAction.textContent = 'Log Out';
-        } else {
-          headerUserName.textContent = 'Guest';
-          btnAuthAction.textContent = 'Sign In';
-        }
-      }
-    }
+      <p id="proofModalDesc" class="text-xs font-bold text-gray-600 leading-relaxed">
+        Upload a photo or screenshot as proof. Our AI vision scanner will verify if your submission satisfies the challenge criteria before awarding points.
+      </p>
 
-    async function handleAuthAction() {
-      const user = await EcoAuth.getCurrentUser();
-      if (user) {
-        await EcoAuth.signOut();
-        checkAuthStatus();
-      } else {
-        window.location.href = 'auth.html';
-      }
-    }
+      <!-- Proof Image Upload & Preview Container -->
+      <div class="border-3 border-dashed border-[#0a0a0a]/40 bg-[#f6f9f3] p-4 rounded-2xl text-center relative overflow-hidden min-h-[180px] flex flex-col items-center justify-center">
+        <input type="file" id="challengeProofInput" accept="image/*" onchange="handleChallengeProofUpload(event)" class="hidden"/>
+        
+        <div id="proofUploadPrompt" class="space-y-2 cursor-pointer" onclick="document.getElementById('challengeProofInput').click()">
+          <span class="material-symbols-outlined text-4xl text-[#15803d]">add_a_photo</span>
+          <p class="font-display font-black text-xs text-[#0a0a0a]">Click to Upload Proof Photo / Screenshot</p>
+          <span class="text-[10px] text-gray-500 font-bold block">Supports JPG, PNG, Screenshots</span>
+        </div>
 
-    document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(checkAuthStatus, 150);
+        <div id="proofPreviewContainer" class="hidden relative w-full flex flex-col items-center justify-center">
+          <img id="proofImagePreview" class="max-h-[180px] object-contain rounded-xl border-2 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a]"/>
+          <div id="proofScanLaser" class="hidden scan-line"></div>
+        </div>
+      </div>
 
-      const logForm = document.getElementById('log-action-form');
-      if (logForm) {
-        logForm.addEventListener('submit', async (e) => {
-          const category = document.getElementById('action-type').value;
-          const title = document.getElementById('action-detail').value;
-          const pts = document.getElementById('action-pts').value;
-          const co2Saved = (pts * 0.25).toFixed(1);
+      <!-- Quick Test Proof Toolbar -->
+      <div>
+        <p class="text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1.5">Or Test Sample Challenge Proofs:</p>
+        <div class="grid grid-cols-4 gap-2 text-center text-xs">
+          <button onclick="simulateProofSample('walk_valid')" title="Valid 2.1km Walk" class="neo-btn bg-white hover:bg-[#ccff00] p-2 text-xs font-bold">🚶 Walk 2.1km</button>
+          <button onclick="simulateProofSample('bottle_valid')" title="Reusable Metal Flask" class="neo-btn bg-white hover:bg-[#38bdf8] p-2 text-xs font-bold">🧴 Hydro Flask</button>
+          <button onclick="simulateProofSample('bottle_plastic')" title="Plastic Bottle (REJECT)" class="neo-btn bg-white hover:bg-red-200 p-2 text-xs font-bold">🥤 Plastic Bottle</button>
+          <button onclick="simulateProofSample('tree_valid')" title="Sapling Plant" class="neo-btn bg-white hover:bg-[#4ade80] p-2 text-xs font-bold">🌳 Sapling</button>
+        </div>
+      </div>
 
-          await EcoAuth.logEcoAction(category, title, co2Saved);
-          console.log('Action persisted successfully to database/store.');
-        });
-      }
-    });
-  </script>
+      <!-- AI Verification Feedback Box -->
+      <div id="proofFeedbackContainer" class="hidden p-4 rounded-xl border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a]">
+        <div class="flex items-center gap-3">
+          <span id="proofFeedbackIcon" class="text-2xl">⏳</span>
+          <div>
+            <h4 id="proofFeedbackTitle" class="font-display font-black text-sm text-[#0a0a0a]">AI Scanning Proof...</h4>
+            <p id="proofFeedbackMsg" class="text-xs font-bold text-gray-700 mt-0.5">Evaluating image content against criteria...</p>
+          </div>
+        </div>
+      </div>
 
-  <!-- JavaScript -->
+      <div class="flex justify-end gap-3 border-t-2 border-[#0a0a0a]/10 pt-3">
+        <button onclick="closeChallengeProofModal()" class="neo-btn bg-gray-100 hover:bg-gray-200 text-[#0a0a0a] py-2 px-4 text-xs font-bold">
+          Cancel
+        </button>
+        <button id="btnVerifyProofSubmit" onclick="runAiProofVerification()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-5 text-xs font-black">
+          🤖 Run AI Verification
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Application Logic Controller Script -->
   <script src="app.js"></script>
 </body>
 </html>

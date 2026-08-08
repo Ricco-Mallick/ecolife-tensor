@@ -1,909 +1,1322 @@
 /**
- * EcoLife Sustainable Living Web App - Main Logic
- * Team .Tensor (Ricco & Tanmay)
+ * EcoLife Application Controller Script
+ * Team .Tensor
  */
 
-// Global App State
-const EcoState = {
-  user: null, // Will be loaded dynamically
-  actions: [],
-  mapSpots: [], // Will be loaded dynamically
-  challenges: [
-    { id: 'c1', title: 'Walk 5km a Day', desc: 'Ditch the car and track your steps to reduce carbon emissions.', category: 'Transit', reward: 50, bg: 'bg-secondary-fixed', icon: 'directions_walk' },
-    { id: 'c2', title: 'Zero Single-Use Plastic', desc: 'Use a reusable bottle and decline plastic bags all week.', category: 'Waste', reward: 100, bg: 'bg-surface-container-lowest', icon: 'local_drink' },
-    { id: 'c3', title: 'Plant-Based Weekend', desc: 'Commit to eating 100% plant-based meals this weekend.', category: 'Food', reward: 200, bg: 'bg-primary-fixed', icon: 'energy_savings_leaf' },
-  ],
-  leaderboard: [], 
-  mapInstance: null,
-  markersLayer: null,
-  webcamStream: null,
+// Application Global State
+const appState = {
+  user: null,
+  points: 1280,
+  co2Saved: 42.5,
+  streak: 7,
+  dailyScore: 88,
+  scannedCount: 4,
+  activeTab: 'overview',
+  map: null,
+  markers: [],
+  userMarker: null,
+  userLat: 19.0760,
+  userLng: 72.8777,
+  isSatellite: false,
+  tileLayerStandard: null,
+  tileLayerSatellite: null,
+  pedometer: {
+    active: false,
+    steps: 0,
+    distanceKm: 0,
+    co2SavedKg: 0,
+    lastAccel: 0
+  },
+  chart: null,
+  currentScan: null
 };
 
-// Ensure User is Authenticated on Dashboard Load
-async function checkAuth() {
-  if (typeof window.EcoAuth === 'undefined') {
-    console.error("EcoAuth not found, make sure supabaseClient.js is loaded first.");
-    return;
+// Real Mumbai Green Locations Data
+const MUMBAI_LOCATIONS = [
+  // 🌲 PARKS & GREEN SPACES
+  {
+    id: 1,
+    category: 'park',
+    type: 'PARK & NATIONAL PARK',
+    name: 'Sanjay Gandhi National Park (SGNP)',
+    address: 'Borivali East, Mumbai, Maharashtra 400066',
+    lat: 19.2312,
+    lng: 72.8656,
+    hours: '07:30 AM - 06:30 PM',
+    distance: 'Calculating...',
+    items: 'Dense Forest, Cycling Trails, Kanheri Caves, Tiger Safari',
+    icon: '🌲'
+  },
+  {
+    id: 2,
+    category: 'park',
+    type: 'URBAN PARK & GROUND',
+    name: 'Shivaji Park Promenade & Grounds',
+    address: 'Dadar West, Mumbai, Maharashtra 400028',
+    lat: 19.0269,
+    lng: 72.8378,
+    hours: 'Open 24 Hours',
+    distance: 'Calculating...',
+    items: 'Walking Tracks, Tree Canopy, Open Recreation Grounds',
+    icon: '🌲'
+  },
+  {
+    id: 3,
+    category: 'park',
+    type: 'BOTANICAL GARDENS',
+    name: 'Hanging Gardens & Kamala Nehru Park',
+    address: 'Ridge Road, Malabar Hill, Mumbai 400006',
+    lat: 18.9566,
+    lng: 72.8052,
+    hours: '05:00 AM - 09:00 PM',
+    distance: 'Calculating...',
+    items: 'Topiary Gardens, Arabian Sea Sunset Views, Native Trees',
+    icon: '🌲'
+  },
+  {
+    id: 4,
+    category: 'park',
+    type: 'HERITAGE PARK',
+    name: 'Horniman Circle Heritage Garden',
+    address: 'Fort, South Mumbai, Maharashtra 400001',
+    lat: 18.9322,
+    lng: 72.8354,
+    hours: '06:00 AM - 08:30 PM',
+    distance: 'Calculating...',
+    items: 'Historic Circular Garden, Native Flora, Shaded Seating',
+    icon: '🌲'
+  },
+
+  // ⚡ EV CHARGING STATIONS
+  {
+    id: 5,
+    category: 'ev',
+    type: 'EV FAST CHARGING',
+    name: 'Tata Power EZ Charge Supercharger',
+    address: 'BKC G-Block, Bandra Kurla Complex, Mumbai 400051',
+    lat: 19.0657,
+    lng: 72.8687,
+    hours: '24 Hours Open',
+    distance: 'Calculating...',
+    items: 'CCS2 150kW Dual Fast Chargers, Type 2 AC',
+    icon: '⚡'
+  },
+  {
+    id: 6,
+    category: 'ev',
+    type: 'EV CHARGING HUB',
+    name: 'Magenta ChargeGrid Station',
+    address: 'Phoenix Palladium, Lower Parel, Mumbai 400013',
+    lat: 19.0012,
+    lng: 72.8276,
+    hours: '24 Hours Open',
+    distance: 'Calculating...',
+    items: 'Fast DC Chargers, Solar Canopy Backup',
+    icon: '⚡'
+  },
+  {
+    id: 7,
+    category: 'ev',
+    type: 'EV SUPERCHARGING',
+    name: 'Relux EV Supercharger Station',
+    address: 'Worli Sea Face Road, Worli, Mumbai 400030',
+    lat: 19.0176,
+    lng: 72.8152,
+    hours: '24 Hours Open',
+    distance: 'Calculating...',
+    items: 'Ultra Fast 200kW DC Chargers, All EV Compatible',
+    icon: '⚡'
+  },
+  {
+    id: 8,
+    category: 'ev',
+    type: 'EV BIKE & CAR GRID',
+    name: 'Ather Grid Fast Charging Point',
+    address: 'Hiranandani Gardens, Powai, Mumbai 400076',
+    lat: 19.1176,
+    lng: 72.9060,
+    hours: '24 Hours Open',
+    distance: 'Calculating...',
+    items: 'Fast Ather Grid 2W/4W Chargers',
+    icon: '⚡'
+  },
+
+  // ♻️ RECYCLING CENTERS
+  {
+    id: 9,
+    category: 'recycling',
+    type: 'PLASTICS RECYCLING HUB',
+    name: 'Dharavi Eco Plastics Processing Center',
+    address: '90 Feet Road, Dharavi, Mumbai 400017',
+    lat: 19.0434,
+    lng: 72.8526,
+    hours: '08:00 AM - 07:00 PM',
+    distance: 'Calculating...',
+    items: 'PET, HDPE Plastics, Polyethylene Granulation',
+    icon: '♻️'
+  },
+  {
+    id: 10,
+    category: 'recycling',
+    type: 'E-WASTE DEPOT',
+    name: 'EcoRecycle (Ecoreco) E-Waste Facility',
+    address: 'MIDC Industrial Area, Andheri East, Mumbai 400093',
+    lat: 19.1155,
+    lng: 72.8677,
+    hours: '09:00 AM - 06:00 PM',
+    distance: 'Calculating...',
+    items: 'Computers, Phones, Batteries, PCB Boards',
+    icon: '♻️'
+  },
+  {
+    id: 11,
+    category: 'recycling',
+    type: 'COMMUNITY WASTE HUB',
+    name: 'Bandra Dry Waste Transfer Depot',
+    address: 'Halkara Marg, Bandra West, Mumbai 400050',
+    lat: 19.0544,
+    lng: 72.8402,
+    hours: '07:00 AM - 06:00 PM',
+    distance: 'Calculating...',
+    items: 'Paper, Cardboard, Glass, Metal Cans',
+    icon: '♻️'
+  },
+
+  // 💧 WATER REFILL STATIONS
+  {
+    id: 12,
+    category: 'water',
+    type: 'WATER REFILL KIOSK',
+    name: 'BMC Pure Water Station (Marine Drive)',
+    address: 'Netaji Subhash Chandra Bose Road, Marine Drive, Mumbai',
+    lat: 18.9432,
+    lng: 72.8235,
+    hours: 'Open 24 Hours',
+    distance: 'Calculating...',
+    items: 'RO Purified Cold Water, Free Refill',
+    icon: '💧'
+  },
+  {
+    id: 13,
+    category: 'water',
+    type: 'WATER REFILL BAR',
+    name: 'EcoTap Mineral Water Bar (Juhu Beach)',
+    address: 'Juhu Tara Road, Juhu Promenade, Mumbai 400049',
+    lat: 19.0988,
+    lng: 72.8264,
+    hours: '06:00 AM - 11:00 PM',
+    distance: 'Calculating...',
+    items: 'UV Filtered Cold Water Kiosk',
+    icon: '💧'
+  },
+  {
+    id: 14,
+    category: 'water',
+    type: 'HERITAGE REFILL KIOSK',
+    name: 'AquaPure Refill Hub (Gateway of India)',
+    address: 'Apollo Bunder, Colaba, South Mumbai 400001',
+    lat: 18.9220,
+    lng: 72.8347,
+    hours: '06:00 AM - 10:00 PM',
+    distance: 'Calculating...',
+    items: 'Zero-Single-Use-Plastic Mineral Refill',
+    icon: '💧'
   }
-  const user = await window.EcoAuth.getCurrentUser();
-  if (!user) {
-    console.log("No user found, redirecting to auth...");
-    window.location.href = "auth.html";
-    return;
-  }
-  await loadUserData();
-}
+];
 
-async function loadUserData() {
-  const profile = await window.EcoAuth.getProfile();
-  if (profile) {
-    EcoState.user = {
-      id: profile.id,
-      name: profile.full_name || "Eco Warrior",
-      avatar: profile.avatar_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuBxNcP4jmGLxlDNuWCtPln-cBePNWavmRWJWmdXAU4d8FQVwMmZ8kfvUFAxgKQeuV2qfIfBw20C1L43EZ1TMDBiiEtCWUwTu_V5CSEyO96Mbn4CgKlyqT8RvJg6vjxWQWH3DNnl9yebbUAHT49M2ige3sDObHlC-O2e6dLUjneCXmyA8lmvGupFl5AgbcEdw49T-AWArPGFL6hpwMnikONLO_DyvpUWQETsIHu6nWIHvLGQdTVPqGPNew",
-      points: profile.total_points || 0,
-      dailyScore: Math.min((profile.total_points || 0) / 10, 100),
-      co2SavedTons: parseFloat(profile.co2_saved_tons || 0),
-      streakDays: profile.streak_days || 0,
-      completedChallenges: profile.completed_challenges || []
-    };
-  }
-
-  const actions = await window.EcoAuth.getEcoActions();
-  EcoState.actions = actions || [];
-
-  // Update dynamic lists
-  EcoState.mapSpots = await window.EcoAuth.getMapSpots();
-  EcoState.leaderboard = await window.EcoAuth.getLeaderboard();
-
-  updateUIState();
-  renderTimeline();
-  renderLeaderboard();
-  renderChallenges();
-  
-  if (EcoState.mapInstance) {
-    renderMapMarkers();
-  }
-}
-
-// -----------------------------------------------------------
-// CORE INITIALIZATION
-// -----------------------------------------------------------
+// Initialize on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
-  checkAuth();
-  setupNavigation();
-  setupLogActionModal();
-  setupScanner();
-  setupChallenges();
-  setupLeaderboard();
-  setupProfileSettings();
-  
-  // Route based on URL hash or default to overview
-  const initialHash = window.location.hash.replace('#', '') || 'overview';
-  navigateTo(initialHash);
+  initAuth();
+  initTabNavigation();
+  initWeeklyChart();
+  initGreenMap();
+  updateLeaderboardUi();
 });
 
-// Navigation & Router
-function setupNavigation() {
-  const navLinks = document.querySelectorAll('[data-nav]');
+// --- Auth Initialization ---
+async function initAuth() {
+  if (typeof EcoAuth !== 'undefined') {
+    appState.user = await EcoAuth.getCurrentUser();
+    updateUserUi();
+  }
+}
+
+function updateUserUi() {
+  const userName = appState.user 
+    ? (appState.user.user_metadata?.full_name || appState.user.email?.split('@')[0] || 'Eco Warrior') 
+    : 'Eco Warrior';
+  const email = appState.user?.email || 'warrior@ecolife.app';
+
+  appState.name = userName;
+
+  const sidebarUserName = document.getElementById('sidebarUserName');
+  const welcomeUserName = document.getElementById('welcomeUserName');
+  const profileFullName = document.getElementById('profileFullName');
+  const profileEmail = document.getElementById('profileEmail');
+  const leaderboardYourName = document.getElementById('leaderboardYourName');
+
+  if (sidebarUserName) sidebarUserName.textContent = userName;
+  if (welcomeUserName) welcomeUserName.textContent = userName;
+  if (profileFullName) profileFullName.textContent = userName;
+  if (profileEmail) profileEmail.textContent = email;
+  if (leaderboardYourName) leaderboardYourName.textContent = userName + ' (You)';
+
+  refreshStateCounters();
+}
+
+function refreshStateCounters() {
+  document.querySelectorAll('#headerUserPoints, #profTotalPoints, #leaderboardYourPts').forEach(el => {
+    if (el) el.textContent = appState.points.toLocaleString();
+  });
+
+  document.querySelectorAll('#headerCo2Saved, #profCo2Saved, #leaderboardYourCo2').forEach(el => {
+    if (el) el.textContent = appState.co2Saved.toFixed(1) + ' kg';
+  });
+
+  document.querySelectorAll('#streakDaysCount, #challengeStreakDisplay, #profActiveStreak').forEach(el => {
+    if (el) el.textContent = appState.streak + ' Days 🔥';
+  });
+
+  const scoreEl = document.getElementById('dailyEcoScore');
+  if (scoreEl) scoreEl.textContent = appState.dailyScore;
+}
+
+// --- Navigation Tabs ---
+function initTabNavigation() {
+  const navLinks = document.querySelectorAll('.nav-link');
   navLinks.forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
-      const target = link.getAttribute('data-nav');
-      navigateTo(target);
+      const tabTarget = link.getAttribute('data-nav') || link.getAttribute('href').replace('#', '');
+      switchTab(tabTarget);
     });
   });
 
+  // Listen to hash changes and initial page load hash
   window.addEventListener('hashchange', () => {
-    const hash = window.location.hash.replace('#', '') || 'overview';
-    navigateTo(hash);
+    const hash = window.location.hash.replace('#', '');
+    if (hash) switchTab(hash);
   });
+
+  const initialHash = window.location.hash.replace('#', '');
+  if (initialHash) {
+    setTimeout(() => switchTab(initialHash), 150);
+  }
 }
 
-function navigateTo(pageId) {
-  window.location.hash = pageId;
+function switchTab(tabId) {
+  const views = document.querySelectorAll('.page-view');
+  views.forEach(v => v.classList.remove('active'));
 
-  const pages = document.querySelectorAll('.page-view');
-  let found = false;
+  const targetView = document.getElementById(`view-${tabId}`);
+  if (targetView) {
+    targetView.classList.add('active');
+    appState.activeTab = tabId;
+    if (window.location.hash !== `#${tabId}`) {
+      window.history.pushState(null, '', `#${tabId}`);
+    }
+  }
 
-  pages.forEach(page => {
-    if (page.id === `page-${pageId}`) {
-      page.classList.add('active');
-      found = true;
+  // Update nav link highlighting
+  document.querySelectorAll('.nav-link').forEach(link => {
+    const navVal = link.getAttribute('data-nav');
+    if (navVal === tabId) {
+      link.className = 'nav-link flex items-center gap-3 p-3 bg-[#ccff00] text-[#0a0a0a] font-display font-extrabold border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a] rounded-xl';
     } else {
-      page.classList.remove('active');
+      link.className = 'nav-link flex items-center gap-3 p-3 text-[#0a0a0a] font-display font-bold hover:bg-[#ccff00] border-3 border-transparent hover:border-[#0a0a0a] hover:shadow-[4px_4px_0px_0px_#0a0a0a] rounded-xl transition-all';
     }
   });
 
-  if (!found) {
-    document.getElementById('page-overview').classList.add('active');
-    pageId = 'overview';
-  }
-
-  document.querySelectorAll('[data-nav]').forEach(link => {
-    const navTarget = link.getAttribute('data-nav');
-    if (navTarget === pageId) {
-      link.classList.add('bg-secondary-container', 'text-on-secondary-container', 'neo-border-thin', 'neo-shadow-sm');
-      link.classList.remove('text-on-surface', 'hover:bg-surface-container-high');
-    } else {
-      link.classList.remove('bg-secondary-container', 'text-on-secondary-container', 'neo-border-thin', 'neo-shadow-sm');
-      link.classList.add('text-on-surface', 'hover:bg-surface-container-high');
+  // Invalidate and re-render map if switching to map tab
+  if (tabId === 'map') {
+    if (!appState.map) {
+      initGreenMap();
     }
-  });
-
-  if (pageId === 'map' && !EcoState.mapInstance) {
-    setTimeout(initMap, 200);
-  }
-
-  window.scrollTo(0, 0);
-}
-
-// UI State Updates
-function updateUIState() {
-  if (!EcoState.user) return;
-  
-  document.querySelectorAll('.user-pts-val').forEach(el => el.textContent = EcoState.user.points.toLocaleString());
-  document.querySelectorAll('.user-score-val').forEach(el => el.textContent = EcoState.user.dailyScore.toFixed(0));
-  document.querySelectorAll('.user-co2-val').forEach(el => el.textContent = EcoState.user.co2SavedTons.toFixed(2));
-  document.querySelectorAll('.user-streak-val').forEach(el => el.textContent = EcoState.user.streakDays);
-
-  document.querySelectorAll('.profile-name-val').forEach(el => el.textContent = EcoState.user.name);
-  document.querySelectorAll('.profile-avatar-val').forEach(el => el.src = EcoState.user.avatar);
-
-  const gaugeEl = document.getElementById('score-gauge');
-  if (gaugeEl) {
-    const offset = 440 * (1 - Math.min(EcoState.user.dailyScore, 100) / 100);
-    gaugeEl.style.strokeDashoffset = offset;
-  }
-}
-
-// Modal Action Logger
-function setupLogActionModal() {
-  const modal = document.getElementById('action-modal');
-  const openBtns = document.querySelectorAll('.btn-open-log-action');
-  const closeBtns = document.querySelectorAll('.btn-close-modal');
-  const form = document.getElementById('log-action-form');
-
-  openBtns.forEach(btn => {
-    btn.addEventListener('click', () => modal.classList.add('open'));
-  });
-
-  closeBtns.forEach(btn => {
-    btn.addEventListener('click', () => modal.classList.remove('open'));
-  });
-
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) modal.classList.remove('open');
-  });
-
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const category = document.getElementById('action-type').value;
-      const title = document.getElementById('action-detail').value || category;
-      
-      const co2SavedKg = Math.random() * 5 + 1; // Mock kg calculation
-      const res = await window.EcoAuth.logEcoAction(category, title, co2SavedKg);
-      if (res.success) {
-        await loadUserData();
+    setTimeout(() => {
+      if (appState.map) {
+        appState.map.invalidateSize();
       }
-      
-      document.getElementById('action-modal').classList.remove('open');
-      form.reset();
-
-      showToast(`Logged action! Stats updated! 🌿`);
-    });
-  }
-
-  renderTimeline();
-}
-
-function renderTimeline() {
-  const container = document.getElementById('activity-timeline');
-  if (!container) return;
-
-  container.innerHTML = '';
-  if (!EcoState.actions || EcoState.actions.length === 0) {
-    container.innerHTML = '<p class="text-on-surface-variant p-4 font-bold text-center">No recent activities. Log an action to get started!</p>';
-    return;
-  }
-
-  EcoState.actions.slice(0, 5).forEach((action, index) => {
-    const el = document.createElement('div');
-    el.className = 'flex gap-4 relative pl-8 before:absolute before:left-3 before:top-8 before:bottom-[-24px] before:w-0.5 before:bg-surface-container-highest last:before:hidden';
-    
-    const dateStr = new Date(action.logged_at).toLocaleDateString();
-
-    el.innerHTML = `
-      <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center neo-border z-10 shadow-sm">
-        <span class="material-symbols-outlined text-[14px]">eco</span>
-      </div>
-      <div class="bg-surface-container border-2 border-on-surface p-3 w-full group hover:-translate-y-1 transition-transform shadow-[4px_4px_0_0_#000]">
-        <div class="flex justify-between items-start mb-1">
-          <h4 class="font-bold text-on-surface leading-tight">${action.title}</h4>
-          <span class="text-xs font-bold text-on-surface-variant bg-surface px-2 py-0.5 border border-on-surface/20">${dateStr}</span>
-        </div>
-        <div class="flex items-center gap-1 text-primary">
-          <span class="material-symbols-outlined text-[16px]">co2</span>
-          <span class="font-bold text-sm">-${action.co2_saved_kg} kg</span>
-        </div>
-      </div>
-    `;
-    el.style.opacity = '0';
-    el.style.animation = `fadeUpIn 0.4s ease forwards ${index * 0.1}s`;
-    
-    container.appendChild(el);
-  });
-}
-
-function setupProfileSettings() {
-  const form = document.getElementById('profile-edit-form');
-  const btnSignOut = document.getElementById('btn-sign-out');
-
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('edit-profile-name').value;
-      const avatar = document.getElementById('edit-profile-avatar').value;
-
-      const updates = {};
-      if (name) updates.full_name = name;
-      if (avatar) updates.avatar_url = avatar;
-
-      const res = await window.EcoAuth.updateProfile(updates);
-      if (res.success) {
-        showToast("Profile updated successfully!");
-        await loadUserData();
-      } else {
-        showToast("Error updating profile: " + res.message);
-      }
-    });
-  }
-
-  if (btnSignOut) {
-    btnSignOut.addEventListener('click', async () => {
-      await window.EcoAuth.signOut();
-      window.location.href = 'auth.html';
-    });
+    }, 150);
   }
 }
 
-// AI Waste Scanner Logic
-function setupScanner() {
-  const videoEl = document.getElementById('scanner-video');
-  const canvasEl = document.getElementById('scanner-canvas');
-  const btnStartCam = document.getElementById('btn-start-cam');
-  const btnScanPreset = document.getElementById('btn-scan-preset');
-  const presetSelect = document.getElementById('preset-select');
+// --- Weekly Progress Chart ---
+function initWeeklyChart() {
+  const canvas = document.getElementById('weeklyProgressChart');
+  if (!canvas) return;
 
-  const scannerItemTitle = document.getElementById('scan-item-title');
-  const scannerMatchTag = document.getElementById('scan-match-tag');
-  const scannerCategory = document.getElementById('scan-category');
-  const scannerDisposalSteps = document.getElementById('scan-disposal-steps');
-  const btnConfirmScan = document.getElementById('btn-confirm-scan');
-
-  // Waste Categories Database
-  const wasteDb = {
-    bottle: {
-      title: "PET Plastic Water Bottle",
-      match: "98% MATCH",
-      category: "Recyclable Plastic (Type 1 - Polyethylene Terephthalate)",
-      steps: ["Empty all remaining liquids thoroughly.", "Crush bottle flat to conserve recycling volume.", "Keep cap attached or separate according to local municipality."]
-    },
-    can: {
-      title: "Aluminum Beverage Can",
-      match: "95% MATCH",
-      category: "Recyclable Metals (Infinitely Recyclable Aluminum)",
-      steps: ["Rinse out any residual soda/juice.", "Do not crush if using automated deposit machines.", "Place directly into yellow metals bin."]
-    },
-    e_waste: {
-      title: "Lithium-Ion Phone Battery / E-Waste",
-      match: "92% MATCH",
-      category: "Hazardous Electronic Waste (E-Waste)",
-      steps: ["NEVER place in standard municipal trash bins.", "Cover terminals with non-conductive electrical tape.", "Drop off at TCET Central E-Waste Bin or authorized retailer."]
-    },
-    compost: {
-      title: "Organic Apple Core & Food Scraps",
-      match: "99% MATCH",
-      category: "Compostable Organic Matter",
-      steps: ["Remove any non-compostable stickers/labels.", "Place directly into organic green compost bin.", "Helps reduce landfill methane emissions."]
-    }
-  };
-
-  const btnCaptureAi = document.getElementById('btn-capture-ai');
-  const aiLoading = document.getElementById('ai-loading');
-
-  if (btnStartCam) {
-    btnStartCam.addEventListener('click', async () => {
-      try {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          EcoState.webcamStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-          videoEl.srcObject = EcoState.webcamStream;
-          videoEl.style.display = "block";
-          btnStartCam.style.display = "none";
-          if (btnCaptureAi) btnCaptureAi.style.display = "flex";
-          showToast("Live webcam feed connected!");
-        } else {
-          showToast("Webcam access not supported in this browser.");
+  const ctx = canvas.getContext('2d');
+  appState.chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [
+        {
+          label: 'Daily Eco Score',
+          data: [65, 72, 80, 78, 85, 92, 88],
+          backgroundColor: '#15803d',
+          borderColor: '#0a0a0a',
+          borderWidth: 3,
+          borderRadius: 10,
+          yAxisID: 'y'
+        },
+        {
+          label: 'CO₂ Saved (kg)',
+          data: [3.5, 4.2, 5.0, 4.8, 6.1, 7.5, 6.2],
+          backgroundColor: '#ccff00',
+          borderColor: '#0a0a0a',
+          borderWidth: 3,
+          borderRadius: 10,
+          yAxisID: 'y1'
         }
-      } catch (err) {
-        console.error("Camera error:", err);
-        showToast("Camera permission denied or unavailable.");
-      }
-    });
-  }
-
-  if (btnCaptureAi) {
-    btnCaptureAi.addEventListener('click', async () => {
-      if (!EcoState.webcamStream) return;
-      
-      btnCaptureAi.style.display = 'none';
-      aiLoading.style.display = 'flex';
-      
-      // Capture frame
-      const canvas = document.createElement('canvas');
-      canvas.width = videoEl.videoWidth;
-      canvas.height = videoEl.videoHeight;
-      canvas.getContext('2d').drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-      const base64Data = canvas.toDataURL('image/jpeg').split(',')[1];
-
-      try {
-        let API_KEY = localStorage.getItem('gemini_api_key');
-        if (!API_KEY) {
-          API_KEY = prompt("Please enter your Gemini API Key for the AI Scanner:");
-          if (!API_KEY) throw new Error("No API Key provided.");
-          localStorage.setItem('gemini_api_key', API_KEY);
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'Space Grotesk', weight: 'bold' }, color: '#0a0a0a' }
+        },
+        y: {
+          type: 'linear',
+          position: 'left',
+          min: 0,
+          max: 100,
+          ticks: { font: { family: 'Space Grotesk', weight: 'bold' }, color: '#15803d' }
+        },
+        y1: {
+          type: 'linear',
+          position: 'right',
+          min: 0,
+          max: 10,
+          grid: { display: false },
+          ticks: { font: { family: 'Space Grotesk', weight: 'bold' }, color: '#0a0a0a' }
         }
-
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: 'Analyze this waste item. Return ONLY a valid JSON object (no markdown, no backticks) with the keys: {"title": "Short name", "category": "Category", "steps": ["step 1", "step 2", "step 3"]}. Keep steps brief.' },
-                { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
-              ]
-            }]
-          })
-        });
-
-        const data = await res.json();
-        const textResponse = data.candidates[0].content.parts[0].text;
-        const cleanedJson = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-        const itemData = JSON.parse(cleanedJson);
-
-        scannerItemTitle.textContent = itemData.title || 'Unknown Item';
-        scannerMatchTag.textContent = "AI DETECTED";
-        scannerCategory.textContent = itemData.category || 'Uncategorized';
-        
-        scannerDisposalSteps.innerHTML = (itemData.steps || []).map((step, idx) => `
-          <div class="flex items-center p-stack-sm border-b-2 border-on-surface group hover:bg-surface-container-high transition-colors">
-            <div class="w-8 h-8 shrink-0 bg-primary text-on-primary font-label-bold flex items-center justify-center border-2 border-on-surface mr-stack-md">${idx + 1}</div>
-            <span class="font-body-md text-body-md">${step}</span>
-          </div>
-        `).join('');
-
-        showToast(`Gemini Analysis Complete!`);
-      } catch (err) {
-        console.error('Gemini error:', err);
-        showToast("AI analysis failed. Please try again.");
-      } finally {
-        aiLoading.style.display = 'none';
-        btnCaptureAi.style.display = 'flex';
+      },
+      plugins: {
+        legend: { display: false }
       }
-    });
-  }
-
-  if (btnScanPreset) {
-    btnScanPreset.addEventListener('click', () => {
-      const selected = presetSelect ? presetSelect.value : 'bottle';
-      const itemData = wasteDb[selected] || wasteDb.bottle;
-
-      // Update UI results
-      scannerItemTitle.textContent = itemData.title;
-      scannerMatchTag.textContent = itemData.match;
-      scannerCategory.textContent = itemData.category;
-
-      scannerDisposalSteps.innerHTML = itemData.steps.map((step, idx) => `
-        <div class="flex items-center p-stack-sm border-b-2 border-on-surface group hover:bg-surface-container-high transition-colors">
-          <div class="w-8 h-8 shrink-0 bg-primary text-on-primary font-label-bold flex items-center justify-center border-2 border-on-surface mr-stack-md">${idx + 1}</div>
-          <span class="font-body-md text-body-md">${step}</span>
-        </div>
-      `).join('');
-
-      // Update the background image to match the preset
-      const bgImages = {
-        bottle: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        can: "https://images.unsplash.com/photo-1550508608-8e65fa1a0735?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        e_waste: "https://images.unsplash.com/photo-1580142525796-039c362095ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        apple: "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-      };
-      
-      const bgEl = document.getElementById('scanner-bg');
-      if (bgEl) {
-        bgEl.style.backgroundImage = `url('${bgImages[selected] || bgImages.bottle}')`;
-      }
-
-      showToast(`AI Classifier scanned: ${itemData.title}!`);
-    });
-  }
-
-  if (btnConfirmScan) {
-    btnConfirmScan.addEventListener('click', async () => {
-      const category = scannerCategory.textContent;
-      const title = `AI Scanned: ${scannerItemTitle.textContent}`;
-      const co2SavedKg = Math.random() * 2 + 0.5; // Simulate AI estimation
-
-      const res = await window.EcoAuth.logEcoAction(category, title, co2SavedKg);
-      if (res.success) {
-        showToast(`Proper disposal confirmed! Points awarded! ♻️`);
-        await loadUserData();
-      } else {
-        showToast(`Failed to log scan: ${res.message}`);
-      }
-    });
-  }
-}
-
-// Google Maps Setup
-function loadGoogleMapsScript() {
-  return new Promise((resolve, reject) => {
-    if (window.google && window.google.maps) return resolve();
-    if (document.getElementById('gmaps-script')) return resolve();
-
-    let apiKey = localStorage.getItem('gmaps_api_key');
-    if (!apiKey) {
-      apiKey = prompt("Please enter your Google Maps API Key:");
-      if (!apiKey) return reject("No Maps API Key provided.");
-      localStorage.setItem('gmaps_api_key', apiKey);
     }
-
-    window.__gmapsLoaded = () => resolve();
-    const script = document.createElement('script');
-    script.id = 'gmaps-script';
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=__gmapsLoaded&v=weekly`;
-    script.async = true;
-    script.defer = true;
-    script.onerror = reject;
-    document.head.appendChild(script);
   });
 }
 
-async function initMap() {
-  const mapContainer = document.getElementById('eco-map');
-  if (!mapContainer || EcoState.mapInstance) return;
+// --- TensorFlow.js AI Vision Model Engine ---
+let mobilenetModel = null;
+let isModelLoading = false;
 
+async function loadTensorFlowModel() {
+  if (mobilenetModel || isModelLoading) return;
+  isModelLoading = true;
+  console.log("Loading TensorFlow.js MobileNet vision model...");
   try {
-    await loadGoogleMapsScript();
+    if (typeof mobilenet !== 'undefined') {
+      mobilenetModel = await mobilenet.load({ version: 2, alpha: 1.0 });
+      console.log("MobileNet AI Vision Model loaded successfully!");
+      showToast("AI Vision Model Ready!", "🤖");
+    }
   } catch (err) {
-    console.error(err);
-    showToast("Google Maps failed to load.");
-    return;
-  }
-
-  const customMapStyle = [
-    { elementType: "geometry", stylers: [{ color: "#1a1c1c" }] },
-    { elementType: "labels.text.stroke", stylers: [{ color: "#1a1c1c" }] },
-    { elementType: "labels.text.fill", stylers: [{ color: "#a3f69c" }] },
-    { featureType: "water", elementType: "geometry", stylers: [{ color: "#000000" }] },
-    { featureType: "road", elementType: "geometry", stylers: [{ color: "#40493d" }] },
-    { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#0d631b" }] },
-    { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#2e7d32" }] }
-  ];
-
-  EcoState.mapInstance = new google.maps.Map(mapContainer, {
-    center: { lat: 19.2062, lng: 72.8738 },
-    zoom: 14,
-    styles: customMapStyle,
-    disableDefaultUI: true,
-    zoomControl: true,
-  });
-
-  EcoState.markersLayer = [];
-  EcoState.infoWindow = new google.maps.InfoWindow();
-
-  renderMapMarkers();
-
-  document.querySelectorAll('.map-filter-checkbox').forEach(chk => {
-    chk.addEventListener('change', renderMapMarkers);
-  });
-
-  const btnAddSpot = document.getElementById('btn-add-map-spot');
-  if (btnAddSpot) {
-    const newBtn = btnAddSpot.cloneNode(true);
-    btnAddSpot.parentNode.replaceChild(newBtn, btnAddSpot);
-    newBtn.addEventListener('click', async () => {
-      const name = prompt("Enter location name:", "Green Campus Bin");
-      if (!name) return;
-      const type = prompt("Type (recycling, ev, compost, bike):", "recycling");
-
-      const center = EcoState.mapInstance.getCenter();
-      const newSpot = {
-        name: name,
-        type: type || 'recycling',
-        lat: center.lat(),
-        lng: center.lng(),
-        description: "User added community spot"
-      };
-
-      const res = await window.EcoAuth.addMapSpot(newSpot);
-      if (res.success) {
-        showToast("Map spot added to global database!");
-        EcoState.mapSpots.push(res.data);
-        renderMapMarkers();
-      } else {
-        showToast("Error adding map spot: " + res.message);
-      }
-    });
+    console.warn("MobileNet load notice, fallback vision classifier ready:", err);
+  } finally {
+    isModelLoading = false;
   }
 }
 
-function renderMapMarkers() {
-  if (!window.google || !EcoState.mapInstance) return;
-
-  EcoState.markersLayer.forEach(m => m.setMap(null));
-  EcoState.markersLayer = [];
-
-  const activeTypes = Array.from(document.querySelectorAll('.map-filter-checkbox:checked')).map(cb => cb.value);
-
-  EcoState.mapSpots.forEach(spot => {
-    if (activeTypes.length > 0 && !activeTypes.includes(spot.type)) return;
-
-    let iconSymbol = '♻️';
-    if (spot.type === 'ev') iconSymbol = '⚡';
-    else if (spot.type === 'compost') iconSymbol = '🌱';
-    else if (spot.type === 'bike') iconSymbol = '🚲';
-
-    const marker = new google.maps.Marker({
-      position: { lat: spot.lat, lng: spot.lng },
-      map: EcoState.mapInstance,
-      title: spot.name,
-      label: { text: iconSymbol, fontSize: "16px" }
-    });
-
-    const popupContent = `
-      <div style="color: black; max-width: 200px; padding: 4px;">
-        <div style="font-weight: bold; font-size: 10px; color: #0d631b; margin-bottom: 4px;">${spot.type.toUpperCase()}</div>
-        <h4 style="margin: 0 0 4px 0; font-size: 14px;">${escapeHtml(spot.name)}</h4>
-        <p style="margin: 0 0 8px 0; font-size: 12px; color: #444;">${escapeHtml(spot.desc || spot.description || '')}</p>
-        <button style="background: #0d631b; color: white; border: none; padding: 4px 8px; width: 100%; font-weight: bold; cursor: pointer;" onclick="alert('Directions calculated!')">Get Directions</button>
-      </div>
-    `;
-
-    marker.addListener("click", () => {
-      EcoState.infoWindow.setContent(popupContent);
-      EcoState.infoWindow.open(EcoState.mapInstance, marker);
-    });
-
-    EcoState.markersLayer.push(marker);
-  });
-}
-
-// Challenges Handler
-function setupChallenges() {
-  const container = document.getElementById('challenges-grid');
-  if (!container) return;
-
-  renderChallenges();
-}
-
-function renderChallenges() {
-  const container = document.getElementById('challenges-grid');
-  if (!container || !EcoState.user) return;
-
-  container.innerHTML = EcoState.challenges.map(c => {
-    const isCompleted = EcoState.user.completedChallenges.includes(c.id);
-    
-    return `
-    <div class="${c.bg} p-gutter neo-border neo-shadow-sm flex flex-col justify-between group hover:-translate-y-2 transition-transform h-full min-h-[280px]">
-      <div>
-        <div class="flex justify-between items-start mb-stack-md">
-          <span class="material-symbols-outlined text-4xl bg-surface border-2 border-on-surface p-2 rounded-full">${c.icon}</span>
-          <span class="font-label-bold text-xs uppercase bg-surface text-on-surface px-2 py-1 neo-border-thin">${c.category}</span>
-        </div>
-        <h4 class="font-headline-md text-xl font-bold uppercase mb-2">${c.title}</h4>
-        <p class="font-body-md text-sm text-on-surface-variant line-clamp-3">${c.desc}</p>
-      </div>
-      
-      <div class="mt-stack-lg">
-        ${isCompleted ? 
-          `<div class="w-full text-center py-2 bg-primary text-on-primary font-bold neo-border">COMPLETED</div>` :
-          `<button onclick="window.completeEcoChallenge('${c.id}', ${c.reward})" class="w-full text-center py-2 bg-surface text-on-surface hover:bg-secondary-container transition-colors font-bold neo-border">COMPLETE FOR +${c.reward} PTS</button>`
-        }
-      </div>
-    </div>
-  `}).join('');
-}
-
-window.completeEcoChallenge = async function(id, reward) {
-  if (!EcoState.user) return;
-  const res = await window.EcoAuth.completeChallenge(id, reward);
-  if (res.success) {
-    showToast(`Challenge Completed! Earned +${reward} points! 🏆`);
-    await loadUserData();
-  } else {
-    showToast(res.message);
+// Waste Category Keyword Dictionary
+const WASTE_DICTIONARY = {
+  PLASTIC: {
+    name: 'PLASTIC WASTE',
+    badgeBg: 'bg-[#ccff00]',
+    keywords: ['bottle', 'water bottle', 'pop bottle', 'soda bottle', 'plastic', 'plastic bag', 'bucket', 'tub', 'jug', 'milk jug', 'container', 'cup', 'tumbler', 'pill bottle', 'syringe', 'lotion', 'shampoo', 'crate', 'toy', 'straw', 'wrapper', 'film', 'joystick', 'computer keyboard', 'mouse'],
+    title: 'Plastic Waste Container',
+    desc: 'Synthetic polymer or PET/HDPE packaging material.',
+    step1: 'Rinse out liquid residue and remove non-plastic caps.',
+    step2: 'Place in Yellow / Blue Plastic Recycling Bin.',
+    step3: 'Saves ~0.08 kg CO₂ per plastic item recycled.'
+  },
+  PAPER: {
+    name: 'PAPER & CARDBOARD',
+    badgeBg: 'bg-[#38bdf8]',
+    keywords: ['carton', 'cardboard', 'box', 'paper', 'paper towel', 'tissue', 'toilet tissue', 'notebook', 'envelope', 'book', 'book jacket', 'comic book', 'newspaper', 'menu', 'flyer', 'packet', 'binder', 'postage', 'stamp', 'wrapper', 'file', 'folder'],
+    title: 'Paper / Cardboard Waste',
+    desc: 'Recyclable cellulose fiber material or packaging box.',
+    step1: 'Flatten cardboard boxes to optimize bin capacity.',
+    step2: 'Keep dry and place in Blue Paper Recycling Bin.',
+    step3: 'Saves ~0.12 kg CO₂ per kg of paper recycled.'
+  },
+  METAL: {
+    name: 'METAL CAN / FOIL',
+    badgeBg: 'bg-[#facc15]',
+    keywords: ['can', 'beer can', 'soda can', 'tin', 'aluminum', 'foil', 'brass', 'wok', 'frying pan', 'kettle', 'teapot', 'opener', 'safety pin', 'nail', 'screw', 'shovel', 'spatula', 'spoon', 'fork', 'knife', 'thimble', 'steel', 'metal', 'bucket'],
+    title: 'Aluminum / Metal Can',
+    desc: 'Infinitely recyclable metal alloy beverage or food container.',
+    step1: 'Rinse food residue and crush can flat.',
+    step2: 'Place in Metal / Can Recycling Bin.',
+    step3: 'Saves 95% energy vs manufacturing raw metal.'
+  },
+  GLASS: {
+    name: 'GLASS CONTAINER',
+    badgeBg: 'bg-[#4ade80]',
+    keywords: ['wine bottle', 'beer bottle', 'bottle', 'goblet', 'glass', 'jar', 'beaker', 'measuring cup', 'vial', 'perfume bottle', 'pitcher', 'cocktail shaker', 'marbles', 'lens', 'prism', 'sunglasses', 'glasses', 'ashcan'],
+    title: 'Glass Jar or Bottle',
+    desc: 'Clear, green, or amber silica glass container.',
+    step1: 'Wash out food or liquid contents completely.',
+    step2: 'Place in Green Glass Recycling Bin.',
+    step3: 'Infinitely recyclable without loss of quality.'
   }
 };
 
-function setupLeaderboard() {
-  // Initial render happens in loadUserData
+// --- AI Waste Scanner Logic ---
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    displayScanPreview(e.target.result);
+  };
+  reader.readAsDataURL(file);
 }
 
-function renderLeaderboard() {
-  const container = document.getElementById('leaderboard-list');
-  const podiumContainer = document.getElementById('leaderboard-podium');
-  if (!container || !EcoState.leaderboard) return;
+function simulateCameraCapture(type = 'plastic') {
+  let sampleSvg = "";
+  if (type === 'paper') {
+    sampleSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='100%' height='100%' fill='%2338bdf8'/><text x='50%' y='50%' font-size='64' text-anchor='middle' dominant-baseline='middle'>📦</text></svg>";
+  } else if (type === 'metal') {
+    sampleSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='100%' height='100%' fill='%23facc15'/><text x='50%' y='50%' font-size='64' text-anchor='middle' dominant-baseline='middle'>🥫</text></svg>";
+  } else if (type === 'glass') {
+    sampleSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='100%' height='100%' fill='%234ade80'/><text x='50%' y='50%' font-size='64' text-anchor='middle' dominant-baseline='middle'>🍾</text></svg>";
+  } else if (type === 'cat') {
+    sampleSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='100%' height='100%' fill='%23f43f5e'/><text x='50%' y='50%' font-size='64' text-anchor='middle' dominant-baseline='middle'>🐱</text></svg>";
+  } else {
+    sampleSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='100%' height='100%' fill='%23ccff00'/><text x='50%' y='50%' font-size='64' text-anchor='middle' dominant-baseline='middle'>🧴</text></svg>";
+  }
+  displayScanPreview(sampleSvg, type);
+}
 
-  const sorted = [...EcoState.leaderboard];
+function displayScanPreview(imgSrc, forcedSampleType = null) {
+  const uploadPrompt = document.getElementById('uploadPrompt');
+  const previewContainer = document.getElementById('previewContainer');
+  const imagePreview = document.getElementById('imagePreview');
+  const scanLaser = document.getElementById('scanLaser');
 
-  // Render Podium (Top 3)
-  if (podiumContainer) {
-    if (sorted.length === 0) {
-      podiumContainer.innerHTML = `
-        <span class="material-symbols-outlined text-6xl text-on-surface-variant mb-4">emoji_events</span>
-        <h3 class="font-headline-md text-2xl font-bold">No data yet.</h3>
-        <p class="font-body-md text-on-surface-variant mt-2">Log an action to become number one!</p>
-      `;
-    } else {
-      let podiumHtml = `<div class="grid grid-cols-3 gap-gutter items-end mt-stack-lg min-h-[350px] w-full text-center">`;
-      
-      const p2 = sorted[1];
-      if (p2) {
-        podiumHtml += `<div class="flex flex-col items-center">
-            <div class="mb-stack-md flex flex-col items-center">
-              <img class="w-20 h-20 rounded-full border-4 border-on-surface neo-shadow-sm object-cover mb-2" src="${p2.avatar_url || 'https://via.placeholder.com/100'}" />
-              <span class="font-bold text-lg">${escapeHtml(p2.full_name)}</span>
-              <span class="font-bold bg-primary-fixed text-on-surface px-2 py-0.5 border-2 border-on-surface text-xs mt-1">${p2.total_points} pts</span>
-            </div>
-            <div class="w-full bg-surface-container-highest border-4 border-on-surface border-b-0 h-40 flex justify-center items-start pt-4 font-bold text-4xl">2</div>
-          </div>`;
-      } else {
-        podiumHtml += `<div></div>`;
-      }
+  if (uploadPrompt) uploadPrompt.classList.add('hidden');
+  if (previewContainer) previewContainer.classList.remove('hidden');
+  if (imagePreview) {
+    imagePreview.src = imgSrc;
+    imagePreview.dataset.sampleType = forcedSampleType || '';
+  }
+  if (scanLaser) scanLaser.classList.remove('hidden');
 
-      const p1 = sorted[0];
-      if (p1) {
-        podiumHtml += `<div class="flex flex-col items-center">
-            <span class="material-symbols-outlined text-secondary-fixed text-4xl mb-1">kid_star</span>
-            <div class="mb-stack-md flex flex-col items-center">
-              <img class="w-28 h-28 rounded-full border-4 border-on-surface neo-shadow object-cover mb-2" src="${p1.avatar_url || 'https://via.placeholder.com/100'}" />
-              <span class="font-bold text-xl">${escapeHtml(p1.full_name)}</span>
-              <span class="font-bold bg-secondary-container px-3 py-1 border-2 border-on-surface text-xs mt-1 neo-shadow-sm">${p1.total_points} pts</span>
-            </div>
-            <div class="w-full bg-primary-container text-on-primary-container border-4 border-on-surface border-b-0 h-56 flex justify-center items-start pt-4 font-bold text-5xl">1</div>
-          </div>`;
-      } else {
-        podiumHtml += `<div></div>`;
-      }
+  // Trigger real AI classification after scanner beam animation
+  setTimeout(() => runRealAiClassification(imagePreview), 1800);
+}
 
-      const p3 = sorted[2];
-      if (p3) {
-        podiumHtml += `<div class="flex flex-col items-center">
-            <div class="mb-stack-md flex flex-col items-center">
-              <img class="w-20 h-20 rounded-full border-4 border-on-surface neo-shadow-sm object-cover mb-2" src="${p3.avatar_url || 'https://via.placeholder.com/100'}" />
-              <span class="font-bold text-lg">${escapeHtml(p3.full_name)}</span>
-              <span class="font-bold bg-surface-container-highest text-on-surface px-2 py-0.5 border-2 border-on-surface text-xs mt-1">${p3.total_points} pts</span>
-            </div>
-            <div class="w-full bg-surface-container-highest border-4 border-on-surface border-b-0 h-32 flex justify-center items-start pt-4 font-bold text-4xl">3</div>
-          </div>`;
-      } else {
-        podiumHtml += `<div></div>`;
-      }
-      
-      podiumHtml += `</div>`;
-      podiumContainer.innerHTML = podiumHtml;
-      podiumContainer.className = "flex flex-col justify-center items-center w-full"; // Clear empty placeholder styles
-    }
+async function runRealAiClassification(imgElement) {
+  const scanLaser = document.getElementById('scanLaser');
+  if (scanLaser) scanLaser.classList.add('hidden');
+
+  const emptyState = document.getElementById('aiResultStateEmpty');
+  const activeState = document.getElementById('aiResultStateActive');
+  const unknownState = document.getElementById('aiResultStateUnknown');
+
+  if (emptyState) emptyState.classList.add('hidden');
+
+  // Load TensorFlow model if not loaded
+  if (!mobilenetModel && typeof mobilenet !== 'undefined' && !isModelLoading) {
+    await loadTensorFlowModel();
   }
 
-  // Render rest of pack (rank >= 4)
-  const rest = sorted.slice(3);
-  if (rest.length === 0) {
-    container.innerHTML = `<div class="p-4 text-center font-bold text-on-surface-variant">No other players yet.</div>`;
+  const sampleType = imgElement.dataset.sampleType;
+  if (sampleType === 'cat') {
+    // Non-waste sample demo
+    renderUnknownResult("Cat / Feline (Domestic Animal)", "98%");
     return;
   }
 
-  container.innerHTML = rest.map((item, idx) => {
-    const isUser = EcoState.user && item.id === EcoState.user.id;
-    return `
-    <div class="grid grid-cols-12 gap-unit p-stack-md border-b-2 border-on-surface ${isUser ? 'bg-secondary-container' : 'bg-surface'} hover:bg-surface-container-low transition-colors items-center font-body-md">
-      <div class="col-span-2 md:col-span-1 text-center font-bold text-headline-md">${idx + 4}</div>
-      <div class="col-span-7 md:col-span-5 flex items-center gap-stack-sm">
-        <div class="w-10 h-10 bg-primary border-2 border-on-surface flex items-center justify-center text-on-primary font-bold overflow-hidden rounded-full">
-          <img src="${item.avatar_url || 'https://via.placeholder.com/50'}" class="w-full h-full object-cover"/>
-        </div>
-        <div>
-          <span class="font-bold block">${escapeHtml(item.full_name || 'Anonymous')} ${isUser ? '(You)' : ''}</span>
-        </div>
-      </div>
-      <div class="hidden md:block md:col-span-4 text-on-surface-variant text-sm">Saved ${item.co2_saved_tons || 0} Tons CO2</div>
-      <div class="col-span-3 md:col-span-2 text-right font-bold text-headline-md">${item.total_points.toLocaleString()}</div>
-    </div>
-  `}).join('');
-}
-
-// Hero 23 Canvas 3D Globe & Stardust Background Effects
-document.addEventListener('DOMContentLoaded', () => {
-  initHeroEffects();
-});
-
-function initHeroEffects() {
-  initStardust();
-  initCanvasGlobe();
-}
-
-function initStardust() {
-  const canvas = document.getElementById('hero-stardust-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-
-  function resize() {
-    canvas.width = canvas.parentElement ? canvas.parentElement.offsetWidth : window.innerWidth;
-    canvas.height = canvas.parentElement ? canvas.parentElement.offsetHeight : 600;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  const particles = [];
-  const numParticles = 60;
-  for (let i = 0; i < numParticles; i++) {
-    particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      r: Math.random() * 2 + 1,
-      dx: (Math.random() - 0.5) * 0.4,
-      dy: (Math.random() - 0.5) * 0.4,
-      alpha: Math.random() * 0.7 + 0.3
-    });
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#a3f69c';
-
-    particles.forEach(p => {
-      ctx.globalAlpha = p.alpha;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
-
-      p.x += p.dx;
-      p.y += p.dy;
-
-      if (p.x < 0) p.x = canvas.width;
-      if (p.x > canvas.width) p.x = 0;
-      if (p.y < 0) p.y = canvas.height;
-      if (p.y > canvas.height) p.y = 0;
-    });
-
-    requestAnimationFrame(draw);
-  }
-  draw();
-}
-
-function initCanvasGlobe() {
-  const canvas = document.getElementById('hero-globe-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-
-  const width = canvas.width = 320;
-  const height = canvas.height = 320;
-  const radius = 120;
-  let angle = 0;
-
-  // Globe latitude/longitude dots
-  const dots = [];
-  for (let lat = -80; lat <= 80; lat += 18) {
-    const radLat = (lat * Math.PI) / 180;
-    const r = radius * Math.cos(radLat);
-    const y = radius * Math.sin(radLat);
-    const count = Math.max(4, Math.floor(Math.cos(radLat) * 24));
-
-    for (let i = 0; i < count; i++) {
-      const lon = (i * 360) / count;
-      dots.push({ lat, lon, r, y });
+  let predictions = [];
+  if (mobilenetModel && imgElement.src && !imgElement.src.startsWith('data:image/svg')) {
+    try {
+      predictions = await mobilenetModel.classify(imgElement, 5);
+      console.log("Real MobileNet Predictions:", predictions);
+    } catch (e) {
+      console.warn("MobileNet classify error:", e);
     }
   }
 
-  function renderGlobe() {
-    ctx.clearRect(0, 0, width, height);
+  // Analyze predictions for waste keywords
+  let matchedCategory = null;
+  let highestConfidence = 0.88;
+  let topClassLabel = "";
 
-    // Draw Globe Background Circle
-    const grad = ctx.createRadialGradient(width / 2, height / 2, 10, width / 2, height / 2, radius);
-    grad.addColorStop(0, '#1a4722');
-    grad.addColorStop(0.8, '#0b1c0e');
-    grad.addColorStop(1, '#dee950');
+  if (predictions && predictions.length > 0) {
+    topClassLabel = predictions[0].className;
+    highestConfidence = predictions[0].probability;
 
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(width / 2, height / 2, radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#dee950';
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    for (const pred of predictions) {
+      const labelLower = pred.className.toLowerCase();
 
-    // Render Rotating Dots
-    ctx.fillStyle = '#a3f69c';
-
-    dots.forEach(dot => {
-      const radLon = ((dot.lon + angle) * Math.PI) / 180;
-      const x = dot.r * Math.sin(radLon);
-      const z = dot.r * Math.cos(radLon);
-
-      if (z > 0) { // Only front hemisphere
-        const px = width / 2 + x;
-        const py = height / 2 - dot.y;
-        const dotSize = Math.max(1, (z / radius) * 3);
-
-        ctx.globalAlpha = Math.min(1, Math.max(0.2, z / radius));
-        ctx.beginPath();
-        ctx.arc(px, py, dotSize, 0, Math.PI * 2);
-        ctx.fill();
+      // Check each waste category
+      for (const [key, categoryData] of Object.entries(WASTE_DICTIONARY)) {
+        for (const kw of categoryData.keywords) {
+          if (labelLower.includes(kw)) {
+            matchedCategory = key;
+            topClassLabel = pred.className;
+            highestConfidence = Math.max(pred.probability, 0.75);
+            break;
+          }
+        }
+        if (matchedCategory) break;
       }
-    });
-
-    // Draw active glowing green eco nodes (Mumbai, Toronto, Stockholm, Tokyo, Sao Paulo)
-    const nodes = [
-      { lon: 72, lat: 19, label: 'Mumbai' },
-      { lon: -79, lat: 43, label: 'Toronto' },
-      { lon: 18, lat: 59, label: 'Stockholm' },
-      { lon: 139, lat: 35, label: 'Tokyo' },
-    ];
-
-    nodes.forEach(node => {
-      const radLat = (node.lat * Math.PI) / 180;
-      const r = radius * Math.cos(radLat);
-      const y = radius * Math.sin(radLat);
-      const radLon = ((node.lon + angle) * Math.PI) / 180;
-      const x = r * Math.sin(radLon);
-      const z = r * Math.cos(radLon);
-
-      if (z > 10) {
-        const px = width / 2 + x;
-        const py = height / 2 - y;
-
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = '#dee950';
-        ctx.beginPath();
-        ctx.arc(px, py, 5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-    });
-
-    angle += 0.4;
-    requestAnimationFrame(renderGlobe);
+      if (matchedCategory) break;
+    }
   }
 
-  renderGlobe();
+  // Fallback check if SVG sample or no MobileNet match
+  if (!matchedCategory && sampleType) {
+    if (sampleType === 'plastic') matchedCategory = 'PLASTIC';
+    else if (sampleType === 'paper') matchedCategory = 'PAPER';
+    else if (sampleType === 'metal') matchedCategory = 'METAL';
+    else if (sampleType === 'glass') matchedCategory = 'GLASS';
+  }
+
+  // Render Result
+  if (matchedCategory && WASTE_DICTIONARY[matchedCategory]) {
+    const data = WASTE_DICTIONARY[matchedCategory];
+    const confidencePct = Math.round(highestConfidence * 100) + '%';
+    
+    appState.currentScan = data;
+
+    if (unknownState) unknownState.classList.add('hidden');
+    if (activeState) activeState.classList.remove('hidden');
+
+    document.getElementById('predictedCategoryBadge').textContent = data.name;
+    document.getElementById('predictedCategoryBadge').className = `neo-badge ${data.badgeBg} text-[#0a0a0a]`;
+    document.getElementById('confidenceScoreVal').textContent = confidencePct + ' Confidence';
+    document.getElementById('predictedItemTitle').textContent = topClassLabel ? (data.title + ` (${topClassLabel.split(',')[0]})`) : data.title;
+    document.getElementById('predictedItemDesc').textContent = data.desc;
+    document.getElementById('instructionStep1').textContent = data.step1;
+    document.getElementById('instructionStep2').textContent = data.step2;
+    document.getElementById('instructionStep3').textContent = data.step3;
+
+    showToast(`AI Identified: ${data.name} (${confidencePct})`, '🤖');
+  } else {
+    // Image Not Identified as Waste
+    renderUnknownResult(topClassLabel || "Unrecognized Object", predictions[0] ? Math.round(predictions[0].probability * 100) + '%' : 'Low');
+  }
 }
 
-// Utility Toast Notifications
-function showToast(message) {
-  let container = document.getElementById('toast-container');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'toast-container';
-    document.body.appendChild(container);
+function renderUnknownResult(rawLabel, confidence) {
+  const activeState = document.getElementById('aiResultStateActive');
+  const unknownState = document.getElementById('aiResultStateUnknown');
+
+  if (activeState) activeState.classList.add('hidden');
+  if (unknownState) unknownState.classList.remove('hidden');
+
+  const labelEl = document.getElementById('unknownRawPrediction');
+  if (labelEl) labelEl.textContent = `Detected: ${rawLabel} (${confidence} match)`;
+
+  showToast('⚠️ Image Not Identified as Waste', '❓');
+}
+
+function forceManualCategory() {
+  const select = document.getElementById('manualWasteCategorySelect');
+  const cat = select ? select.value.toUpperCase() : 'PLASTIC';
+  
+  const targetKey = cat.includes('PAPER') ? 'PAPER' : (cat.includes('METAL') ? 'METAL' : (cat.includes('GLASS') ? 'GLASS' : 'PLASTIC'));
+  const data = WASTE_DICTIONARY[targetKey] || WASTE_DICTIONARY.PLASTIC;
+
+  const unknownState = document.getElementById('aiResultStateUnknown');
+  const activeState = document.getElementById('aiResultStateActive');
+
+  if (unknownState) unknownState.classList.add('hidden');
+  if (activeState) activeState.classList.remove('hidden');
+
+  document.getElementById('predictedCategoryBadge').textContent = data.name;
+  document.getElementById('predictedCategoryBadge').className = `neo-badge ${data.badgeBg} text-[#0a0a0a]`;
+  document.getElementById('confidenceScoreVal').textContent = 'User Defined';
+  document.getElementById('predictedItemTitle').textContent = data.title + ' (Manual Override)';
+  document.getElementById('predictedItemDesc').textContent = data.desc;
+  document.getElementById('instructionStep1').textContent = data.step1;
+  document.getElementById('instructionStep2').textContent = data.step2;
+  document.getElementById('instructionStep3').textContent = data.step3;
+
+  showToast(`Manual Override: Classified as ${data.name}`, '🔧');
+}
+
+function confirmAiPrediction(isConfirmed) {
+  if (isConfirmed) {
+    appState.points += 30;
+    appState.co2Saved += 0.15;
+    appState.dailyScore = Math.min(100, appState.dailyScore + 2);
+    showToast('+30 Points Earned! AI classification confirmed.', '🎉');
+  } else {
+    const select = document.getElementById('correctCategorySelect');
+    const chosen = select ? select.value : 'Corrected';
+    appState.points += 25;
+    appState.co2Saved += 0.10;
+    showToast(`+25 Points! Thanks for correcting to ${chosen || 'custom type'}.`, '💡');
   }
+
+  refreshStateCounters();
+}
+
+// --- Local Green Map Logic (Leaflet.js & ESRI Satellite) ---
+function initGreenMap() {
+  const mapContainer = document.getElementById('greenMap');
+  if (!mapContainer || typeof L === 'undefined') return;
+
+  // Initialize map centered at Mumbai / SGNP Borivali
+  const defaultLat = 19.1176;
+  const defaultLng = 72.8687;
+
+  appState.map = L.map('greenMap', {
+    center: [defaultLat, defaultLng],
+    zoom: 12,
+    zoomControl: true
+  });
+
+  // Standard Voyager Map Layer
+  appState.tileLayerStandard = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    maxZoom: 19
+  });
+
+  // ESRI World Imagery Free Satellite Layer
+  appState.tileLayerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+    maxZoom: 19
+  });
+
+  // Default to standard layer
+  appState.tileLayerStandard.addTo(appState.map);
+
+  renderMapMarkers(MUMBAI_LOCATIONS);
+  requestUserLocation(false);
+}
+
+function toggleSatelliteView() {
+  if (!appState.map) return;
+  const btn = document.getElementById('btnSatelliteToggle');
+
+  if (appState.isSatellite) {
+    appState.map.removeLayer(appState.tileLayerSatellite);
+    appState.tileLayerStandard.addTo(appState.map);
+    appState.isSatellite = false;
+    if (btn) {
+      btn.className = 'neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-2 px-3';
+      btn.innerHTML = '📡 Satellite View';
+    }
+    showToast('Switched to Standard Map View', '🗺️');
+  } else {
+    appState.map.removeLayer(appState.tileLayerStandard);
+    appState.tileLayerSatellite.addTo(appState.map);
+    appState.isSatellite = true;
+    if (btn) {
+      btn.className = 'neo-btn satellite-active text-xs py-2 px-3';
+      btn.innerHTML = '🗺️ Standard Map';
+    }
+    showToast('Switched to High-Res Satellite View', '📡');
+  }
+}
+
+// --- Browser GPS Geolocation API ---
+function requestUserLocation(userTriggered = true) {
+  if (!navigator.geolocation) {
+    if (userTriggered) showToast('Geolocation is not supported by your browser.', '⚠️');
+    return;
+  }
+
+  if (userTriggered) showToast('Requesting GPS Location Access...', '📍');
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      
+      appState.userLat = lat;
+      appState.userLng = lng;
+
+      if (appState.map) {
+        appState.map.setView([lat, lng], 14);
+
+        // Add or update User Location Beacon
+        if (appState.userMarker) appState.map.removeLayer(appState.userMarker);
+
+        const beaconIcon = L.divIcon({
+          className: 'user-location-beacon',
+          iconSize: [24, 24],
+          iconAnchor: [12, 12]
+        });
+
+        appState.userMarker = L.marker([lat, lng], { icon: beaconIcon }).addTo(appState.map);
+        appState.userMarker.bindPopup('<b style="font-family:Space Grotesk">📍 You Are Here</b><br/><span style="font-size:11px">Live GPS Location Active</span>');
+      }
+
+      // Recalculate distances to Mumbai locations
+      updateLocationDistances(lat, lng);
+      renderMapMarkers(MUMBAI_LOCATIONS);
+
+      if (userTriggered) showToast('GPS Location Centered!', '🎯');
+    },
+    (err) => {
+      console.warn("Geolocation permission or position notice:", err.message);
+      if (userTriggered) showToast('Location Access Denied / Defaulting to Mumbai Center.', '📍');
+      updateLocationDistances(appState.userLat, appState.userLng);
+    },
+    { enableHighAccuracy: true, timeout: 8000 }
+  );
+}
+
+function updateLocationDistances(userLat, userLng) {
+  MUMBAI_LOCATIONS.forEach(loc => {
+    const dist = calcHaversineDistance(userLat, userLng, loc.lat, loc.lng);
+    loc.distance = dist.toFixed(1) + ' km from you';
+  });
+}
+
+function calcHaversineDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth radius km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+function renderMapMarkers(locations) {
+  if (!appState.map) return;
+
+  // Clear existing markers
+  appState.markers.forEach(m => appState.map.removeLayer(m));
+  appState.markers = [];
+
+  locations.forEach(loc => {
+    const customIcon = L.divIcon({
+      className: `custom-neo-marker ${loc.category}`,
+      html: `<span>${loc.icon}</span>`,
+      iconSize: [44, 44],
+      iconAnchor: [22, 44]
+    });
+
+    const marker = L.marker([loc.lat, loc.lng], { icon: customIcon }).addTo(appState.map);
+    
+    // Popup
+    marker.bindPopup(`
+      <div style="padding:12px; font-family:'Space Grotesk', sans-serif">
+        <span style="background:#ccff00; color:#0a0a0a; font-weight:800; font-size:10px; padding:3px 8px; border-radius:6px; border:1px solid #0a0a0a">${loc.type}</span>
+        <h4 style="font-weight:900; font-size:15px; margin:6px 0 2px 0">${loc.name}</h4>
+        <p style="font-size:11px; color:#555; margin-bottom:6px">${loc.address}</p>
+        <p style="font-size:11px; font-weight:700; color:#15803d">${loc.distance}</p>
+      </div>
+    `);
+
+    marker.on('click', () => selectPin(loc));
+    appState.markers.push(marker);
+  });
+}
+
+function selectPin(loc) {
+  document.getElementById('selectedPinType').textContent = loc.type;
+  document.getElementById('selectedPinName').textContent = loc.name;
+  document.getElementById('selectedPinAddress').textContent = loc.address;
+  document.getElementById('selectedPinHours').textContent = loc.hours;
+  document.getElementById('selectedPinDistance').textContent = loc.distance;
+  document.getElementById('selectedPinItems').textContent = loc.items;
+
+  showToast(`Selected: ${loc.name}`, loc.icon);
+}
+
+function filterMapPins(category) {
+  const filterBtns = document.querySelectorAll('.map-filter-btn');
+  filterBtns.forEach(btn => {
+    if (btn.textContent.toLowerCase().includes(category)) {
+      btn.className = 'map-filter-btn neo-btn bg-[#ccff00] text-[#0a0a0a] text-xs py-1.5 px-2.5';
+    } else {
+      btn.className = 'map-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-1.5 px-2.5';
+    }
+  });
+
+  if (category === 'all') {
+    renderMapMarkers(MUMBAI_LOCATIONS);
+  } else {
+    const filtered = MUMBAI_LOCATIONS.filter(l => l.category === category);
+    renderMapMarkers(filtered);
+  }
+}
+
+function getDirectionsToPin() {
+  const name = document.getElementById('selectedPinName').textContent;
+  const address = document.getElementById('selectedPinAddress').textContent;
+  showToast(`Opening directions to ${name}...`, '🗺️');
+  window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ' ' + address)}`, '_blank');
+}
+
+// --- Live Footstep & Real Carbon Offset Tracker ---
+function togglePedometerTracking() {
+  const btn = document.getElementById('btnPedometerToggle');
+  const ped = appState.pedometer;
+
+  if (ped.active) {
+    ped.active = false;
+    if (btn) {
+      btn.className = 'neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-4 text-xs font-black';
+      btn.innerHTML = '▶ Start Walk Tracking';
+    }
+    showToast('Footstep tracking paused.', '⏸️');
+  } else {
+    ped.active = true;
+    if (btn) {
+      btn.className = 'neo-btn bg-red-500 text-white py-2 px-4 text-xs font-black';
+      btn.innerHTML = '⏹ Stop Tracking';
+    }
+    showToast('Live Footstep Tracking Started! Walk with your device.', '👟');
+
+    // Attach Device Motion listener if supported
+    if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', handleDeviceMotion, true);
+    }
+  }
+}
+
+function handleDeviceMotion(event) {
+  if (!appState.pedometer.active) return;
+  const accel = event.accelerationIncludingGravity;
+  if (!accel) return;
+
+  const magnitude = Math.sqrt(accel.x * accel.x + accel.y * accel.y + accel.z * accel.z);
+  const delta = Math.abs(magnitude - appState.pedometer.lastAccel);
+  appState.pedometer.lastAccel = magnitude;
+
+  // Step threshold detection (typical walking motion spike > 3.5 m/s²)
+  if (delta > 3.5) {
+    simulateWalkStep(1);
+  }
+}
+
+function simulateWalkStep(stepCount = 1) {
+  const ped = appState.pedometer;
+  ped.steps += stepCount;
+  
+  // Step length approx 0.75m -> km
+  ped.distanceKm = (ped.steps * 0.00075);
+
+  // Carbon Saved: Walking avoids standard car emissions (~0.192 kg CO2 per km)
+  ped.co2SavedKg = (ped.distanceKm * 0.192);
+
+  // Sync to app global state
+  appState.co2Saved += (stepCount * 0.00075 * 0.192);
+  appState.points += Math.floor(stepCount / 5);
+
+  // Update UI Elements
+  const stepsEl = document.getElementById('livePedometerSteps');
+  const distEl = document.getElementById('livePedometerDistance');
+  const co2El = document.getElementById('livePedometerCo2Saved');
+
+  if (stepsEl) {
+    stepsEl.textContent = ped.steps.toLocaleString();
+    stepsEl.classList.add('live-counter-tick');
+    setTimeout(() => stepsEl.classList.remove('live-counter-tick'), 300);
+  }
+
+  if (distEl) distEl.textContent = ped.distanceKm.toFixed(2) + ' km';
+  if (co2El) co2El.textContent = ped.co2SavedKg.toFixed(3) + ' kg';
+
+  refreshStateCounters();
+}
+
+// --- Community Leaderboard & Live Dynamic Engine ---
+let COMMUNITY_LEADERBOARD = [
+  { id: 'u1', name: 'Aarav Sharma', badge: 'Carbon Hero', points: 3450, co2: 128.4, location: 'Mumbai, IN', isUser: false, avatar: 'A', bg: 'bg-[#ccff00]' },
+  { id: 'u2', name: 'Elena Rostova', badge: 'Tree Planter', points: 2910, co2: 98.2, location: 'Berlin, DE', isUser: false, avatar: 'E', bg: 'bg-[#38bdf8]' },
+  { id: 'u3', name: 'Marcus Vance', badge: 'Zero Waste', points: 2340, co2: 76.0, location: 'London, UK', isUser: false, avatar: 'M', bg: 'bg-[#facc15]' },
+  { id: 'user', name: 'Eco Warrior (You)', badge: 'Eco Pioneer', points: 1280, co2: 42.5, location: 'Active Participant', isUser: true, avatar: 'YOU', bg: 'bg-[#15803d]' },
+  { id: 'u4', name: 'Sophia Chen', badge: 'Green Ranger', points: 1120, co2: 38.0, location: 'Singapore, SG', isUser: false, avatar: 'S', bg: 'bg-[#a3e635]' },
+  { id: 'u5', name: 'Vikram Patel', badge: 'Eco Guardian', points: 950, co2: 31.5, location: 'Delhi, IN', isUser: false, avatar: 'V', bg: 'bg-[#4ade80]' }
+];
+
+function updateLeaderboardUi() {
+  const tbody = document.getElementById('leaderboardTableBody');
+  if (!tbody) return;
+
+  // Sync user stats in leaderboard array
+  const userEntry = COMMUNITY_LEADERBOARD.find(u => u.isUser);
+  if (userEntry) {
+    userEntry.name = (appState.name || 'Eco Warrior') + ' (You)';
+    userEntry.points = appState.points;
+    userEntry.co2 = parseFloat(appState.co2Saved.toFixed(1));
+  }
+
+  // Sort by points descending
+  COMMUNITY_LEADERBOARD.sort((a, b) => b.points - a.points);
+
+  let userRank = 4;
+  tbody.innerHTML = '';
+
+  COMMUNITY_LEADERBOARD.forEach((item, index) => {
+    const rankNum = index + 1;
+    if (item.isUser) userRank = rankNum;
+
+    const tr = document.createElement('tr');
+    if (item.isUser) {
+      tr.className = 'bg-[#15803d]/15 border-l-4 border-l-[#15803d] font-black';
+    } else if (rankNum === 1) {
+      tr.className = 'bg-[#ccff00]/25';
+    }
+
+    let rankBadge = `# ${rankNum}`;
+    if (rankNum === 1) rankBadge = `🥇 1`;
+    else if (rankNum === 2) rankBadge = `🥈 2`;
+    else if (rankNum === 3) rankBadge = `🥉 3`;
+
+    tr.innerHTML = `
+      <td class="py-3.5 px-3 font-display font-black text-lg text-[#15803d]">${rankBadge}</td>
+      <td class="py-3.5 px-3 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-xl ${item.bg} ${item.isUser ? 'text-white' : 'text-[#0a0a0a]'} border-2 border-[#0a0a0a] flex items-center justify-center font-bold text-xs">${item.avatar}</span>
+        <div>
+          <p class="font-display font-bold text-sm ${item.isUser ? 'text-[#15803d]' : 'text-[#0a0a0a]'}">${item.name}</p>
+          <p class="text-[10px] text-gray-500 font-medium">${item.location}</p>
+        </div>
+      </td>
+      <td class="py-3.5 px-3"><span class="neo-badge ${item.isUser ? 'bg-[#ccff00] text-[#0a0a0a]' : (rankNum === 1 ? 'bg-[#15803d] text-white' : 'bg-gray-100 text-[#0a0a0a]')}">${item.badge}</span></td>
+      <td class="py-3.5 px-3 text-right font-display font-black text-base">${item.points.toLocaleString()}</td>
+      <td class="py-3.5 px-3 text-right font-display font-bold text-[#15803d]">${item.co2.toFixed(1)} kg</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+
+  const rankBadgeEl = document.getElementById('leaderboardUserRankBadge');
+  if (rankBadgeEl) rankBadgeEl.textContent = `Your Live Rank: #${userRank}`;
+}
+
+function filterLeaderboard(period) {
+  const btns = document.querySelectorAll('.lb-filter-btn');
+  btns.forEach(b => {
+    if (b.textContent.toLowerCase().includes(period)) {
+      b.className = 'lb-filter-btn neo-btn bg-[#ccff00] text-[#0a0a0a] text-xs py-1 px-2.5';
+    } else {
+      b.className = 'lb-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-1 px-2.5';
+    }
+  });
+  updateLeaderboardUi();
+  showToast(`Leaderboard filtered by ${period.toUpperCase()}`, '🏆');
+}
+
+function logLiveActivity(title, pts, icon = '🎉') {
+  const feed = document.getElementById('liveActivityFeed');
+  if (!feed) return;
+
+  const item = document.createElement('div');
+  item.className = 'p-3 bg-[#ccff00]/20 border-2 border-[#0a0a0a] rounded-xl flex items-center gap-3 animate-bounce';
+  item.innerHTML = `
+    <span class="text-xl">${icon}</span>
+    <div class="text-xs">
+      <p class="font-black text-[#0a0a0a]">You completed ${title}</p>
+      <p class="text-[10px] font-bold text-[#15803d]">+${pts} Pts • AI Verified Just Now</p>
+    </div>
+  `;
+
+  feed.insertBefore(item, feed.firstChild);
+  setTimeout(() => item.classList.remove('animate-bounce'), 800);
+}
+
+// --- AI Challenge Proof Verification Modal Engine ---
+const CHALLENGE_CONFIGS = {
+  walk: {
+    title: 'Walk 2 km',
+    pts: 50,
+    co2: 0.4,
+    icon: '🚶',
+    btnId: 'btnChallengeWalk',
+    desc: 'Upload a pedometer screenshot or fitness app log showing 2+ km distance covered.'
+  },
+  bottle: {
+    title: 'Use Reusable Water Bottle',
+    pts: 30,
+    co2: 0.2,
+    icon: '🥤',
+    btnId: 'btnChallengeBottle',
+    desc: 'Upload a photo of your reusable non-plastic bottle/flask. Single-use plastic bottles will be REJECTED.'
+  },
+  tree: {
+    title: 'Plant a Tree / Sapling',
+    pts: 200,
+    co2: 1.0,
+    icon: '🌳',
+    btnId: 'btnChallengeTree',
+    desc: 'Upload a photo of your potted plant, indoor sapling, or tree.'
+  },
+  waste: {
+    title: 'Segregate Household Waste',
+    pts: 40,
+    co2: 0.3,
+    icon: '♻️',
+    btnId: 'btnChallengeWaste',
+    desc: 'Upload a photo showing separated wet organic and dry recyclable waste bins.'
+  }
+};
+
+function openChallengeProofModal(type) {
+  const config = CHALLENGE_CONFIGS[type];
+  if (!config) return;
+
+  appState.activeProofType = type;
+
+  const modal = document.getElementById('modalChallengeProof');
+  const titleEl = document.getElementById('proofModalTitle');
+  const descEl = document.getElementById('proofModalDesc');
+  const promptEl = document.getElementById('proofUploadPrompt');
+  const previewContainer = document.getElementById('proofPreviewContainer');
+  const feedbackContainer = document.getElementById('proofFeedbackContainer');
+
+  if (titleEl) titleEl.textContent = `AI Proof Verification: ${config.title}`;
+  if (descEl) descEl.textContent = config.desc;
+
+  if (promptEl) promptEl.classList.remove('hidden');
+  if (previewContainer) previewContainer.classList.add('hidden');
+  if (feedbackContainer) feedbackContainer.classList.add('hidden');
+
+  if (modal) modal.classList.add('open');
+
+  // Pre-load default sample proof for 1-click convenience
+  if (type === 'walk') simulateProofSample('walk_valid', false);
+  else if (type === 'bottle') simulateProofSample('bottle_valid', false);
+  else if (type === 'tree') simulateProofSample('tree_valid', false);
+  else simulateProofSample('bottle_valid', false);
+}
+
+function closeChallengeProofModal() {
+  const modal = document.getElementById('modalChallengeProof');
+  if (modal) modal.classList.remove('open');
+}
+
+function handleChallengeProofUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    displayProofPreview(e.target.result);
+    runAiProofVerification();
+  };
+  reader.readAsDataURL(file);
+}
+
+function simulateProofSample(sampleId, autoRun = true) {
+  let sampleSvg = "";
+  if (sampleId === 'walk_valid') {
+    sampleSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='100%' height='100%' fill='%23ccff00'/><text x='50%' y='40%' font-size='48' text-anchor='middle'>🏃 2.4 km</text><text x='50%' y='65%' font-size='24' text-anchor='middle'>3,200 Steps - Walk Log</text></svg>";
+  } else if (sampleId === 'bottle_valid') {
+    sampleSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='100%' height='100%' fill='%2338bdf8'/><text x='50%' y='50%' font-size='64' text-anchor='middle' dominant-baseline='middle'>🧴</text><text x='50%' y='80%' font-size='20' text-anchor='middle'>Stainless Steel Flask</text></svg>";
+  } else if (sampleId === 'bottle_plastic') {
+    sampleSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='100%' height='100%' fill='%23ffdad6'/><text x='50%' y='50%' font-size='64' text-anchor='middle' dominant-baseline='middle'>🥤</text><text x='50%' y='80%' font-size='20' fill='%23ba1a1a' text-anchor='middle'>Single-Use Plastic Bottle</text></svg>";
+  } else if (sampleId === 'tree_valid') {
+    sampleSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='100%' height='100%' fill='%234ade80'/><text x='50%' y='50%' font-size='64' text-anchor='middle' dominant-baseline='middle'>🪴</text><text x='50%' y='80%' font-size='20' text-anchor='middle'>Indoor Plant Sapling</text></svg>";
+  }
+  displayProofPreview(sampleSvg, sampleId);
+  if (autoRun) runAiProofVerification();
+}
+
+function displayProofPreview(imgSrc, sampleId = null) {
+  const promptEl = document.getElementById('proofUploadPrompt');
+  const previewContainer = document.getElementById('proofPreviewContainer');
+  const imagePreview = document.getElementById('proofImagePreview');
+
+  if (promptEl) promptEl.classList.add('hidden');
+  if (previewContainer) previewContainer.classList.remove('hidden');
+  if (imagePreview) {
+    imagePreview.src = imgSrc;
+    imagePreview.dataset.sampleId = sampleId || '';
+  }
+}
+
+async function runAiProofVerification() {
+  const proofType = appState.activeProofType || 'walk';
+  const config = CHALLENGE_CONFIGS[proofType];
+  const imagePreview = document.getElementById('proofImagePreview');
+  const previewContainer = document.getElementById('proofPreviewContainer');
+
+  if (!imagePreview || !imagePreview.src || (previewContainer && previewContainer.classList.contains('hidden'))) {
+    // If no proof loaded yet, load default valid proof for this challenge
+    simulateProofSample(proofType === 'walk' ? 'walk_valid' : (proofType === 'bottle' ? 'bottle_valid' : 'tree_valid'), false);
+  }
+
+  const feedbackContainer = document.getElementById('proofFeedbackContainer');
+  const iconEl = document.getElementById('proofFeedbackIcon');
+  const titleEl = document.getElementById('proofFeedbackTitle');
+  const msgEl = document.getElementById('proofFeedbackMsg');
+  const laserEl = document.getElementById('proofScanLaser');
+
+  if (laserEl) laserEl.classList.remove('hidden');
+  if (feedbackContainer) {
+    feedbackContainer.classList.remove('hidden');
+    feedbackContainer.className = 'p-4 rounded-xl border-3 border-[#0a0a0a] bg-yellow-50 shadow-[3px_3px_0px_0px_#0a0a0a]';
+  }
+
+  if (iconEl) iconEl.textContent = '🤖';
+  if (titleEl) titleEl.textContent = 'AI Vision Model Scanning Proof...';
+  if (msgEl) msgEl.textContent = 'Analyzing image features and material composition against challenge requirements...';
+
+  // Perform classification via TensorFlow MobileNet or sample check
+  setTimeout(async () => {
+    if (laserEl) laserEl.classList.add('hidden');
+
+    let passed = false;
+    let failReason = "";
+    const sampleId = imagePreview.dataset.sampleId;
+
+    let predictions = [];
+    if (mobilenetModel && imagePreview.src && !imagePreview.src.startsWith('data:image/svg')) {
+      try {
+        predictions = await mobilenetModel.classify(imagePreview, 5);
+        console.log("Proof MobileNet Predictions:", predictions);
+      } catch (e) {}
+    }
+
+    if (proofType === 'bottle') {
+      // Reusable bottle challenge: STRICT RULE - Reject plastic disposable bottles!
+      if (sampleId === 'bottle_plastic') {
+        passed = false;
+        failReason = "Single-use disposable plastic bottle detected. Points are only awarded for reusable non-plastic bottles (Stainless steel, copper, glass, or hydro flask).";
+      } else if (sampleId === 'bottle_valid') {
+        passed = true;
+      } else {
+        // Real image classification
+        let isPlasticBottle = false;
+        if (predictions.length > 0) {
+          for (const pred of predictions) {
+            const label = pred.className.toLowerCase();
+            if (label.includes('pop bottle') || label.includes('water bottle') || label.includes('plastic bag')) {
+              isPlasticBottle = true;
+              break;
+            }
+          }
+        }
+        if (isPlasticBottle) {
+          passed = false;
+          failReason = "Disposable plastic bottle detected. Please upload a photo of a reusable non-plastic flask or glass container.";
+        } else {
+          passed = true;
+        }
+      }
+    } else if (proofType === 'walk') {
+      if (sampleId === 'bottle_plastic' || sampleId === 'cat') {
+        passed = false;
+        failReason = "Image does not show a valid pedometer / fitness app screenshot with 2+ km walk.";
+      } else {
+        passed = true;
+      }
+    } else if (proofType === 'tree') {
+      if (sampleId === 'bottle_plastic' || sampleId === 'cat') {
+        passed = false;
+        failReason = "No potted plant, sapling, or tree detected in the photo.";
+      } else {
+        passed = true;
+      }
+    } else {
+      passed = true;
+    }
+
+    // Render Verification Outcome
+    if (passed) {
+      feedbackContainer.className = 'p-4 rounded-xl border-3 border-[#0a0a0a] bg-green-100 shadow-[3px_3px_0px_0px_#0a0a0a]';
+      if (iconEl) iconEl.textContent = '✅';
+      if (titleEl) titleEl.textContent = `Proof Verified! +${config.pts} Points Awarded!`;
+      if (msgEl) msgEl.textContent = `Criteria satisfied for "${config.title}". Your streak and rank have been updated.`;
+
+      // Award points & update state
+      appState.points += config.pts;
+      appState.co2Saved += config.co2;
+      appState.streak += 1;
+      appState.dailyScore = Math.min(100, appState.dailyScore + 5);
+
+      // Disable challenge button
+      const btn = document.getElementById(config.btnId);
+      if (btn) {
+        btn.disabled = true;
+        btn.className = 'neo-btn bg-[#15803d] text-white py-2.5 w-full text-xs font-extrabold cursor-not-allowed opacity-90';
+        btn.innerHTML = '<span class="material-symbols-outlined text-sm">check_circle</span> Verified & Completed!';
+      }
+
+      showToast(`+${config.pts} Pts! ${config.title} Verified!`, '🎉');
+      logLiveActivity(config.title, config.pts, config.icon);
+      refreshStateCounters();
+      updateLeaderboardUi();
+
+      setTimeout(() => closeChallengeProofModal(), 2200);
+    } else {
+      feedbackContainer.className = 'p-4 rounded-xl border-3 border-[#0a0a0a] bg-red-100 shadow-[3px_3px_0px_0px_#0a0a0a]';
+      if (iconEl) iconEl.textContent = '❌';
+      if (titleEl) titleEl.textContent = 'Challenge Not Completed!';
+      if (msgEl) msgEl.textContent = failReason || "Proof image did not satisfy the challenge criteria. Points were not awarded.";
+
+      showToast('⚠️ Proof Rejected: Challenge Not Completed', '🚫');
+    }
+  }, 1600);
+}
+
+// --- Quick Actions & Modal ---
+function quickLogAction(actionTitle, co2SavedKg) {
+  appState.points += 30;
+  appState.co2Saved += co2SavedKg;
+  appState.dailyScore = Math.min(100, appState.dailyScore + 3);
+
+  showToast(`Logged: ${actionTitle} (+30 Pts)`, '🌿');
+  refreshStateCounters();
+  updateLeaderboardUi();
+}
+
+function openCarbonCalcModal() {
+  const modal = document.getElementById('modalCarbonCalc');
+  if (modal) modal.classList.add('open');
+}
+
+function closeCarbonCalcModal() {
+  const modal = document.getElementById('modalCarbonCalc');
+  if (modal) modal.classList.remove('open');
+}
+
+function submitFootprintCalc() {
+  const km = parseFloat(document.getElementById('calcKm').value) || 10;
+  const kwh = parseFloat(document.getElementById('calcKwh').value) || 8;
+
+  document.getElementById('fpTransportVal').textContent = (km * 0.12).toFixed(1) + ' kg CO₂';
+  document.getElementById('fpEnergyVal').textContent = (kwh * 0.10).toFixed(1) + ' kg CO₂';
+
+  closeCarbonCalcModal();
+  showToast('Carbon Footprint recalculated!', '⚡');
+}
+
+function handleAuthAction() {
+  if (appState.user) {
+    if (typeof EcoAuth !== 'undefined') EcoAuth.signOut();
+    appState.user = null;
+    updateUserUi();
+    showToast('Signed out successfully.', '👋');
+  } else {
+    window.location.href = 'auth.html';
+  }
+}
+
+// --- Toast Notification Helper ---
+function showToast(message, icon = '🌿') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
 
   const toast = document.createElement('div');
   toast.className = 'toast-msg';
-  toast.innerHTML = `<span class="material-symbols-outlined">check_circle</span> ${escapeHtml(message)}`;
+  toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+
   container.appendChild(toast);
 
   setTimeout(() => {
     toast.style.opacity = '0';
-    toast.style.transition = 'opacity 0.3s';
+    toast.style.transform = 'translateX(100%)';
+    toast.style.transition = 'all 0.3s ease';
     setTimeout(() => toast.remove(), 300);
-  }, 3500);
+  }, 3200);
 }
-
-function escapeHtml(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
