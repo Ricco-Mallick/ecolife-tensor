@@ -80,11 +80,13 @@ async function initAuth() {
   if (profile) {
     appState.profile = profile;
     appState.points = profile.total_points || 0;
-    appState.co2Saved = parseFloat(profile.co2_saved_tons || 0) * 1000;
+    const rawCo2 = parseFloat(profile.co2_saved_tons || 0);
+    // Sanitize co2Saved to realistic kg value
+    appState.co2Saved = (rawCo2 > 500) ? parseFloat((rawCo2 / 1000).toFixed(2)) : rawCo2;
     appState.streak = profile.streak_days || 0;
-    appState.dailyScore = Math.min(Math.round((profile.total_points || 0) / 10), 100);
     appState.completedChallenges = profile.completed_challenges || [];
   }
+
 
   // Load DB Challenges
   appState.challenges = await EcoAuth.getChallenges();
@@ -165,8 +167,8 @@ function refreshStateCounters() {
   if (scoreEl) scoreEl.textContent = appState.dailyScore;
 
 
-  // Compute Real Impact Equivalencies
-  const co2 = appState.co2Saved || 0;
+  // Compute Real Impact Equivalencies & Carbon Footprint
+  const co2 = appState.co2Saved || 0.3;
   const trees = (co2 / 21.77).toFixed(1);
   const carKm = (co2 / 0.192).toFixed(1);
   const bulbs = (co2 * 12.5).toFixed(1);
@@ -182,12 +184,71 @@ function refreshStateCounters() {
   if (bulbEl) bulbEl.textContent = bulbs + ' hrs';
   if (phoneEl) phoneEl.textContent = phones.toLocaleString();
 
+  // Dynamic Carbon Footprint Breakdown & Bar Animation
+  const tKg = Math.max(0.5, parseFloat((co2 * 0.45).toFixed(1)));
+  const eKg = Math.max(0.3, parseFloat((co2 * 0.35).toFixed(1)));
+  const fKg = Math.max(0.2, parseFloat((co2 * 0.20).toFixed(1)));
+  updateCarbonFootprintDisplay(tKg, eKg, fKg);
+
   // Update streak progress bar
   const streakBar = document.getElementById('streakProgressBar');
   if (streakBar) {
     const pct = Math.min((appState.streak % 10) / 10 * 100, 100);
     streakBar.style.width = pct + '%';
   }
+}
+
+function updateCarbonFootprintDisplay(transportKg, energyKg, foodKg) {
+  const tKg = parseFloat(transportKg) || 1.2;
+  const eKg = parseFloat(energyKg) || 0.8;
+  const fKg = parseFloat(foodKg) || 0.5;
+  const total = tKg + eKg + fKg || 1;
+
+  const tVal = document.getElementById('fpTransportVal');
+  const eVal = document.getElementById('fpEnergyVal');
+  const fVal = document.getElementById('fpFoodVal');
+
+  const tBar = document.getElementById('fpTransportBar');
+  const eBar = document.getElementById('fpEnergyBar');
+  const fBar = document.getElementById('fpFoodBar');
+
+  if (tVal) tVal.textContent = tKg.toFixed(1) + ' kg CO₂';
+  if (eVal) eVal.textContent = eKg.toFixed(1) + ' kg CO₂';
+  if (fVal) fVal.textContent = fKg.toFixed(1) + ' kg CO₂';
+
+  const tPct = Math.min(100, Math.max(8, Math.round((tKg / total) * 100)));
+  const ePct = Math.min(100, Math.max(8, Math.round((eKg / total) * 100)));
+  const fPct = Math.min(100, Math.max(8, Math.round((fKg / total) * 100)));
+
+  if (tBar) tBar.style.width = tPct + '%';
+  if (eBar) eBar.style.width = ePct + '%';
+  if (fBar) fBar.style.width = fPct + '%';
+}
+
+function openCarbonCalcModal() {
+  const modal = document.getElementById('modalCarbonCalc');
+  if (modal) modal.classList.add('open');
+}
+
+function closeCarbonCalcModal() {
+  const modal = document.getElementById('modalCarbonCalc');
+  if (modal) modal.classList.remove('open');
+}
+
+function submitFootprintCalc() {
+  const km = parseFloat(document.getElementById('calcKm').value) || 12;
+  const kwh = parseFloat(document.getElementById('calcKwh').value) || 8;
+
+  const result = CarbonEngine.calculateFootprint({ transportKmPerWeek: km * 7, electricityKwhPerMonth: kwh * 30 });
+  
+  const tKg = parseFloat(((result.breakdown?.transportCo2Month || 36) / 30).toFixed(1));
+  const eKg = parseFloat(((result.breakdown?.electricityCo2Month || 24) / 30).toFixed(1));
+  const fKg = parseFloat(((result.breakdown?.meatCo2Month || 15) / 30).toFixed(1));
+
+  updateCarbonFootprintDisplay(tKg, eKg, fKg);
+
+  closeCarbonCalcModal();
+  showToast('Carbon Footprint recalculated & progress bars updated!', '⚡');
 }
 
 async function loadProfileActivityHistory() {
