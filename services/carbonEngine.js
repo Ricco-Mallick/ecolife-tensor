@@ -98,22 +98,63 @@ const CarbonEngine = {
    * @returns {Object} Breakdown of footprint in kg CO2 per month
    */
   calculateFootprint({ transportKmPerWeek = 50, electricityKwhPerMonth = 150, meatMealsPerWeek = 7 }) {
-    const transportMonthlyKg = (transportKmPerWeek * 4) * 0.192;
-    const energyMonthlyKg = electricityKwhPerMonth * 0.708;
-    const foodMonthlyKg = (meatMealsPerWeek * 4) * 1.5;
+    const transportCo2Month = (transportKmPerWeek * 4.33) * this.EMISSION_FACTORS.WALKING_VS_CAR;
+    const electricityCo2Month = electricityKwhPerMonth * this.EMISSION_FACTORS.ENERGY_SAVED_KWH;
+    const meatCo2Month = (meatMealsPerWeek * 4.33) * this.EMISSION_FACTORS.PLANT_BASED_MEAL;
 
-    const totalMonthlyKg = transportMonthlyKg + energyMonthlyKg + foodMonthlyKg;
+    const totalCo2MonthKg = parseFloat((transportCo2Month + electricityCo2Month + meatCo2Month).toFixed(2));
+    const totalCo2YearTons = parseFloat((totalCo2MonthKg * 12 / 1000).toFixed(2));
 
     return {
-      transportMonthlyKg: parseFloat(transportMonthlyKg.toFixed(1)),
-      energyMonthlyKg: parseFloat(energyMonthlyKg.toFixed(1)),
-      foodMonthlyKg: parseFloat(foodMonthlyKg.toFixed(1)),
-      totalMonthlyKg: parseFloat(totalMonthlyKg.toFixed(1)),
-      totalAnnualTons: parseFloat((totalMonthlyKg * 12 / 1000).toFixed(2)),
-      breakdownPct: {
-        transport: Math.round((transportMonthlyKg / totalMonthlyKg) * 100) || 0,
-        energy: Math.round((energyMonthlyKg / totalMonthlyKg) * 100) || 0,
-        food: Math.round((foodMonthlyKg / totalMonthlyKg) * 100) || 0
+      totalCo2MonthKg,
+      totalCo2YearTons,
+      breakdown: {
+        transportCo2Month: parseFloat(transportCo2Month.toFixed(2)),
+        electricityCo2Month: parseFloat(electricityCo2Month.toFixed(2)),
+        meatCo2Month: parseFloat(meatCo2Month.toFixed(2))
+      }
+    };
+  },
+
+  /**
+   * Calculate Multi-Factor Daily Eco Score (0 to 100)
+   * @param {Object} params - { todayPoints, streakDays, todayCo2Saved }
+   * @returns {Object} { score, tier, tierBadge, breakdown }
+   */
+  calculateDailyEcoScore({ todayPoints = 0, streakDays = 0, todayCo2Saved = 0 }) {
+    const pts = Math.max(0, parseInt(todayPoints) || 0);
+    const streak = Math.max(0, parseInt(streakDays) || 0);
+    const co2 = Math.max(0, parseFloat(todayCo2Saved) || 0);
+
+    const pointsComponent = Math.min(Math.round(pts / 4), 60); // Max 60 pts from actions
+    const streakComponent = Math.min(streak * 2, 20); // Max 20 pts from active streak
+    const co2Component = Math.min(Math.round(co2 * 10), 20); // Max 20 pts from CO2 saved
+
+    const rawScore = pointsComponent + streakComponent + co2Component;
+    const score = Math.max(0, Math.min(100, rawScore));
+
+    let tier = 'Eco Novice';
+    let tierBadge = '🌱';
+
+    if (score >= 76) {
+      tier = 'Eco Legend';
+      tierBadge = '🏆';
+    } else if (score >= 51) {
+      tier = 'Eco Guardian';
+      tierBadge = '🛡️';
+    } else if (score >= 26) {
+      tier = 'Eco Advocate';
+      tierBadge = '🌿';
+    }
+
+    return {
+      score,
+      tier,
+      tierBadge,
+      breakdown: {
+        pointsComponent,
+        streakComponent,
+        co2Component
       }
     };
   }

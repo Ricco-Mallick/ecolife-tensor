@@ -146,8 +146,24 @@ function refreshStateCounters() {
     if (el) el.textContent = appState.streak + ' Days 🔥';
   });
 
+  // Calculate Dynamic Daily Eco Score & Tier Badge
+  if (typeof CarbonEngine !== 'undefined') {
+    const scoreData = CarbonEngine.calculateDailyEcoScore({
+      todayPoints: appState.points,
+      streakDays: appState.streak,
+      todayCo2Saved: appState.co2Saved
+    });
+    appState.dailyScore = scoreData.score;
+    appState.tier = scoreData.tier;
+
+    document.querySelectorAll('#sidebarUserRank, #profileTierBadge').forEach(el => {
+      if (el) el.textContent = `${scoreData.tierBadge} Tier: ${scoreData.tier}`;
+    });
+  }
+
   const scoreEl = document.getElementById('dailyEcoScore');
   if (scoreEl) scoreEl.textContent = appState.dailyScore;
+
 
   // Compute Real Impact Equivalencies
   const co2 = appState.co2Saved || 0;
