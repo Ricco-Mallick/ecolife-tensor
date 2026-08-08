@@ -305,6 +305,40 @@ function refreshStateCounters() {
 
   const scoreEl = document.getElementById('dailyEcoScore');
   if (scoreEl) scoreEl.textContent = appState.dailyScore;
+
+  // Update streak progress bar (milestone every 10 days)
+  const streakBar = document.getElementById('streakProgressBar');
+  if (streakBar) {
+    const pct = Math.min((appState.streak % 10) / 10 * 100, 100);
+    streakBar.style.width = pct + '%';
+  }
+
+  // Populate live activity feed from real completed challenges
+  const feed = document.getElementById('liveActivityFeed');
+  const feedEmpty = document.getElementById('activityFeedEmpty');
+  if (feed && appState.completedChallenges && appState.completedChallenges.length > 0) {
+    if (feedEmpty) feedEmpty.style.display = 'none';
+    const challengeMap = {
+      walk:   { emoji: '🚶', label: 'Walk 2 km',             pts: '+50 Pts' },
+      bottle: { emoji: '🥤', label: 'Reusable Water Bottle', pts: '+30 Pts' },
+      tree:   { emoji: '🌳', label: 'Plant a Tree',          pts: '+200 Pts' },
+      waste:  { emoji: '♻️', label: 'Segregate Waste',       pts: '+40 Pts' },
+    };
+    // Clear existing non-empty items
+    feed.querySelectorAll('.activity-item').forEach(el => el.remove());
+    appState.completedChallenges.slice().reverse().forEach(id => {
+      const c = challengeMap[id] || { emoji: '🌱', label: id, pts: 'Pts Earned' };
+      const div = document.createElement('div');
+      div.className = 'activity-item p-3 bg-[#f6f9f3] border-2 border-[#0a0a0a] rounded-xl flex items-center gap-3 animate-fadeIn';
+      div.innerHTML = `
+        <span class="text-xl">${c.emoji}</span>
+        <div class="text-xs">
+          <p class="font-black text-[#0a0a0a]">You completed ${c.label}</p>
+          <p class="text-[10px] font-bold text-[#15803d]">${c.pts} • AI Verified ✓</p>
+        </div>`;
+      feed.prepend(div);
+    });
+  }
 }
 
 // --- Navigation Tabs ---
