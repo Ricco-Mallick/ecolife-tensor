@@ -987,25 +987,46 @@
   <!-- Carbon Footprint Modal -->
   <div id="modalCarbonCalc" class="modal-overlay">
     <div class="neo-card bg-white p-6 max-w-md w-full m-4 space-y-4 relative">
-      <div class="flex items-center justify-between">
-        <h3 class="font-display font-black text-xl">Recalculate Carbon Footprint</h3>
+      <div class="flex items-center justify-between border-b-2 border-[#0a0a0a]/10 pb-3">
+        <div>
+          <h3 class="font-display font-black text-xl text-[#0a0a0a]">Recalculate Carbon Footprint</h3>
+          <p class="text-[10px] text-gray-500 font-bold">Type numbers below to calculate live emission impact</p>
+        </div>
         <button onclick="closeCarbonCalcModal()" class="font-bold text-lg hover:text-red-600">✕</button>
       </div>
 
       <div class="space-y-3 text-xs font-bold">
         <div>
-          <label class="block mb-1">Daily Commute (km by car):</label>
-          <input type="number" id="calcKm" value="12" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+          <label class="block mb-1 text-[#0a0a0a]">🚗 Daily Car Commute (km/day):</label>
+          <input type="number" id="calcKm" value="2.6" min="0" max="500" step="0.1" oninput="liveUpdateFootprintModal()" class="w-full border-3 border-[#0a0a0a] p-2.5 rounded-xl font-display text-sm font-black"/>
+          <span class="text-[10px] text-gray-500 block mt-0.5">Factor: 0.192 kg CO₂ per km</span>
         </div>
         <div>
-          <label class="block mb-1">Electricity Usage (kWh/day):</label>
-          <input type="number" id="calcKwh" value="8" class="w-full border-3 border-[#0a0a0a] p-2 rounded-xl font-display"/>
+          <label class="block mb-1 text-[#0a0a0a]">⚡ Household Electricity (kWh/day):</label>
+          <input type="number" id="calcKwh" value="4.2" min="0" max="500" step="0.1" oninput="liveUpdateFootprintModal()" class="w-full border-3 border-[#0a0a0a] p-2.5 rounded-xl font-display text-sm font-black"/>
+          <span class="text-[10px] text-gray-500 block mt-0.5">Factor: 0.071 kg CO₂ per kWh</span>
+        </div>
+        <div>
+          <label class="block mb-1 text-[#0a0a0a]">🥗 Daily Waste Items (items/day):</label>
+          <input type="number" id="calcWaste" value="2" min="0" max="100" step="1" oninput="liveUpdateFootprintModal()" class="w-full border-3 border-[#0a0a0a] p-2.5 rounded-xl font-display text-sm font-black"/>
+          <span class="text-[10px] text-gray-500 block mt-0.5">Factor: 0.10 kg CO₂ per item</span>
         </div>
       </div>
 
-      <button onclick="submitFootprintCalc()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 w-full text-xs font-bold">
-        Update Footprint
-      </button>
+      <!-- Live Calculation Preview -->
+      <div class="p-3 bg-[#f6f9f3] border-2 border-[#0a0a0a] rounded-xl text-xs font-bold flex items-center justify-between">
+        <span>Computed Total:</span>
+        <span id="modalLiveTotalPreview" class="font-display font-black text-sm text-[#15803d]">1.0 kg CO₂ / day</span>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="closeCarbonCalcModal()" class="neo-btn bg-gray-100 text-[#0a0a0a] py-2.5 px-4 text-xs font-bold flex-1">
+          Cancel
+        </button>
+        <button onclick="submitFootprintCalc()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 px-5 text-xs font-black flex-1">
+          ⚡ Apply & Save Live Footprint
+        </button>
+      </div>
     </div>
   </div>
 

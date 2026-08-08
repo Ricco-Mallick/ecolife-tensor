@@ -185,10 +185,23 @@ function refreshStateCounters() {
   if (phoneEl) phoneEl.textContent = phones.toLocaleString();
 
   // Dynamic Carbon Footprint Breakdown & Bar Animation
-  const tKg = 0.5 + parseFloat(((co2 * 0.05) || 0).toFixed(1));
-  const eKg = 0.3;
-  const fKg = 0.2;
-  updateCarbonFootprintDisplay(tKg, eKg, fKg);
+  if (appState.customFootprint) {
+    updateCarbonFootprintDisplay(appState.customFootprint.transportKg, appState.customFootprint.energyKg, appState.customFootprint.foodKg);
+  } else {
+    const savedCustom = localStorage.getItem('ecolife_custom_footprint');
+    if (savedCustom) {
+      try {
+        appState.customFootprint = JSON.parse(savedCustom);
+        updateCarbonFootprintDisplay(appState.customFootprint.transportKg, appState.customFootprint.energyKg, appState.customFootprint.foodKg);
+      } catch (e) {
+        const tKg = 0.5 + parseFloat(((co2 * 0.05) || 0).toFixed(1));
+        updateCarbonFootprintDisplay(tKg, 0.3, 0.2);
+      }
+    } else {
+      const tKg = 0.5 + parseFloat(((co2 * 0.05) || 0).toFixed(1));
+      updateCarbonFootprintDisplay(tKg, 0.3, 0.2);
+    }
+  }
 
   // Update streak progress bar
   const streakBar = document.getElementById('streakProgressBar');
@@ -200,9 +213,9 @@ function refreshStateCounters() {
 
 // --- REDESIGNED CARBON FOOTPRINT ENGINE ---
 function updateCarbonFootprintDisplay(transportKg = 0.5, energyKg = 0.3, foodKg = 0.2) {
-  const tKg = Math.max(0.1, parseFloat(transportKg) || 0.5);
-  const eKg = Math.max(0.1, parseFloat(energyKg) || 0.3);
-  const fKg = Math.max(0.1, parseFloat(foodKg) || 0.2);
+  const tKg = Math.max(0.01, parseFloat(transportKg) || 0.5);
+  const eKg = Math.max(0.01, parseFloat(energyKg) || 0.3);
+  const fKg = Math.max(0.01, parseFloat(foodKg) || 0.2);
   const totalKg = parseFloat((tKg + eKg + fKg).toFixed(1));
 
   const tPct = Math.round((tKg / totalKg) * 100);
@@ -237,9 +250,27 @@ function updateCarbonFootprintDisplay(transportKg = 0.5, energyKg = 0.3, foodKg 
   if (fBar) fBar.style.width = `${fPct}%`;
 }
 
+function liveUpdateFootprintModal() {
+  const kmEl = document.getElementById('calcKm');
+  const kwhEl = document.getElementById('calcKwh');
+  const wasteEl = document.getElementById('calcWaste');
+
+  const km = kmEl ? (parseFloat(kmEl.value) || 0) : 2.6;
+  const kwh = kwhEl ? (parseFloat(kwhEl.value) || 0) : 4.2;
+  const waste = wasteEl ? (parseFloat(wasteEl.value) || 0) : 2;
+
+  const result = CarbonEngine.calculateFootprint({ commuteKm: km, electricityKwh: kwh, wasteItems: waste });
+  
+  const previewEl = document.getElementById('modalLiveTotalPreview');
+  if (previewEl) previewEl.textContent = `${result.totalKg.toFixed(1)} kg CO₂ / day`;
+
+  updateCarbonFootprintDisplay(result.transportKg, result.energyKg, result.foodKg);
+}
+
 function openCarbonCalcModal() {
   const modal = document.getElementById('modalCarbonCalc');
   if (modal) modal.classList.add('open');
+  liveUpdateFootprintModal();
 }
 
 function closeCarbonCalcModal() {
@@ -248,14 +279,24 @@ function closeCarbonCalcModal() {
 }
 
 function submitFootprintCalc() {
-  const km = parseFloat(document.getElementById('calcKm').value) || 2.6;
-  const kwh = parseFloat(document.getElementById('calcKwh').value) || 4.2;
+  const km = parseFloat(document.getElementById('calcKm').value) || 0;
+  const kwh = parseFloat(document.getElementById('calcKwh').value) || 0;
+  const waste = parseFloat(document.getElementById('calcWaste').value) || 0;
 
-  const result = CarbonEngine.calculateFootprint({ commuteKm: km, electricityKwh: kwh, wasteItems: 2 });
+  const result = CarbonEngine.calculateFootprint({ commuteKm: km, electricityKwh: kwh, wasteItems: waste });
+  
+  appState.customFootprint = {
+    transportKg: result.transportKg,
+    energyKg: result.energyKg,
+    foodKg: result.foodKg,
+    totalKg: result.totalKg
+  };
+
+  localStorage.setItem('ecolife_custom_footprint', JSON.stringify(appState.customFootprint));
   updateCarbonFootprintDisplay(result.transportKg, result.energyKg, result.foodKg);
 
   closeCarbonCalcModal();
-  showToast('Carbon Footprint recalculated from scratch!', '🌱');
+  showToast(`Carbon Footprint saved: ${result.totalKg.toFixed(1)} kg CO₂/day!`, '⚡');
 }
 
 async function loadProfileActivityHistory() {
