@@ -92,6 +92,7 @@ async function initAuth() {
   updateUserUi();
   await loadLeaderboard();
   await loadLiveActivityFeed();
+  await loadWeeklyChartData();
 }
 
 function updateUserUi() {
@@ -213,7 +214,7 @@ function switchTab(tabId) {
   }
 }
 
-// --- Weekly Progress Graph ---
+// --- Weekly Progress Graph — Live from Supabase ---
 function initWeeklyChart() {
   const ctx = document.getElementById('weeklyProgressChart');
   if (!ctx) return;
@@ -225,7 +226,7 @@ function initWeeklyChart() {
       datasets: [
         {
           label: 'Daily Eco Score',
-          data: [65, 70, 75, 72, 80, 85, appState.dailyScore || 88],
+          data: [0, 0, 0, 0, 0, 0, 0],
           backgroundColor: '#15803d',
           borderColor: '#0a0a0a',
           borderWidth: 2,
@@ -234,7 +235,7 @@ function initWeeklyChart() {
         },
         {
           label: 'CO₂ Saved (kg)',
-          data: [1.2, 2.5, 3.1, 2.8, 4.2, 5.0, parseFloat(appState.co2Saved.toFixed(1)) || 4.5],
+          data: [0, 0, 0, 0, 0, 0, 0],
           backgroundColor: '#ccff00',
           borderColor: '#0a0a0a',
           borderWidth: 2,
@@ -250,6 +251,7 @@ function initWeeklyChart() {
         y: {
           beginAtZero: true,
           position: 'left',
+          max: 100,
           grid: { color: 'rgba(10,10,10,0.1)' }
         },
         y1: {
@@ -260,6 +262,17 @@ function initWeeklyChart() {
       }
     }
   });
+}
+
+async function loadWeeklyChartData() {
+  if (!appState.chart || typeof EcoAuth === 'undefined') return;
+  const metrics = await EcoAuth.getWeeklyChartMetrics();
+  if (metrics) {
+    appState.chart.data.labels = metrics.labels;
+    appState.chart.data.datasets[0].data = metrics.scores;
+    appState.chart.data.datasets[1].data = metrics.co2Saved;
+    appState.chart.update();
+  }
 }
 
 // --- Database-Driven Green Locations Map ---
@@ -528,6 +541,7 @@ async function confirmAiPrediction(isConfirmed) {
     appState.co2Saved += impact.co2SavedKg;
     appState.scannedCount += 1;
     refreshStateCounters();
+    await loadWeeklyChartData();
     showToast(`+${impact.points} Pts! Logged waste scan to Supabase`, '♻️');
   }
 }
@@ -814,6 +828,7 @@ async function runAiProofVerification() {
         renderChallengeButtonsState();
         await loadLeaderboard();
         await loadLiveActivityFeed();
+        await loadWeeklyChartData();
 
         setTimeout(() => closeChallengeProofModal(), 2000);
       } else {
@@ -841,6 +856,7 @@ async function quickLogAction(actionTitle, co2SavedKg) {
     showToast(`Logged: ${actionTitle} (+30 Pts)`, '🌿');
     refreshStateCounters();
     await loadLeaderboard();
+    await loadWeeklyChartData();
   }
 }
 
