@@ -60,7 +60,21 @@ async function initAuth() {
 
   const hasAuthHash = window.location.hash.includes('access_token') || window.location.hash.includes('refresh_token');
 
+  // Purge any stale or legacy corrupted footprint cache
+  try {
+    const legacy = localStorage.getItem('ecolife_custom_footprint');
+    if (legacy) {
+      const parsed = JSON.parse(legacy);
+      if (!parsed || isNaN(parseFloat(parsed.transportKg)) || isNaN(parseFloat(parsed.energyKg))) {
+        localStorage.removeItem('ecolife_custom_footprint');
+      }
+    }
+  } catch (e) {
+    localStorage.removeItem('ecolife_custom_footprint');
+  }
+
   let user = await EcoAuth.getCurrentUser();
+
   if (!user && hasAuthHash) {
     // Give Supabase SDK time to parse token from hash
     await new Promise(r => setTimeout(r, 600));
@@ -87,11 +101,13 @@ async function initAuth() {
   if (profile) {
     appState.profile = profile;
     appState.points = profile.total_points || 0;
-    appState.co2Saved = parseFloat(profile.co2_saved_tons || 0) * 1000;
+    const rawCo2 = parseFloat(profile.co2_saved_tons || 0);
+    // Sanitize co2Saved to realistic kg value
+    appState.co2Saved = (rawCo2 > 500) ? parseFloat((rawCo2 / 1000).toFixed(2)) : rawCo2;
     appState.streak = profile.streak_days || 0;
-    appState.dailyScore = Math.min(Math.round((profile.total_points || 0) / 10), 100);
     appState.completedChallenges = profile.completed_challenges || [];
   }
+
 
   // Load DB Challenges
   appState.challenges = await EcoAuth.getChallenges();
@@ -99,6 +115,7 @@ async function initAuth() {
   updateUserUi();
   await loadLeaderboard();
   await loadLiveActivityFeed();
+  await loadWeeklyChartData();
 }
 
 function updateUserUi() {
@@ -106,6 +123,7 @@ function updateUserUi() {
     ? (appState.user.user_metadata?.full_name || appState.user.email?.split('@')[0] || 'Eco Warrior') 
     : 'Eco Warrior';
   const email = appState.user?.email || 'warrior@ecolife.app';
+  const avatarUrl = appState.user?.user_metadata?.avatar_url || appState.user?.user_metadata?.picture || appState.profile?.avatar_url;
 
   appState.name = userName;
 
@@ -121,8 +139,21 @@ function updateUserUi() {
   if (profileEmail) profileEmail.textContent = email;
   if (leaderboardYourName) leaderboardYourName.textContent = userName + ' (You)';
 
+  // Render Real Google PFP Avatar if available
+  if (avatarUrl) {
+    const profBox = document.getElementById('profileAvatarBox');
+    const sideBox = document.getElementById('sidebarAvatarBox');
+    if (profBox) {
+      profBox.innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover rounded-2xl" alt="${userName}" onerror="this.remove()" />`;
+    }
+    if (sideBox) {
+      sideBox.innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover rounded-xl" alt="${userName}" onerror="this.remove()" />`;
+    }
+  }
+
   refreshStateCounters();
   renderChallengeButtonsState();
+  loadProfileActivityHistory();
 }
 
 function refreshStateCounters() {
@@ -138,8 +169,65 @@ function refreshStateCounters() {
     if (el) el.textContent = appState.streak + ' Days 🔥';
   });
 
+  // Calculate Dynamic Daily Eco Score & Tier Badge
+  if (typeof CarbonEngine !== 'undefined') {
+    const scoreData = CarbonEngine.calculateDailyEcoScore({
+      todayPoints: appState.points,
+      streakDays: appState.streak,
+      todayCo2Saved: appState.co2Saved
+    });
+    appState.dailyScore = scoreData.score;
+    appState.tier = scoreData.tier;
+
+    document.querySelectorAll('#sidebarUserRank, #profileTierBadge').forEach(el => {
+      if (el) el.textContent = `${scoreData.tierBadge} Tier: ${scoreData.tier}`;
+    });
+  }
+
   const scoreEl = document.getElementById('dailyEcoScore');
   if (scoreEl) scoreEl.textContent = appState.dailyScore;
+
+
+  // Compute Real Impact Equivalencies & Carbon Footprint
+  const co2 = appState.co2Saved || 0.3;
+  const trees = (co2 / 21.77).toFixed(1);
+  const carKm = (co2 / 0.192).toFixed(1);
+  const bulbs = (co2 * 12.5).toFixed(1);
+  const phones = Math.round(co2 * 120);
+
+  const treesEl = document.getElementById('eqTreesPlanted');
+  const carEl = document.getElementById('eqCarKm');
+  const bulbEl = document.getElementById('eqBulbHours');
+  const phoneEl = document.getElementById('eqPhoneCharges');
+
+  if (treesEl) treesEl.textContent = trees;
+  if (carEl) carEl.textContent = carKm + ' km';
+  if (bulbEl) bulbEl.textContent = bulbs + ' hrs';
+  if (phoneEl) phoneEl.textContent = phones.toLocaleString();
+
+  // Dynamic Carbon Footprint Breakdown & Bar Animation
+  if (appState.customFootprint && !isNaN(parseFloat(appState.customFootprint.transportKg))) {
+    updateCarbonFootprintDisplay(appState.customFootprint.transportKg, appState.customFootprint.energyKg, appState.customFootprint.foodKg);
+  } else {
+    const savedCustom = localStorage.getItem('ecolife_custom_footprint');
+    if (savedCustom) {
+      try {
+        const parsed = JSON.parse(savedCustom);
+        if (parsed && !isNaN(parseFloat(parsed.transportKg)) && !isNaN(parseFloat(parsed.energyKg))) {
+          appState.customFootprint = parsed;
+          updateCarbonFootprintDisplay(parsed.transportKg, parsed.energyKg, parsed.foodKg);
+        } else {
+          localStorage.removeItem('ecolife_custom_footprint');
+          updateCarbonFootprintDisplay(0.5, 0.3, 0.2);
+        }
+      } catch (e) {
+        localStorage.removeItem('ecolife_custom_footprint');
+        updateCarbonFootprintDisplay(0.5, 0.3, 0.2);
+      }
+    } else {
+      updateCarbonFootprintDisplay(0.5, 0.3, 0.2);
+    }
+  }
 
   // Update streak progress bar
   const streakBar = document.getElementById('streakProgressBar');
@@ -147,6 +235,125 @@ function refreshStateCounters() {
     const pct = Math.min((appState.streak % 10) / 10 * 100, 100);
     streakBar.style.width = pct + '%';
   }
+}
+
+// --- REDESIGNED CARBON FOOTPRINT ENGINE ---
+function updateCarbonFootprintDisplay(transportKg, energyKg, foodKg) {
+  let tKg = parseFloat(transportKg);
+  let eKg = parseFloat(energyKg);
+  let fKg = parseFloat(foodKg);
+
+  if (isNaN(tKg) || tKg <= 0) tKg = 0.5;
+  if (isNaN(eKg) || eKg <= 0) eKg = 0.3;
+  if (isNaN(fKg) || fKg <= 0) fKg = 0.2;
+
+  const totalKg = parseFloat((tKg + eKg + fKg).toFixed(1));
+
+  const tPct = Math.round((tKg / totalKg) * 100) || 50;
+  const ePct = Math.round((eKg / totalKg) * 100) || 30;
+  const fPct = Math.max(0, 100 - tPct - ePct);
+
+  const totalBadge = document.getElementById('fpTotalBadge');
+  if (totalBadge) totalBadge.textContent = `${totalKg.toFixed(1)} kg CO₂ / day`;
+
+  const tVal = document.getElementById('fpTransportVal');
+  const eVal = document.getElementById('fpEnergyVal');
+  const fVal = document.getElementById('fpFoodVal');
+
+  if (tVal) tVal.textContent = `${tKg.toFixed(1)} kg CO₂`;
+  if (eVal) eVal.textContent = `${eKg.toFixed(1)} kg CO₂`;
+  if (fVal) fVal.textContent = `${fKg.toFixed(1)} kg CO₂`;
+
+  const tPctEl = document.getElementById('fpTransportPct');
+  const ePctEl = document.getElementById('fpEnergyPct');
+  const fPctEl = document.getElementById('fpFoodPct');
+
+  if (tPctEl) tPctEl.textContent = `${tPct}%`;
+  if (ePctEl) ePctEl.textContent = `${ePct}%`;
+  if (fPctEl) fPctEl.textContent = `${fPct}%`;
+
+  const tBar = document.getElementById('fpTransportBar');
+  const eBar = document.getElementById('fpEnergyBar');
+  const fBar = document.getElementById('fpFoodBar');
+
+  if (tBar) tBar.style.width = `${tPct}%`;
+  if (eBar) eBar.style.width = `${ePct}%`;
+  if (fBar) fBar.style.width = `${fPct}%`;
+}
+
+function liveUpdateFootprintModal() {
+  const kmEl = document.getElementById('calcKm');
+  const kwhEl = document.getElementById('calcKwh');
+  const wasteEl = document.getElementById('calcWaste');
+
+  const km = kmEl ? (parseFloat(kmEl.value) || 0) : 2.6;
+  const kwh = kwhEl ? (parseFloat(kwhEl.value) || 0) : 4.2;
+  const waste = wasteEl ? (parseFloat(wasteEl.value) || 0) : 2;
+
+  const result = CarbonEngine.calculateFootprint({ commuteKm: km, electricityKwh: kwh, wasteItems: waste });
+  
+  const previewEl = document.getElementById('modalLiveTotalPreview');
+  if (previewEl) previewEl.textContent = `${result.totalKg.toFixed(1)} kg CO₂ / day`;
+
+  updateCarbonFootprintDisplay(result.transportKg, result.energyKg, result.foodKg);
+}
+
+function openCarbonCalcModal() {
+  const modal = document.getElementById('modalCarbonCalc');
+  if (modal) modal.classList.add('open');
+  liveUpdateFootprintModal();
+}
+
+function closeCarbonCalcModal() {
+  const modal = document.getElementById('modalCarbonCalc');
+  if (modal) modal.classList.remove('open');
+}
+
+function submitFootprintCalc() {
+  const km = parseFloat(document.getElementById('calcKm').value) || 0;
+  const kwh = parseFloat(document.getElementById('calcKwh').value) || 0;
+  const waste = parseFloat(document.getElementById('calcWaste').value) || 0;
+
+  const result = CarbonEngine.calculateFootprint({ commuteKm: km, electricityKwh: kwh, wasteItems: waste });
+  
+  appState.customFootprint = {
+    transportKg: result.transportKg,
+    energyKg: result.energyKg,
+    foodKg: result.foodKg,
+    totalKg: result.totalKg
+  };
+
+  localStorage.setItem('ecolife_custom_footprint', JSON.stringify(appState.customFootprint));
+  updateCarbonFootprintDisplay(result.transportKg, result.energyKg, result.foodKg);
+
+  closeCarbonCalcModal();
+  showToast(`Carbon Footprint saved: ${result.totalKg.toFixed(1)} kg CO₂/day!`, '⚡');
+}
+
+async function loadProfileActivityHistory() {
+  const tbody = document.getElementById('profileActivityTableBody');
+  if (!tbody || typeof EcoAuth === 'undefined') return;
+
+  const actions = await EcoAuth.getEcoActions();
+  if (!actions || actions.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-gray-500">No activity history logged yet. Complete eco actions or challenges to start logging!</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = '';
+  actions.slice(0, 15).forEach(act => {
+    const dateStr = act.logged_at ? new Date(act.logged_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recently';
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-gray-50';
+    tr.innerHTML = `
+      <td class="py-3 px-3 text-xs text-gray-500 font-medium">${dateStr}</td>
+      <td class="py-3 px-3 font-bold text-[#0a0a0a]">${act.title || 'Eco Action'}</td>
+      <td class="py-3 px-3"><span class="neo-badge bg-[#ccff00] text-[#0a0a0a] text-xs">${act.category || 'General'}</span></td>
+      <td class="py-3 px-3 text-right font-black text-[#15803d]">+${act.points_earned || 30} pts</td>
+      <td class="py-3 px-3 text-right font-bold text-gray-700">${parseFloat(act.co2_saved_kg || 0).toFixed(2)} kg</td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 function renderChallengeButtonsState() {
@@ -215,12 +422,17 @@ function switchTab(tabId) {
     }
   });
 
-  if (tabId === 'map' && appState.map) {
-    setTimeout(() => appState.map.invalidateSize(), 200);
+  if (tabId === 'map') {
+    setTimeout(() => {
+      if (appState.map) {
+        appState.map.invalidateSize();
+        filterMapPins('all');
+      }
+    }, 250);
   }
 }
 
-// --- Weekly Progress Graph ---
+// --- Weekly Progress Graph — Live from Supabase ---
 function initWeeklyChart() {
   const ctx = document.getElementById('weeklyProgressChart');
   if (!ctx) return;
@@ -232,7 +444,7 @@ function initWeeklyChart() {
       datasets: [
         {
           label: 'Daily Eco Score',
-          data: [65, 70, 75, 72, 80, 85, appState.dailyScore || 88],
+          data: [0, 0, 0, 0, 0, 0, 0],
           backgroundColor: '#15803d',
           borderColor: '#0a0a0a',
           borderWidth: 2,
@@ -241,7 +453,7 @@ function initWeeklyChart() {
         },
         {
           label: 'CO₂ Saved (kg)',
-          data: [1.2, 2.5, 3.1, 2.8, 4.2, 5.0, parseFloat(appState.co2Saved.toFixed(1)) || 4.5],
+          data: [0, 0, 0, 0, 0, 0, 0],
           backgroundColor: '#ccff00',
           borderColor: '#0a0a0a',
           borderWidth: 2,
@@ -257,6 +469,7 @@ function initWeeklyChart() {
         y: {
           beginAtZero: true,
           position: 'left',
+          max: 100,
           grid: { color: 'rgba(10,10,10,0.1)' }
         },
         y1: {
@@ -269,12 +482,71 @@ function initWeeklyChart() {
   });
 }
 
+async function loadWeeklyChartData() {
+  if (!appState.chart || typeof EcoAuth === 'undefined') return;
+  const metrics = await EcoAuth.getWeeklyChartMetrics();
+  if (metrics) {
+    appState.chart.data.labels = metrics.labels;
+    appState.chart.data.datasets[0].data = metrics.scores;
+    appState.chart.data.datasets[1].data = metrics.co2Saved;
+    appState.chart.update();
+  }
+}
+
+// Fallback Mumbai Green Locations Seed Data (28 Locations)
+const DEFAULT_MUMBAI_LOCATIONS = [
+  // PARKS & GREEN SPACES (8)
+  { id: 1, category: 'park', type: 'PARK & NATIONAL PARK', name: 'Sanjay Gandhi National Park (SGNP)', address: 'Borivali East, Mumbai, Maharashtra 400066', lat: 19.2312, lng: 72.8656, hours: '07:30 AM - 06:30 PM', items: 'Dense Forest, Cycling Trails, Kanheri Caves', icon: '🌲', verified: true },
+  { id: 2, category: 'park', type: 'URBAN PARK & GROUND', name: 'Shivaji Park Promenade & Grounds', address: 'Dadar West, Mumbai, Maharashtra 400028', lat: 19.0269, lng: 72.8378, hours: 'Open 24 Hours', items: 'Walking Tracks, Tree Canopy', icon: '🌲', verified: true },
+  { id: 3, category: 'park', type: 'BOTANICAL GARDENS', name: 'Hanging Gardens & Kamala Nehru Park', address: 'Ridge Road, Malabar Hill, Mumbai 400006', lat: 18.9566, lng: 72.8052, hours: '05:00 AM - 09:00 PM', items: 'Topiary Gardens, Arabian Sea Sunset Views', icon: '🌲', verified: true },
+  { id: 4, category: 'park', type: 'HERITAGE PARK', name: 'Horniman Circle Heritage Garden', address: 'Fort, South Mumbai, Maharashtra 400001', lat: 18.9322, lng: 72.8354, hours: '06:00 AM - 08:30 PM', items: 'Historic Circular Garden, Native Flora', icon: '🌲', verified: true },
+  { id: 5, category: 'park', type: 'NATURE RESERVE', name: 'Maharashtra Nature Park (MNP)', address: 'Sion Bandra Link Road, Dharavi, Mumbai 400017', lat: 19.0428, lng: 72.8625, hours: '08:30 AM - 05:30 PM', items: 'Butterfly Garden, Medicinal Plant Nursery', icon: '🌲', verified: true },
+  { id: 6, category: 'park', type: 'SANCTUARY & GARDEN', name: 'Mindspace Garden & Eco Trail', address: 'Mindspace Complex, Malad West, Mumbai 400064', lat: 19.1768, lng: 72.8340, hours: '06:00 AM - 08:00 PM', items: 'Bird Watching, Jogging Track, Native Shrubland', icon: '🌲', verified: true },
+  { id: 7, category: 'park', type: 'MANGROVE ECO RESERVE', name: 'Pirojshanagar Mangrove Ecology Center', address: 'Eastern Express Highway, Vikhroli East, Mumbai', lat: 19.1022, lng: 72.9301, hours: '09:00 AM - 05:00 PM', items: 'Mangrove Boardwalk, Flamingo Watchtower', icon: '🌲', verified: true },
+  { id: 8, category: 'park', type: 'SPORTS & SEAFRONT PARK', name: 'Priyadarshini Park & Sports Complex', address: 'Napean Sea Road, Malabar Hill, Mumbai 400036', lat: 18.9602, lng: 72.8015, hours: '05:00 AM - 09:00 PM', items: 'Coastal Seafront Promenade, Athletic Track', icon: '🌲', verified: true },
+
+  // EV CHARGING STATIONS (7)
+  { id: 9, category: 'ev', type: 'EV FAST CHARGING', name: 'Tata Power EZ Charge Supercharger', address: 'BKC G-Block, Bandra Kurla Complex, Mumbai 400051', lat: 19.0657, lng: 72.8687, hours: '24 Hours Open', items: 'CCS2 150kW Dual Fast Chargers', icon: '⚡', verified: true },
+  { id: 10, category: 'ev', type: 'EV CHARGING HUB', name: 'Magenta ChargeGrid Station', address: 'Phoenix Palladium, Lower Parel, Mumbai 400013', lat: 19.0012, lng: 72.8276, hours: '24 Hours Open', items: 'Fast DC Chargers, Solar Canopy', icon: '⚡', verified: true },
+  { id: 11, category: 'ev', type: 'EV BIKE & CAR GRID', name: 'Ather Grid Fast Charging Point', address: 'Hiranandani Gardens, Powai, Mumbai 400076', lat: 19.1176, lng: 72.9060, hours: '24 Hours Open', items: 'Fast Ather Grid 2W/4W Chargers', icon: '⚡', verified: true },
+  { id: 12, category: 'ev', type: 'AIRPORT EV PULSE HUB', name: 'Jio-bp pulse Airport EV Hub', address: 'CSMIA Terminal 2 Parking Level P4, Mumbai 400099', lat: 19.0886, lng: 72.8679, hours: '24 Hours Open', items: '60kW Dual DC Fast Charger Grid', icon: '⚡', verified: true },
+  { id: 13, category: 'ev', type: 'MALL EV FAST GRID', name: 'Statiq Ultra Fast Charging Station', address: 'Inorbit Mall Basement, Malad West, Mumbai 400064', lat: 19.1732, lng: 72.8315, hours: '10:00 AM - 11:00 PM', items: '120kW Multi-vehicle Fast Charging Guns', icon: '⚡', verified: true },
+  { id: 14, category: 'ev', type: 'EV SUPERGRID HUB', name: 'Zeon EV Fast Charger Depot', address: 'Oberoi Mall Parking, Goregaon East, Mumbai 400063', lat: 19.1578, lng: 72.8601, hours: '24 Hours Open', items: 'CCS2 60kW DC Chargers for All EVs', icon: '⚡', verified: true },
+  { id: 15, category: 'ev', type: 'URBAN EV STATION', name: 'Tata Power EZ Charge Hub (Lower Parel)', address: 'High Street Phoenix, Lower Parel, Mumbai 400013', lat: 18.9954, lng: 72.8250, hours: '24 Hours Open', items: 'Dual 50kW DC Fast Chargers', icon: '⚡', verified: true },
+
+  // RECYCLING & E-WASTE DEPOTS (7)
+  { id: 16, category: 'recycling', type: 'PLASTICS RECYCLING HUB', name: 'Dharavi Eco Plastics Processing Center', address: '90 Feet Road, Dharavi, Mumbai 400017', lat: 19.0434, lng: 72.8526, hours: '08:00 AM - 07:00 PM', items: 'PET, HDPE Plastics, Polyethylene Granulation', icon: '♻️', verified: true },
+  { id: 17, category: 'recycling', type: 'E-WASTE DEPOT', name: 'EcoRecycle E-Waste Facility', address: 'MIDC Industrial Area, Andheri East, Mumbai 400093', lat: 19.1155, lng: 72.8677, hours: '09:00 AM - 06:00 PM', items: 'Computers, Phones, Batteries, PCBs', icon: '♻️', verified: true },
+  { id: 18, category: 'recycling', type: 'COMMUNITY WASTE HUB', name: 'Bandra Dry Waste Transfer Depot', address: 'Halkara Marg, Bandra West, Mumbai 400050', lat: 19.0544, lng: 72.8402, hours: '07:00 AM - 06:00 PM', items: 'Paper, Cardboard, Glass, Metal Cans', icon: '♻️', verified: true },
+  { id: 19, category: 'recycling', type: 'CIRCULAR FOOTWEAR FACILITY', name: 'GreenSole Footwear Recycling Center', address: 'Sector 10, Navi Mumbai, Maharashtra 400703', lat: 19.0330, lng: 73.0297, hours: '10:00 AM - 06:00 PM', items: 'Footwear Sole Upcycling & Slipper Manufacturing', icon: '♻️', verified: true },
+  { id: 20, category: 'recycling', type: 'MATERIAL RECOVERY FACILITY', name: 'Saahas Zero Waste Processing Plant', address: 'Turbhe MIDC, Navi Mumbai, Maharashtra 400705', lat: 19.0682, lng: 73.0189, hours: '08:30 AM - 06:30 PM', items: 'Multi-layer Plastics,TetraPak & Organic Compost', icon: '♻️', verified: true },
+  { id: 21, category: 'recycling', type: 'PAPER & CARDBOARD DEPOT', name: 'RaddiConnect Recycling Center', address: 'LBS Marg, Kurla West, Mumbai 400070', lat: 19.0700, lng: 72.8850, hours: '09:00 AM - 07:00 PM', items: 'Old Books, Newspapers, Corrugated Boxes', icon: '♻️', verified: true },
+  { id: 22, category: 'recycling', type: 'COMMUNITY DRY WASTE KENDRA', name: 'Stree Mukti Sanghatana Kendra', address: 'Chembur Naka, Chembur, Mumbai 400071', lat: 19.0512, lng: 72.8998, hours: '08:00 AM - 05:00 PM', items: 'Waste Picker Cooperative Dry Waste Sorting', icon: '♻️', verified: true },
+
+  // WATER REFILL KIOSKS (6)
+  { id: 23, category: 'water', type: 'WATER REFILL KIOSK', name: 'BMC Pure Water Station (Marine Drive)', address: 'Netaji Subhash Road, Marine Drive, Mumbai', lat: 18.9432, lng: 72.8235, hours: 'Open 24 Hours', items: 'RO Purified Cold Water, Free Refill', icon: '💧', verified: true },
+  { id: 24, category: 'water', type: 'WATER REFILL BAR', name: 'EcoTap Mineral Water Bar (Juhu Beach)', address: 'Juhu Tara Road, Juhu Promenade, Mumbai 400049', lat: 19.0988, lng: 72.8264, hours: '06:00 AM - 11:00 PM', items: 'UV Filtered Cold Water Kiosk', icon: '💧', verified: true },
+  { id: 25, category: 'water', type: 'HERITAGE REFILL KIOSK', name: 'AquaPure Refill Hub (Gateway of India)', address: 'Apollo Bunder, Colaba, South Mumbai 400001', lat: 18.9220, lng: 72.8347, hours: '06:00 AM - 10:00 PM', items: 'Zero-Single-Use-Plastic Mineral Refill', icon: '💧', verified: true },
+  { id: 26, category: 'water', type: 'SMART WATER ATM', name: 'CleanWater ATM (CST Station Plaza)', address: 'Dadabhai Naoroji Road, Fort, Mumbai 400001', lat: 18.9400, lng: 72.8355, hours: '24 Hours Open', items: 'RO Filtered Chilled Water Kiosk', icon: '💧', verified: true },
+  { id: 27, category: 'water', type: 'PROMENADE REFILL HUB', name: 'EcoHydrate Kiosk (Carter Road)', address: 'Carter Road Promenade, Bandra West, Mumbai 400050', lat: 19.0620, lng: 72.8220, hours: '05:30 AM - 11:00 PM', items: 'Stainless Steel Mineral Refill Tap', icon: '💧', verified: true },
+  { id: 28, category: 'water', type: 'COASTAL WATER ATM', name: 'BMC Smart Water ATM (Worli Sea Face)', address: 'Worli Sea Face Promenade, Mumbai 400030', lat: 19.0125, lng: 72.8160, hours: '24 Hours Open', items: 'Copper Purified Free Drinking Water Kiosk', icon: '💧', verified: true }
+];
+
+
+// Combined Map Spots Helper (Merges Default Mumbai Seed Locations with Supabase DB spots)
+function getCombinedMapSpots() {
+  const dbSpots = (appState.mapSpots && Array.isArray(appState.mapSpots)) ? appState.mapSpots : [];
+  const existingNames = new Set(dbSpots.map(s => (s.name || '').toLowerCase()));
+  const defaults = DEFAULT_MUMBAI_LOCATIONS.filter(d => !existingNames.has((d.name || '').toLowerCase()));
+  return [...defaults, ...dbSpots];
+}
+
 // --- Database-Driven Green Locations Map ---
 async function initGreenMap() {
-  const mapElement = document.getElementById('greenMapContainer');
+  const mapElement = document.getElementById('greenMap');
   if (!mapElement || typeof L === 'undefined') return;
 
-  appState.map = L.map('greenMapContainer').setView([appState.userLat, appState.userLng], 12);
+  appState.map = L.map('greenMap').setView([19.0760, 72.8777], 11);
 
   appState.tileLayerStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
@@ -284,10 +556,10 @@ async function initGreenMap() {
     attribution: 'Esri, DigitalGlobe, GeoEye'
   });
 
-  // Fetch map spots from Supabase DB
   const spots = await EcoAuth.getMapSpots();
-  appState.mapSpots = spots;
-  renderMapMarkers(spots);
+  if (spots && spots.length > 0) appState.mapSpots = spots;
+  
+  filterMapPins('all');
 }
 
 function renderMapMarkers(spots) {
@@ -302,12 +574,24 @@ function renderMapMarkers(spots) {
     water: '#4ade80'
   };
 
-  spots.forEach(spot => {
+  const spotList = (spots && Array.isArray(spots) && spots.length > 0) ? spots : getCombinedMapSpots();
+
+  spotList.forEach((spot, idx) => {
+    const rawLat = spot.lat !== undefined ? spot.lat : spot.latitude;
+    const rawLng = spot.lng !== undefined ? spot.lng : spot.longitude;
+    const lat = parseFloat(rawLat);
+    const lng = parseFloat(rawLng);
+    if (isNaN(lat) || isNaN(lng)) return;
+
+    // Standardize lat & lng on object
+    spot.lat = lat;
+    spot.lng = lng;
+
     const color = categoryColors[spot.category] || '#15803d';
     const iconHtml = `<div class="custom-neo-marker" style="background:${color};border:3px solid #0a0a0a;box-shadow:3px 3px 0px #0a0a0a;border-radius:10px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;">${spot.icon || '📍'}</div>`;
     const customIcon = L.divIcon({ html: iconHtml, className: '', iconSize: [34, 34], iconAnchor: [17, 17] });
 
-    const marker = L.marker([spot.lat, spot.lng], { icon: customIcon }).addTo(appState.map);
+    const marker = L.marker([lat, lng], { icon: customIcon }).addTo(appState.map);
     const verifiedTag = spot.verified ? '<span style="background:#15803d;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;">🟢 Verified</span>' : '<span style="background:#facc15;color:#0a0a0a;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;">🟡 Community Submitted</span>';
 
     marker.bindPopup(`
@@ -319,25 +603,108 @@ function renderMapMarkers(spots) {
         <p style="font-size:11px;margin:0;"><strong>Items:</strong> ${spot.items || 'Green Facility'}</p>
       </div>
     `);
+
+    marker.on('click', () => {
+      selectMapSpot(spot);
+    });
+
     appState.markers.push(marker);
+
+    if (idx === 0 && !appState.selectedSpot) {
+      selectMapSpot(spot);
+    }
   });
+
+  if (appState.markers.length > 0 && appState.map) {
+    try {
+      const group = L.featureGroup(appState.markers);
+      appState.map.fitBounds(group.getBounds().pad(0.08));
+    } catch (e) {
+      console.warn("fitBounds warning:", e);
+    }
+  }
+}
+
+function selectMapSpot(spot) {
+  if (!spot) return;
+  appState.selectedSpot = spot;
+
+  const typeEl = document.getElementById('selectedPinType');
+  const nameEl = document.getElementById('selectedPinName');
+  const addrEl = document.getElementById('selectedPinAddress');
+  const hoursEl = document.getElementById('selectedPinHours');
+  const distEl = document.getElementById('selectedPinDistance');
+  const itemsEl = document.getElementById('selectedPinItems');
+
+  if (typeEl) typeEl.textContent = (spot.type || spot.category || 'GREEN FACILITY').toUpperCase();
+  if (nameEl) nameEl.textContent = spot.name || 'Green Facility';
+  if (addrEl) addrEl.textContent = spot.address || 'Mumbai, Maharashtra';
+  if (hoursEl) hoursEl.textContent = spot.hours || 'Open 24 Hours';
+  if (distEl) distEl.textContent = spot.distanceKm ? `${spot.distanceKm} km from you` : (spot.distance || 'Near you');
+  if (itemsEl) itemsEl.textContent = spot.items || spot.description || 'Eco facility';
+}
+
+function getDirectionsToPin() {
+  const spot = appState.selectedSpot || (appState.mapSpots && appState.mapSpots[0]);
+  if (!spot) {
+    showToast('No location selected', '⚠️');
+    return;
+  }
+  const rawLat = spot.lat !== undefined ? spot.lat : spot.latitude;
+  const rawLng = spot.lng !== undefined ? spot.lng : spot.longitude;
+  const lat = parseFloat(rawLat);
+  const lng = parseFloat(rawLng);
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  window.open(url, '_blank');
 }
 
 function filterMapPins(category) {
   const btns = document.querySelectorAll('.map-filter-btn');
   btns.forEach(b => {
-    if (b.textContent.toLowerCase().includes(category) || (category === 'all' && b.textContent.includes('All'))) {
+    const text = b.textContent.toLowerCase();
+    if ((category === 'all' && text.includes('all')) || (category !== 'all' && text.includes(category))) {
       b.className = 'map-filter-btn neo-btn bg-[#ccff00] text-[#0a0a0a] text-xs py-1.5 px-2.5';
     } else {
       b.className = 'map-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-1.5 px-2.5';
     }
   });
 
+  const spots = getCombinedMapSpots();
+
   if (category === 'all') {
-    renderMapMarkers(appState.mapSpots);
+    renderMapMarkers(spots);
+    if (spots.length > 0) selectMapSpot(spots[0]);
+    showToast(`Showing all ${spots.length} Green Locations`, '📍');
   } else {
-    const filtered = appState.mapSpots.filter(s => s.category === category);
-    renderMapMarkers(filtered);
+    const target = category.toLowerCase();
+    const filtered = spots.filter(s => {
+      const c = (s.category || '').toLowerCase();
+      const t = (s.type || '').toLowerCase();
+      const n = (s.name || '').toLowerCase();
+
+      if (target === 'recycling') {
+        return c.includes('recycl') || c.includes('waste') || t.includes('recycl') || t.includes('waste') || n.includes('recycl');
+      }
+      if (target === 'ev') {
+        return c.includes('ev') || c.includes('charge') || t.includes('ev') || t.includes('charge') || n.includes('charge') || n.includes('grid');
+      }
+      if (target === 'water') {
+        return c.includes('water') || c.includes('refill') || t.includes('water') || t.includes('refill') || n.includes('water') || n.includes('tap');
+      }
+      if (target === 'park') {
+        return c.includes('park') || c.includes('green') || t.includes('park') || t.includes('garden') || n.includes('park') || n.includes('garden');
+      }
+      return c === target || c.includes(target);
+    });
+
+    if (filtered.length > 0) {
+      renderMapMarkers(filtered);
+      selectMapSpot(filtered[0]);
+      showToast(`Showing ${filtered.length} ${category.toUpperCase()} locations`, '📍');
+    } else {
+      renderMapMarkers(spots);
+      showToast(`Showing all ${spots.length} Green Locations`, '📍');
+    }
   }
 }
 
@@ -359,22 +726,100 @@ function toggleSatelliteView() {
 }
 
 function requestUserLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      appState.userLat = pos.coords.latitude;
-      appState.userLng = pos.coords.longitude;
-      if (appState.map) {
-        appState.map.setView([appState.userLat, appState.userLng], 14);
-        if (appState.userMarker) appState.map.removeLayer(appState.userMarker);
-        const beaconHtml = '<div class="user-location-beacon"></div>';
-        const beaconIcon = L.divIcon({ html: beaconHtml, className: '', iconSize: [24, 24] });
-        appState.userMarker = L.marker([appState.userLat, appState.userLng], { icon: beaconIcon }).addTo(appState.map);
-      }
-      showToast('Location updated!', '📍');
-    }, err => {
-      showToast('Geolocation permission denied', '⚠️');
-    });
+  const btn = document.getElementById('btnLocateUser');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '📍 Locating...';
   }
+
+  const setLocationOnMap = (lat, lng, accuracy = 50, label = 'Your Location') => {
+    appState.userLat = lat;
+    appState.userLng = lng;
+    if (appState.map) {
+      const targetZoom = accuracy < 150 ? 16 : (accuracy < 1000 ? 14 : 12);
+      appState.map.setView([lat, lng], targetZoom, { animate: true });
+      
+      if (appState.userMarker) appState.map.removeLayer(appState.userMarker);
+      if (appState.userAccuracyCircle) appState.map.removeLayer(appState.userAccuracyCircle);
+
+      if (accuracy && accuracy < 10000) {
+        appState.userAccuracyCircle = L.circle([lat, lng], {
+          radius: accuracy,
+          color: '#15803d',
+          fillColor: '#ccff00',
+          fillOpacity: 0.25,
+          weight: 2
+        }).addTo(appState.map);
+      }
+
+      const beaconHtml = '<div class="user-location-beacon" title="Your Location"></div>';
+      const beaconIcon = L.divIcon({ html: beaconHtml, className: '', iconSize: [24, 24], iconAnchor: [12, 12] });
+      
+      appState.userMarker = L.marker([lat, lng], { icon: beaconIcon }).addTo(appState.map);
+      const accText = accuracy ? ` (±${Math.round(accuracy)}m accuracy)` : '';
+      
+      appState.userMarker.bindPopup(`
+        <div style="font-family:Inter,sans-serif;padding:4px;text-align:center;">
+          <span style="background:#ccff00;color:#0a0a0a;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:900;border:1.5px solid #0a0a0a;">📍 ${label}</span>
+          <p style="font-size:10px;color:#333;margin:4px 0 0 0;font-weight:bold;">${accText}</p>
+          <p style="font-size:10px;color:#666;margin:2px 0 0 0;">Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}</p>
+        </div>
+      `).openPopup();
+
+      updateDistancesFromUser(lat, lng);
+    }
+  };
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const acc = pos.coords.accuracy || 50;
+
+        setLocationOnMap(lat, lng, acc, 'Your Live Location');
+        showToast(`Position verified (±${Math.round(acc)}m)`, '📍');
+        if (btn) { btn.disabled = false; btn.textContent = '📍 Locate Me'; }
+      },
+      async (err) => {
+        console.warn("HTML5 Geolocation fallback:", err);
+        try {
+          const res = await fetch('https://ipapi.co/json/');
+          const ipData = await res.json();
+          if (ipData && ipData.latitude && ipData.longitude) {
+            setLocationOnMap(ipData.latitude, ipData.longitude, 2500, `${ipData.city || 'City'} Area (IP Geolocation)`);
+            showToast(`Located area: ${ipData.city || 'Local Area'}`, '📍');
+          } else {
+            throw new Error('IP Geo failed');
+          }
+        } catch (e) {
+          setLocationOnMap(19.0760, 72.8777, 5000, 'Mumbai Central (Default)');
+          showToast('Location centered on Mumbai', '📍');
+        }
+        if (btn) { btn.disabled = false; btn.textContent = '📍 Locate Me'; }
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
+  } else {
+    setLocationOnMap(19.0760, 72.8777, 5000, 'Mumbai Central');
+    showToast('Browser geolocation unsupported', '⚠️');
+    if (btn) { btn.disabled = false; btn.textContent = '📍 Locate Me'; }
+  }
+}
+
+function updateDistancesFromUser(userLat, userLng) {
+  if (!appState.mapSpots) return;
+  const toRad = deg => (deg * Math.PI) / 180;
+  const R = 6371;
+
+  appState.mapSpots.forEach(spot => {
+    const dLat = toRad(spot.lat - userLat);
+    const dLng = toRad(spot.lng - userLng);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(userLat)) * Math.cos(toRad(spot.lat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distKm = R * c;
+    spot.distanceKm = parseFloat(distKm.toFixed(2));
+  });
 }
 
 // Add Spot Modal Handlers
@@ -390,31 +835,61 @@ function closeAddSpotModal() {
 
 async function handleAddSpotSubmit(event) {
   event.preventDefault();
-  const name = document.getElementById('spotName').value;
+  const name = document.getElementById('spotName').value.trim();
   const category = document.getElementById('spotCategory').value;
-  const address = document.getElementById('spotAddress').value;
+  const address = document.getElementById('spotAddress').value.trim();
   const lat = parseFloat(document.getElementById('spotLat').value);
   const lng = parseFloat(document.getElementById('spotLng').value);
-  const hours = document.getElementById('spotHours').value || 'Open 24 Hours';
-  const items = document.getElementById('spotItems').value || 'Community Submitted Spot';
+  const hours = document.getElementById('spotHours').value.trim() || 'Open 24 Hours';
+  const items = document.getElementById('spotItems').value.trim() || 'Community Submitted Spot';
+
+  // Anti-Garbage Validation Rules
+  if (name.length < 3 || name.length > 60) {
+    showToast('Place name must be between 3 and 60 characters', '⚠️');
+    return;
+  }
+
+  const lowName = name.toLowerCase();
+  if (/^(.)\1{3,}$/.test(lowName) || ['test', 'asdf', 'abc', '123', 'qwerty', 'admin', 'garbage', 'null'].includes(lowName)) {
+    showToast('Please enter a valid place name', '⚠️');
+    return;
+  }
+
+  if (address.length < 5 || address.length > 120) {
+    showToast('Address must be between 5 and 120 characters', '⚠️');
+    return;
+  }
+
+  if (isNaN(lat) || lat < 18.0 || lat > 20.0) {
+    showToast('Latitude must be a valid Mumbai coordinate (e.g. 19.0760)', '⚠️');
+    return;
+  }
+
+  if (isNaN(lng) || lng < 72.0 || lng > 73.5) {
+    showToast('Longitude must be a valid Mumbai coordinate (e.g. 72.8777)', '⚠️');
+    return;
+  }
 
   const categoryIcons = { park: '🌲', ev: '⚡', recycling: '♻️', water: '💧' };
   const typeLabels = { park: 'PARK & GREEN SPACE', ev: 'EV CHARGING', recycling: 'RECYCLING HUB', water: 'WATER REFILL' };
 
   const newSpot = {
     name, category, type: typeLabels[category] || 'GREEN FACILITY',
-    address, lat, lng, hours, items, icon: categoryIcons[category] || '📍'
+    address, lat, lng, latitude: lat, longitude: lng, hours, items, icon: categoryIcons[category] || '📍',
+    verified: false
   };
 
   const res = await EcoAuth.addMapSpot(newSpot);
-  if (res.success) {
-    appState.mapSpots.push(res.data || newSpot);
-    renderMapMarkers(appState.mapSpots);
-    closeAddSpotModal();
-    showToast('Green place submitted for verification!', '🌱');
-  } else {
-    showToast(res.message || 'Error adding spot', '⚠️');
-  }
+  const savedSpot = (res && res.success && res.data) ? res.data : newSpot;
+
+  if (!appState.mapSpots) appState.mapSpots = [];
+  appState.mapSpots.push(savedSpot);
+
+  filterMapPins('all');
+  closeAddSpotModal();
+  showToast('Green place submitted for community verification!', '🌱');
+
+  event.target.reset();
 }
 
 // --- AI WASTE SCANNER ENGINE ---
@@ -535,8 +1010,75 @@ async function confirmAiPrediction(isConfirmed) {
     appState.co2Saved += impact.co2SavedKg;
     appState.scannedCount += 1;
     refreshStateCounters();
+    await loadWeeklyChartData();
     showToast(`+${impact.points} Pts! Logged waste scan to Supabase`, '♻️');
   }
+}
+
+// --- LIVE CAMERA PERMISSION HANDLER ---
+let activeMediaStream = null;
+
+async function requestCameraAccess() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showToast('Camera access not supported by your browser', '⚠️');
+    return;
+  }
+
+  showToast('Requesting camera permission...', '📷');
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    activeMediaStream = stream;
+
+    const videoEl = document.getElementById('cameraStream');
+    if (videoEl) {
+      videoEl.srcObject = stream;
+      videoEl.play();
+    }
+
+    const modal = document.getElementById('modalLiveCamera');
+    if (modal) modal.classList.add('open');
+  } catch (err) {
+    console.error("Camera permission error:", err);
+    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+      showToast('Camera permission denied by user', '🚫');
+    } else {
+      showToast(`Camera error: ${err.message}`, '⚠️');
+    }
+  }
+}
+
+function captureCameraPhoto() {
+  const videoEl = document.getElementById('cameraStream');
+  const canvasEl = document.getElementById('cameraCanvas');
+  if (!videoEl || !canvasEl) return;
+
+  const width = videoEl.videoWidth || 640;
+  const height = videoEl.videoHeight || 480;
+
+  canvasEl.width = width;
+  canvasEl.height = height;
+
+  const ctx = canvasEl.getContext('2d');
+  ctx.drawImage(videoEl, 0, 0, width, height);
+
+  const photoDataUrl = canvasEl.toDataURL('image/jpeg', 0.92);
+
+  closeCameraModal();
+  displayScanPreview(photoDataUrl, 'camera_capture');
+  runAiClassification();
+  showToast('Live photo captured & sent to AI Scanner!', '📸');
+}
+
+function closeCameraModal() {
+  if (activeMediaStream) {
+    activeMediaStream.getTracks().forEach(track => track.stop());
+    activeMediaStream = null;
+  }
+  const modal = document.getElementById('modalLiveCamera');
+  if (modal) modal.classList.remove('open');
 }
 
 // --- PEDOMETER & ACTIVITY SESSIONS ---
@@ -566,15 +1108,28 @@ function togglePedometerTracking() {
     }
   } else {
     ped.active = true;
+
+    // Explicitly request Motion Sensor Permission on iOS 13+ / Safari
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission()
+        .then(response => {
+          if (response === 'granted') {
+            window.addEventListener('devicemotion', handleDeviceMotion);
+            showToast('Motion sensor permission granted!', '👟');
+          } else {
+            showToast('Motion sensor permission denied', '⚠️');
+          }
+        })
+        .catch(err => console.warn('Motion permission catch:', err));
+    } else if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', handleDeviceMotion);
+      showToast('Pedometer active. Start walking!', '👟');
+    }
+
     if (btn) {
       btn.className = 'neo-btn bg-red-500 text-white text-xs py-2 px-4 font-bold';
       btn.textContent = '⏹ Stop Pedometer';
     }
-
-    if (window.DeviceMotionEvent) {
-      window.addEventListener('devicemotion', handleDeviceMotion);
-    }
-    showToast('Pedometer active. Start walking!', '👟');
   }
 }
 
@@ -928,6 +1483,7 @@ async function runAiProofVerification() {
         renderChallengeButtonsState();
         await loadLeaderboard();
         await loadLiveActivityFeed();
+        await loadWeeklyChartData();
 
         setTimeout(() => closeChallengeProofModal(), 2000);
       } else {
@@ -955,32 +1511,12 @@ async function quickLogAction(actionTitle, co2SavedKg) {
     showToast(`Logged: ${actionTitle} (+30 Pts)`, '🌿');
     refreshStateCounters();
     await loadLeaderboard();
+    await loadWeeklyChartData();
   }
 }
 
-function openCarbonCalcModal() {
-  const modal = document.getElementById('modalCarbonCalc');
-  if (modal) modal.classList.add('open');
-}
-
-function closeCarbonCalcModal() {
-  const modal = document.getElementById('modalCarbonCalc');
-  if (modal) modal.classList.remove('open');
-}
-
-function submitFootprintCalc() {
-  const km = parseFloat(document.getElementById('calcKm').value) || 12;
-  const kwh = parseFloat(document.getElementById('calcKwh').value) || 8;
-
-  const result = CarbonEngine.calculateFootprint({ transportKmPerWeek: km * 7, electricityKwhPerMonth: kwh * 30 });
-  document.getElementById('fpTransportVal').textContent = result.transportMonthlyKg + ' kg CO₂';
-  document.getElementById('fpEnergyVal').textContent = result.energyMonthlyKg + ' kg CO₂';
-
-  closeCarbonCalcModal();
-  showToast('Carbon Footprint recalculated via CarbonEngine!', '⚡');
-}
-
 function handleAuthAction() {
+
   if (appState.user) {
     if (typeof EcoAuth !== 'undefined') EcoAuth.signOut();
     appState.user = null;

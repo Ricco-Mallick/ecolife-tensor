@@ -310,12 +310,14 @@ h1, h2, h3, h4, h5, .font-display {
   padding: 1rem;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
-.modal-overlay.open, .modal.open, .modal:not(.hidden) {
+.modal-overlay.open, .modal.open {
   opacity: 1;
   pointer-events: auto;
+  visibility: visible;
 }
 
 .modal-card-box {
