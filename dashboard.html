@@ -150,13 +150,13 @@
   </nav>
 
   <!-- Main Content Area -->
-  <main class="lg:ml-64 flex-1 p-4 lg:p-8 mb-16 lg:mb-0 max-w-7xl mx-auto w-full">
+  <main class="lg:ml-64 flex-1 p-3 lg:p-5 mb-16 lg:mb-0 max-w-7xl mx-auto w-full">
 
     <!-- PAGE 1: OVERVIEW -->
-    <section id="view-overview" class="page-view active space-y-8">
+    <section id="view-overview" class="page-view active space-y-4">
       
       <!-- Top Hero Banner Card -->
-      <div class="neo-card bg-gradient-to-r from-[#15803d] via-[#166534] to-[#0f5127] text-white p-6 lg:p-8 relative overflow-hidden">
+      <div class="neo-card bg-gradient-to-r from-[#15803d] via-[#166534] to-[#0f5127] text-white p-4 lg:p-5 relative overflow-hidden">
         
         <!-- Decorative Bauhaus Geometric Accent Shapes -->
         <div class="absolute -right-10 -bottom-10 w-48 h-48 rounded-full bg-[#ccff00] border-4 border-[#0a0a0a] opacity-20 pointer-events-none"></div>
@@ -190,9 +190,9 @@
       </div>
 
       <!-- 3 Core Overview Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-        <div class="neo-card p-6 bg-white flex flex-col justify-between">
+        <div class="neo-card p-4 bg-white flex flex-col justify-between">
           <div class="flex items-center justify-between mb-4">
             <h3 class="font-display font-black text-lg text-[#0a0a0a]">Daily Eco Score</h3>
             <span class="neo-badge bg-[#ccff00] text-[#0a0a0a]">Tier: Guardian</span>
@@ -213,7 +213,7 @@
           </div>
         </div>
 
-        <div class="neo-card p-6 bg-[#ccff00] flex flex-col justify-between">
+        <div class="neo-card p-4 bg-[#ccff00] flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <h3 class="font-display font-black text-lg text-[#0a0a0a]">Active Streak</h3>
             <span class="text-3xl animate-bounce">🔥</span>
@@ -233,7 +233,7 @@
         </div>
 
         <!-- Card 4: Quick Action Hub -->
-        <div class="neo-card p-6 bg-[#15803d] text-white flex flex-col justify-between">
+        <div class="neo-card p-4 bg-[#15803d] text-white flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-2">
               <h3 class="font-display font-black text-lg">Quick Eco Action</h3>
@@ -314,17 +314,28 @@
         <!-- LEFT 7 COLS: Widescreen Landscape Viewfinder Deck -->
         <div class="lg:col-span-7 neo-card p-5 lg:p-6 bg-white flex flex-col justify-between space-y-4">
           <div class="flex items-center justify-between">
-            <h3 class="font-display font-black text-lg flex items-center gap-2">
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-[10px] font-black text-gray-500 uppercase tracking-wider hidden sm:inline">Samples:</span>
+          <button onclick="simulateCameraCapture('plastic')" title="Plastic Bottle" class="neo-btn bg-white hover:bg-[#ccff00] px-2.5 py-1 text-[10px] font-bold">🧴 Plastic</button>
+          <button onclick="simulateCameraCapture('paper')" title="Cardboard Box" class="neo-btn bg-white hover:bg-[#38bdf8] px-2.5 py-1 text-[10px] font-bold">📦 Paper</button>
+          <button onclick="simulateCameraCapture('metal')" title="Metal Can" class="neo-btn bg-white hover:bg-[#facc15] px-2.5 py-1 text-[10px] font-bold">🥫 Metal</button>
+          <button onclick="simulateCameraCapture('glass')" title="Glass Bottle" class="neo-btn bg-white hover:bg-[#4ade80] px-2.5 py-1 text-[10px] font-bold">🍾 Glass</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 w-full items-stretch">
+        
+        <div class="lg:col-span-7 neo-card p-4 bg-white flex flex-col justify-between space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display font-black text-md flex items-center gap-2">
               <span class="material-symbols-outlined text-[#15803d]">center_focus_strong</span>
               Step 1: Scanner Viewfinder
             </h3>
-            <span class="text-[11px] font-black text-[#15803d] bg-[#ccff00] px-2.5 py-0.5 rounded-full border border-[#0a0a0a]">16:9 Widescreen</span>
+            <span class="text-[10px] font-black text-[#15803d] bg-[#ccff00] px-2 py-0.5 rounded-full border border-[#0a0a0a]">16:9 Widescreen</span>
           </div>
 
-          <!-- 16:9 Landscape Dropzone Frame -->
-          <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="border-4 border-dashed border-[#0a0a0a] bg-[#f6f9f3] hover:bg-[#ccff00]/15 rounded-2xl p-6 text-center cursor-pointer relative aspect-[16/9] min-h-[220px] max-h-[300px] w-full flex flex-col items-center justify-center transition-colors group overflow-hidden">
+          <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="border-4 border-dashed border-[#0a0a0a] bg-[#f6f9f3] hover:bg-[#ccff00]/15 rounded-2xl p-4 text-center cursor-pointer relative aspect-[16/9] min-h-[160px] max-h-[220px] w-full flex flex-col items-center justify-center transition-colors group overflow-hidden">
             
-            <!-- Corner Bracket Markers -->
             <div class="scanner-bracket bracket-tl"></div>
             <div class="scanner-bracket bracket-tr"></div>
             <div class="bracket-bl scanner-bracket"></div>
@@ -332,275 +343,52 @@
 
             <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)"/>
 
-            <div id="uploadPrompt" class="space-y-2 max-w-sm mx-auto">
-              <div class="w-14 h-14 bg-[#ccff00] border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] rounded-2xl flex items-center justify-center mx-auto text-2xl group-hover:scale-110 transition-transform">
-                📸
-              </div>
-              <p class="font-display font-black text-base text-[#0a0a0a]">Click or Drag & Drop Image Here</p>
-              <p class="text-[11px] text-gray-500 font-medium">JPG, PNG, WEBP (Plastic, Cardboard, Paper, Metal, Glass)</p>
+            <div id="uploadPrompt" class="space-y-1 max-w-sm mx-auto">
+              <div class="w-12 h-12 bg-[#ccff00] border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] rounded-2xl flex items-center justify-center mx-auto text-xl">📸</div>
+              <p class="font-display font-black text-sm text-[#0a0a0a]">Click or Drag & Drop</p>
             </div>
 
-            <!-- Image Preview Box -->
             <div id="previewContainer" class="hidden w-full h-full relative flex items-center justify-center overflow-hidden rounded-xl">
-              <img id="imagePreview" class="max-h-[240px] object-contain rounded-xl border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a]"/>
+              <img id="imagePreview" class="max-h-[180px] object-contain rounded-xl border-3 border-[#0a0a0a]"/>
               <div id="scanLaser" class="hidden scan-line"></div>
             </div>
           </div>
 
-          <!-- Dual Camera & Upload Action Buttons -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <button onclick="document.getElementById('fileInput').click()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-3 px-4 text-xs font-black flex items-center justify-center gap-2">
-              <span class="material-symbols-outlined text-base">file_upload</span> Upload / Choose Photo
-            </button>
-            <button onclick="requestCameraAccess()" class="neo-btn bg-[#15803d] text-white py-3 px-4 text-xs font-black flex items-center justify-center gap-2">
-              <span class="material-symbols-outlined text-base">photo_camera</span> 📸 Open Live Camera
-            </button>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+            <button onclick="document.getElementById('fileInput').click()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2.5 px-3 text-[10px] font-black">Upload Photo</button>
+            <button onclick="requestCameraAccess()" class="neo-btn bg-[#15803d] text-white py-2.5 px-3 text-[10px] font-black">Open Camera</button>
           </div>
         </div>
 
-        <!-- RIGHT 5 COLS: AI Prediction & Disposal Guide Deck -->
-        <div class="lg:col-span-5 neo-card p-5 lg:p-6 bg-white flex flex-col justify-between space-y-4">
+        <div class="lg:col-span-5 neo-card p-4 bg-white flex flex-col justify-between space-y-3">
           <div>
-            <h3 class="font-display font-black text-lg flex items-center gap-2 mb-3">
+            <h3 class="font-display font-black text-md flex items-center gap-2 mb-2">
               <span class="material-symbols-outlined text-[#15803d]">analytics</span>
-              Step 2: AI Result & Guide
+              Step 2: AI Result
             </h3>
-
-            <!-- State 1: Empty -->
-            <div id="aiResultStateEmpty" class="border-3 border-dashed border-[#0a0a0a]/30 p-6 rounded-2xl text-center text-gray-500 py-12 flex flex-col items-center justify-center min-h-[260px]">
-              <span class="material-symbols-outlined text-4xl mb-2 text-gray-400">center_focus_weak</span>
-              <p class="font-display font-black text-sm text-[#0a0a0a]">No waste image analyzed yet</p>
-              <p class="text-xs font-bold text-gray-500 mt-1">Upload a photo or choose a sample to view live AI classification.</p>
+            <div id="aiResultStateEmpty" class="border-3 border-dashed border-[#0a0a0a]/30 p-4 rounded-2xl text-center text-gray-500 py-6">
+              <p class="font-display font-black text-sm">No analysis performed.</p>
             </div>
-
-            <!-- State 2: Active AI Result -->
-            <div id="aiResultStateActive" class="hidden space-y-3">
-              <div class="bg-[#f6f9f3] border-3 border-[#0a0a0a] p-4 rounded-xl shadow-[3px_3px_0px_0px_#0a0a0a]">
-                <div class="flex items-center justify-between mb-1.5">
-                  <span id="predictedCategoryBadge" class="neo-badge bg-[#ccff00] text-[#0a0a0a] text-[10px]">PLASTIC WASTE</span>
-                  <span id="confidenceScoreVal" class="font-display font-black text-xs text-[#15803d]">96% Confidence</span>
-                </div>
-                <h4 id="predictedItemTitle" class="font-display text-lg font-black text-[#0a0a0a]">PET Plastic Bottle</h4>
-                <p id="predictedItemDesc" class="text-xs text-gray-600 mt-0.5 font-medium">Recyclable polyethylene terephthalate container.</p>
-              </div>
-
-              <div class="border-3 border-[#0a0a0a] bg-white p-4 rounded-xl space-y-1.5">
-                <h4 class="font-display font-black text-xs flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-[#15803d] text-base">recycling</span> Disposal & Recycling Steps
-                </h4>
-                <ul class="space-y-1 text-xs font-bold text-gray-700">
-                  <li class="flex items-start gap-1.5">
-                    <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep1">Rinse bottle and remove cap before disposal.</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep2">Place in Yellow / Blue Plastic Bin.</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="text-[#15803d] font-black">✔</span> <span id="instructionStep3">Saves approx ~0.08 kg CO₂ per item.</span>
-                  </li>
-                </ul>
-              </div>
-
-              <!-- Confirmation Box -->
-              <div class="bg-[#ccff00]/25 border-3 border-[#0a0a0a] p-4 rounded-xl space-y-2">
-                <div class="flex items-center justify-between">
-                  <h4 class="font-display font-black text-xs text-[#0a0a0a]">Confirm AI prediction:</h4>
-                  <span class="text-xs font-black text-[#15803d]">Claim +30 Pts</span>
-                </div>
-
-                <div class="flex flex-col gap-2">
-                  <button onclick="confirmAiPrediction(true)" class="neo-btn bg-[#15803d] text-white py-2 px-3 text-xs font-bold w-full">
-                    <span class="material-symbols-outlined text-sm">check_circle</span> Yes, Confirm Prediction
-                  </button>
-                  
-                  <div class="flex gap-2">
-                    <select id="correctCategorySelect" class="bg-white border-2 border-[#0a0a0a] font-display font-bold text-xs p-1.5 rounded-xl flex-1">
-                      <option value="">Correct to...</option>
-                      <option value="Plastic">Plastic</option>
-                      <option value="Paper">Paper / Cardboard</option>
-                      <option value="Metal">Metal Can</option>
-                      <option value="Glass">Glass Container</option>
-                    </select>
-                    <button onclick="confirmAiPrediction(false)" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-1.5 px-3 text-xs font-bold">
-                      Update
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- State 3: Bold RED Image Not Detected -->
-            <div id="aiResultStateUnknown" class="hidden space-y-3 border-3 border-[#0a0a0a] bg-red-50 p-4 rounded-xl shadow-[3px_3px_0px_0px_#0a0a0a]">
-              <div class="flex items-center gap-2">
-                <span class="w-8 h-8 bg-red-600 text-white font-black text-base rounded-lg flex items-center justify-center border-2 border-[#0a0a0a]">⚠️</span>
-                <div>
-                  <h4 class="font-display font-black text-lg text-red-600 leading-tight">IMAGE NOT DETECTED</h4>
-                  <p id="unknownRawPrediction" class="text-[10px] font-black text-red-700 uppercase tracking-wide">No Plastic, Cardboard, Paper, Metal or Glass Found</p>
-                </div>
-              </div>
-              <p class="text-xs font-bold text-red-800 leading-relaxed bg-red-100/80 p-2.5 rounded-lg border border-red-300">
-                Our real-life AI scanner analyzed this photo but could not detect recyclable waste. Please upload a clear waste photo.
-              </p>
-              <div class="border-t border-red-200 pt-2 flex flex-col gap-2">
-                <button onclick="document.getElementById('fileInput').click()" class="neo-btn bg-red-600 hover:bg-red-700 text-white py-2 px-3 text-xs font-black w-full">
-                  📸 Try Another Photo
-                </button>
-                <div class="flex gap-2">
-                  <select id="manualWasteCategorySelect" class="bg-white border-2 border-[#0a0a0a] font-display font-bold text-xs p-1.5 rounded-xl flex-1">
-                    <option value="Plastic">Force Plastic</option>
-                    <option value="Paper">Force Paper / Cardboard</option>
-                    <option value="Metal">Force Metal</option>
-                    <option value="Glass">Force Glass</option>
-                  </select>
-                  <button onclick="forceManualCategory()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-1.5 px-3 text-xs font-black">
-                    Classify
-                  </button>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
-
       </div>
     </section>
-
 
     <!-- PAGE 3: LOCAL GREEN MAP -->
-    <section id="view-map" class="page-view space-y-6">
-      
-      <div class="neo-card p-6 bg-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <section id="view-map" class="page-view space-y-4">
+      <div class="neo-card p-4 bg-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div class="inline-flex items-center gap-2 bg-[#ccff00] border-2 border-[#0a0a0a] font-display font-black text-xs px-3 py-0.5 rounded-full uppercase tracking-wider mb-1">
-            📍 Mumbai Green Locations & Satellite Map
-          </div>
-          <h2 class="font-display text-3xl font-black">Local Green Map</h2>
-          <p class="text-sm text-gray-600 font-medium">Explore Parks 🌲, EV Charging ⚡, Recycling Hubs ♻️, and Water Refill Stations 💧 across Mumbai.</p>
-        </div>
-
-        <!-- Map Layer Controls & Filter Tabs -->
-        <div class="flex flex-wrap items-center gap-2">
-          <button id="btnSatelliteToggle" onclick="toggleSatelliteView()" class="neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-2 px-3">
-            📡 Satellite View
-          </button>
-          <button id="btnLocateUser" onclick="requestUserLocation()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] text-xs py-2 px-3">
-            📍 Locate Me
-          </button>
-          <button onclick="openAddSpotModal()" class="neo-btn bg-[#15803d] text-white text-xs py-2 px-3">
-            ＋ Add Green Place
-          </button>
-          
-          <div class="w-full sm:w-auto flex flex-wrap gap-1.5 mt-2 sm:mt-0">
-            <button onclick="filterMapPins('all')" class="map-filter-btn neo-btn bg-[#ccff00] text-[#0a0a0a] text-xs py-1.5 px-2.5">
-              All Pins
-            </button>
-            <button onclick="filterMapPins('recycling')" class="map-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-1.5 px-2.5">
-              ♻️ Recycling
-            </button>
-            <button onclick="filterMapPins('ev')" class="map-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-1.5 px-2.5">
-              ⚡ EV Charging
-            </button>
-            <button onclick="filterMapPins('water')" class="map-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-1.5 px-2.5">
-              💧 Water Refill
-            </button>
-            <button onclick="filterMapPins('park')" class="map-filter-btn neo-btn bg-white hover:bg-gray-100 text-[#0a0a0a] text-xs py-1.5 px-2.5">
-              🌲 Parks
-            </button>
-          </div>
+          <h2 class="font-display text-2xl font-black">Local Green Map</h2>
         </div>
       </div>
-
-      <!-- Live Footstep Pedometer & Carbon Footprint Card -->
-      <div class="neo-card p-6 bg-gradient-to-r from-[#15803d] to-[#0f5127] text-white space-y-4">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-white/20 pb-4">
-          <div>
-            <div class="inline-flex items-center gap-2 bg-[#ccff00] text-[#0a0a0a] border-2 border-[#0a0a0a] font-display font-black text-xs px-3 py-0.5 rounded-full uppercase">
-              👟 Live Footstep & Real Carbon Offset Tracker
-            </div>
-            <h3 class="font-display font-black text-2xl mt-1 text-white">Live Footstep Pedometer</h3>
-            <p class="text-xs text-white/90 font-medium">Captures your real steps walked & computes live saved vehicle CO₂ emissions in real time.</p>
-          </div>
-
-          <!-- Live Controls -->
-          <div class="flex flex-wrap gap-2">
-            <button id="btnPedometerToggle" onclick="togglePedometerTracking()" class="neo-btn bg-[#ccff00] text-[#0a0a0a] py-2 px-4 text-xs font-black">
-              ▶ Start Walk Tracking
-            </button>
-            <button onclick="simulateWalkStep(15)" class="neo-btn bg-white text-[#0a0a0a] py-2 px-3 text-xs font-black" title="Simulate 15 Steps">
-              👟 Step Walk (+15)
-            </button>
-          </div>
-        </div>
-
-        <!-- 3 Live Metric Counter Displays -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="bg-white/10 border-2 border-white/30 p-4 rounded-xl text-center">
-            <p class="text-[10px] font-black uppercase text-[#ccff00] tracking-wider">Live Steps Walked</p>
-            <p id="livePedometerSteps" class="font-display font-black text-3xl text-white my-1">0</p>
-            <span class="text-[10px] text-white/80 font-bold">Captured via motion/GPS</span>
-          </div>
-
-          <div class="bg-white/10 border-2 border-white/30 p-4 rounded-xl text-center">
-            <p class="text-[10px] font-black uppercase text-[#ccff00] tracking-wider">Distance Covered</p>
-            <p id="livePedometerDistance" class="font-display font-black text-3xl text-white my-1">0.00 km</p>
-            <span class="text-[10px] text-white/80 font-bold">~0.75 meters per step</span>
-          </div>
-
-          <div class="bg-[#ccff00] text-[#0a0a0a] border-3 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a] p-4 rounded-xl text-center">
-            <p class="text-[10px] font-black uppercase text-[#0a0a0a] tracking-wider">Real CO₂ Offset Saved</p>
-            <p id="livePedometerCo2Saved" class="font-display font-black text-3xl text-[#0a0a0a] my-1">0.000 kg</p>
-            <span class="text-[10px] font-black text-[#15803d]">0.192 kg CO₂ saved per km</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Map & Location Info Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- Interactive Map Container -->
-        <div class="lg:col-span-2 neo-card bg-white p-2 min-h-[480px] relative">
-          <div id="greenMap" class="w-full h-[470px] rounded-2xl"></div>
-        </div>
-
-        <!-- Selected Location Details Drawer -->
-        <div class="neo-card p-6 bg-white space-y-4 flex flex-col justify-between">
-          <div>
-            <span id="selectedPinType" class="neo-badge bg-[#ccff00] text-[#0a0a0a]">PARK & GREEN SPACE</span>
-            <h3 id="selectedPinName" class="font-display text-2xl font-black text-[#0a0a0a] mt-2">Sanjay Gandhi National Park (SGNP)</h3>
-            <p id="selectedPinAddress" class="text-xs font-bold text-gray-500 mt-1">Borivali East, Mumbai, Maharashtra</p>
-            
-            <div class="my-4 border-t-2 border-[#0a0a0a]/10 pt-4 space-y-3 text-xs font-bold text-gray-700">
-              <div class="flex items-center justify-between">
-                <span class="text-gray-500">Operating Hours:</span>
-                <span id="selectedPinHours" class="text-[#15803d]">07:30 AM - 06:30 PM</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-gray-500">Distance:</span>
-                <span id="selectedPinDistance">0.8 km from location</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-gray-500">Facility / Features:</span>
-                <span id="selectedPinItems" class="text-right max-w-[150px] truncate">Dense Forest, Cycling, Kanheri Caves</span>
-              </div>
-            </div>
-          </div>
-
-          <button onclick="getDirectionsToPin()" class="neo-btn bg-[#15803d] text-white py-3.5 w-full text-xs font-bold">
-            <span class="material-symbols-outlined">directions</span> Get Directions in Google Maps
-          </button>
-        </div>
-
-      </div>
-
     </section>
 
-
     <!-- PAGE 4: ECO CHALLENGES -->
-    <section id="view-challenges" class="page-view space-y-6">
+    <section id="view-challenges" class="page-view space-y-4">
       
-      <div class="neo-card p-6 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="neo-card p-4 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <div class="inline-flex items-center gap-2 bg-[#ccff00] border-2 border-[#0a0a0a] font-display font-black text-xs px-3 py-0.5 rounded-full uppercase tracking-wider mb-1">
+          <div class="inline-flex items-center gap-2 bg-[#ccff00] border-2 border-[#0a0a0a] font-display font-black text-[10px] px-3 py-0.5 rounded-full uppercase tracking-wider mb-1">
             🤖 AI Proof Scanner Verification Active
           </div>
           <h2 class="font-display text-3xl font-black">Daily Eco Challenges</h2>
@@ -611,11 +399,11 @@
         </div>
       </div>
 
-      <!-- Challenges Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- 2-COLUMN LANDSCAPE CONSOLE GRID -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-        <!-- Challenge 1: Walk 2 km -->
-        <div class="neo-card p-6 bg-white flex flex-col justify-between space-y-4">
+        <!-- LEFT 7 COLS: Camera / Upload Image Console -->
+        <div class="lg:col-span-7 neo-card p-4 lg:p-5 bg-white flex flex-col justify-between space-y-3">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
               <div class="w-12 h-12 bg-[#ccff00] border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] rounded-xl flex items-center justify-center text-2xl font-bold">
@@ -639,7 +427,7 @@
         </div>
 
         <!-- Challenge 2: Use Reusable Bottle -->
-        <div class="neo-card p-6 bg-white flex flex-col justify-between space-y-4">
+        <div class="neo-card p-4 bg-white flex flex-col justify-between space-y-3">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
               <div class="w-12 h-12 bg-[#38bdf8] border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] rounded-xl flex items-center justify-center text-2xl font-bold">
@@ -663,7 +451,7 @@
         </div>
 
         <!-- Challenge 3: Plant a Tree -->
-        <div class="neo-card p-6 bg-white flex flex-col justify-between space-y-4">
+        <div class="neo-card p-4 bg-white flex flex-col justify-between space-y-3">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
               <div class="w-12 h-12 bg-[#4ade80] border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] rounded-xl flex items-center justify-center text-2xl font-bold">
@@ -687,7 +475,7 @@
         </div>
 
         <!-- Challenge 4: Segregate Waste -->
-        <div class="neo-card p-6 bg-white flex flex-col justify-between space-y-4">
+        <div class="neo-card p-4 bg-white flex flex-col justify-between space-y-3">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
               <div class="w-12 h-12 bg-[#facc15] border-3 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] rounded-xl flex items-center justify-center text-2xl font-bold">
@@ -716,9 +504,9 @@
 
 
     <!-- PAGE 5: LIVE LEADERBOARD -->
-    <section id="view-leaderboard" class="page-view space-y-6">
+    <section id="view-leaderboard" class="page-view space-y-4">
       
-      <div class="neo-card p-6 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="neo-card p-4 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div class="inline-flex items-center gap-2 bg-[#ccff00] border-2 border-[#0a0a0a] font-display font-black text-xs px-3 py-0.5 rounded-full uppercase tracking-wider mb-1">
             ⚡ Live Dynamic Ranking Engine
@@ -732,10 +520,10 @@
       </div>
 
       <!-- Leaderboard & Activity Feed Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         <!-- Leaderboard Table (Col 2) -->
-        <div class="lg:col-span-2 neo-card p-6 bg-white overflow-x-auto">
+        <div class="lg:col-span-2 neo-card p-4 bg-white overflow-x-auto">
           <div class="flex items-center justify-between mb-4 border-b-2 border-[#0a0a0a]/10 pb-3">
             <h3 class="font-display font-black text-lg text-[#0a0a0a]">Top Eco Champions</h3>
             <div class="flex gap-2">
@@ -760,14 +548,14 @@
         </div>
 
         <!-- Live Activity Feed Drawer (Col 1) -->
-        <div class="neo-card p-6 bg-white space-y-4 flex flex-col justify-between">
+        <div class="neo-card p-4 bg-white space-y-3 flex flex-col justify-between">
           <div>
             <h3 class="font-display font-black text-lg text-[#0a0a0a] flex items-center gap-2">
               <span class="w-3 h-3 rounded-full bg-[#15803d] animate-ping"></span> Live Challenge Activity
             </h3>
             <p class="text-xs text-gray-500 font-medium mt-0.5">Real-time verified challenge feed from the community.</p>
 
-            <div id="liveActivityFeed" class="mt-4 space-y-3 max-h-[380px] overflow-y-auto pr-1">
+            <div id="liveActivityFeed" class="mt-3 space-y-2 max-h-[280px] overflow-y-auto pr-1">
               <div id="activityFeedEmpty" class="py-10 text-center text-gray-400">
                 <span class="material-symbols-outlined text-3xl mb-2 block">hourglass_empty</span>
                 <p class="text-xs font-bold">No activity yet.</p>
@@ -787,12 +575,12 @@
 
 
     <!-- PAGE 6: PROFILE -->
-    <section id="view-profile" class="page-view space-y-8">
+    <section id="view-profile" class="page-view space-y-4">
       
       <!-- Profile Header Card -->
-      <div class="neo-card p-6 lg:p-8 bg-white flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="neo-card p-4 lg:p-5 bg-white flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-          <div id="profileAvatarBox" class="w-20 h-20 rounded-2xl bg-[#15803d] text-white font-black text-3xl flex items-center justify-center border-4 border-[#0a0a0a] shadow-[4px_4px_0px_0px_#0a0a0a] overflow-hidden">
+          <div id="profileAvatarBox" class="w-16 h-16 rounded-2xl bg-[#15803d] text-white font-black text-2xl flex items-center justify-center border-4 border-[#0a0a0a] shadow-[3px_3px_0px_0px_#0a0a0a] overflow-hidden">
             🌿
           </div>
           <div>
@@ -808,28 +596,28 @@
       </div>
 
       <!-- User Stats Counter Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="neo-card p-6 bg-white text-center">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="neo-card p-4 bg-white text-center">
           <p class="text-xs font-extrabold uppercase text-gray-500">Total CO₂ Saved</p>
-          <p id="profCo2Saved" class="font-display font-black text-4xl text-[#15803d] my-2">0.0 kg</p>
+          <p id="profCo2Saved" class="font-display font-black text-3xl text-[#15803d] my-1">0.0 kg</p>
           <span class="text-[11px] font-bold text-gray-500">Loaded from your activity</span>
         </div>
 
-        <div class="neo-card p-6 bg-white text-center">
+        <div class="neo-card p-4 bg-white text-center">
           <p class="text-xs font-extrabold uppercase text-gray-500">Total Points Earned</p>
-          <p id="profTotalPoints" class="font-display font-black text-4xl text-[#0a0a0a] my-2">0</p>
+          <p id="profTotalPoints" class="font-display font-black text-3xl text-[#0a0a0a] my-1">0</p>
           <span class="text-[11px] font-bold text-[#15803d]">Keep taking eco actions!</span>
         </div>
 
-        <div class="neo-card p-6 bg-[#ccff00] text-center">
+        <div class="neo-card p-4 bg-[#ccff00] text-center">
           <p class="text-xs font-extrabold uppercase text-[#0a0a0a]">Active Streak</p>
-          <p id="profActiveStreak" class="font-display font-black text-4xl text-[#0a0a0a] my-2">0 Days 🔥</p>
+          <p id="profActiveStreak" class="font-display font-black text-3xl text-[#0a0a0a] my-1">0 Days 🔥</p>
           <span class="text-[11px] font-extrabold text-[#0a0a0a]">Start your streak today!</span>
         </div>
       </div>
 
       <!-- Achievements Showcase -->
-      <div class="neo-card p-6 bg-white space-y-4">
+      <div class="neo-card p-4 bg-white space-y-3">
         <h3 class="font-display font-black text-2xl text-[#0a0a0a]">Unlocked Achievements</h3>
         
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
